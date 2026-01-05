@@ -1,0 +1,62 @@
+package com.birdbook.util;
+
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import com.mongodb.client.MongoCollection;
+
+@Component
+public class MongoDataInitializer implements CommandLineRunner {
+
+    @Override
+    public void run(String... args) throws Exception {
+        MongoCollection<Document> birdsCollection = 
+            ConnectionHandler.getDatabase().getCollection("birds");
+        if(birdsCollection.countDocuments() == 0) {
+            populateBirds(birdsCollection);
+            System.out.println("Bird data initialized successfully!");
+        } else {
+            System.out.println("Bird collection already populated, skipping initialization.");
+        }
+    }
+
+    private void populateBirds(MongoCollection<Document> collection) {
+        Document[] birds = {
+            new Document("_id", new ObjectId())
+                .append("commonName", "American Robin")
+                .append("imageURL", "https://example.com/images/american-robin.jpg"),
+            
+            new Document("_id", new ObjectId())
+                .append("commonName", "Northern Cardinal")
+                .append("imageURL", "https://example.com/images/northern-cardinal.jpg"),
+            
+            new Document("_id", new ObjectId())
+                .append("commonName", "Black-capped Chickadee")
+                .append("imageURL", "https://example.com/images/chickadee.jpg"),
+            
+            new Document("_id", new ObjectId())
+                .append("commonName", "Blue Jay")
+                .append("imageURL", "https://example.com/images/blue-jay.jpg"),
+            
+            new Document("_id", new ObjectId())
+                .append("commonName", "House Finch")
+                .append("imageURL", "https://example.com/images/house-finch.jpg"),
+            
+            new Document("_id", new ObjectId())
+                .append("commonName", "Downy Woodpecker")
+                .append("imageURL", "https://example.com/images/downy-woodpecker.jpg"),
+            
+            new Document("_id", new ObjectId())
+                .append("commonName", "Tufted Titmouse")
+                .append("imageURL", "https://example.com/images/tufted-titmouse.jpg"),
+            
+            new Document("_id", new ObjectId())
+                .append("commonName", "American Goldfinch")
+                .append("imageURL", "https://example.com/images/american-goldfinch.jpg")
+        };
+        
+        collection.insertMany(java.util.Arrays.asList(birds));
+    }
+}

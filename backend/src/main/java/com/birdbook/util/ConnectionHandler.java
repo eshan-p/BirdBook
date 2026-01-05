@@ -19,6 +19,7 @@ public class ConnectionHandler {
                 if(input == null) {
                     throw new Exception("Unable to find application.properties");
                 }
+                prop.load(input);
                 client = MongoClients.create(prop.getProperty("db.url"));
                 database = client.getDatabase(prop.getProperty("db.database"));
             } catch(IOException | ClassNotFoundException e) {
