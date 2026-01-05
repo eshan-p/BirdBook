@@ -1,5 +1,7 @@
 package com.birdbook.util;
 
+import java.util.Arrays;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.boot.CommandLineRunner;
@@ -58,5 +60,52 @@ public class MongoDataInitializer implements CommandLineRunner {
         };
         
         collection.insertMany(java.util.Arrays.asList(birds));
+    }
+
+    private void populateGroups(MongoCollection<Document> collection) {
+
+    }
+
+    private void populatePosts(MongoCollection<Document> collection) {
+        
+    }
+
+    private void populateUsers(MongoCollection<Document> collection) {
+        ObjectId user1 = new ObjectId();
+        ObjectId user2 = new ObjectId();
+        ObjectId user3 = new ObjectId();
+        ObjectId user4 = new ObjectId();
+
+        //TODO, link to actual groups / posts
+        Document users[] = {
+            new Document("_id", user1)
+            .append("username", "birdwatcher_beth")
+            .append("password", "password123")
+            .append("friends", Arrays.asList(user2.toString(), user3.toString()))
+            .append("posts", Arrays.asList())
+            .append("groups", Arrays.asList()),
+
+            new Document("_id", user2)
+            .append("username", "nature_nancy")
+            .append("password", "pwrd2941j")
+            .append("friends", Arrays.asList(user1.toString(), user4.toString()))
+            .append("posts", Arrays.asList())
+            .append("groups", Arrays.asList()),
+
+            new Document("_id", user3)
+            .append("username", "ornithology_oscar")
+            .append("password", "kjlbgdra78")
+            .append("friends", Arrays.asList(user1.toString()))
+            .append("posts", Arrays.asList())
+            .append("groups", Arrays.asList()),
+
+            new Document("_id", user4)
+            .append("username", "spotter_scott")
+            .append("password", "fisohaf12")
+            .append("friends", Arrays.asList(user2.toString()))
+            .append("posts", Arrays.asList())
+            .append("groups", Arrays.asList()),
+        };
+        collection.insertMany(Arrays.asList(users));
     }
 }
