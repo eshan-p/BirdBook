@@ -44,32 +44,59 @@ public class MongoDataInitializer implements CommandLineRunner {
         } else {
             System.out.println("Bird collection already populated, skipping initialization.");
         }
+
+        MongoCollection<Document> usersCollection = 
+            ConnectionHandler.getDatabase().getCollection("users");
+        if(usersCollection.countDocuments() == 0) {
+            populateUsers(usersCollection);
+            System.out.println("User data initialized successfully!");
+        } else {
+            System.out.println("User collection already populated, skipping initialization.");
+        }
+
+        MongoCollection<Document> groupsCollection = 
+            ConnectionHandler.getDatabase().getCollection("groups");
+        if(groupsCollection.countDocuments() == 0) {
+            populateGroups(groupsCollection);
+            System.out.println("Group data initialized successfully!");
+        } else {
+            System.out.println("Group collection already populated, skipping initialization.");
+        }
+
+        MongoCollection<Document> postsCollection = 
+            ConnectionHandler.getDatabase().getCollection("posts");
+        if(postsCollection.countDocuments() == 0) {
+            populatePosts(postsCollection);
+            System.out.println("Post data initialized successfully!");
+        } else {
+            System.out.println("Post collection already populated, skipping initialization.");
+        }
     }
 
     private void populateBirds(MongoCollection<Document> collection) {
         Document[] birds = {
-            new Document("_id", bird1)
+            new Document("_id", bird1.toString())
                 .append("commonName", "American Robin")
                 .append("imageURL", "https://example.com/images/american-robin.jpg"),
-            new Document("_id", bird2)
+            new Document("_id", bird2.toString())
                 .append("commonName", "Northern Cardinal")
                 .append("imageURL", "https://example.com/images/northern-cardinal.jpg"),
-            new Document("_id", bird3)
+            new Document("_id", bird3.toString())
                 .append("commonName", "Black-capped Chickadee")
                 .append("imageURL", "https://example.com/images/chickadee.jpg"),
-            new Document("_id", bird4)
+            new Document("_id", bird4.toString())
                 .append("commonName", "Blue Jay")
                 .append("imageURL", "https://example.com/images/blue-jay.jpg"),
-            new Document("_id", bird5)
+            new Document("_id", bird5.toString())
                 .append("commonName", "House Finch")
                 .append("imageURL", "https://example.com/images/house-finch.jpg"),
-            new Document("_id", bird6)
+            new Document("_id", bird6.toString())
                 .append("commonName", "Downy Woodpecker")
                 .append("imageURL", "https://example.com/images/downy-woodpecker.jpg"),
-            new Document("_id", bird7)
+            new Document("_id", bird7.toString())
                 .append("commonName", "Tufted Titmouse")
                 .append("imageURL", "https://example.com/images/tufted-titmouse.jpg"),
-            new Document("_id", bird8)
+            new Document("_id", bird8.toString())
                 .append("commonName", "American Goldfinch")
                 .append("imageURL", "https://example.com/images/american-goldfinch.jpg")
         };  
