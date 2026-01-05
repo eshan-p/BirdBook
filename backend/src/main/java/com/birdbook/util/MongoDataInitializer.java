@@ -11,6 +11,17 @@ import com.mongodb.client.MongoCollection;
 
 @Component
 public class MongoDataInitializer implements CommandLineRunner {
+    ObjectId user1 = new ObjectId();
+    ObjectId user2 = new ObjectId();
+    ObjectId user3 = new ObjectId();
+    ObjectId user4 = new ObjectId();
+    ObjectId group1 = new ObjectId();
+    ObjectId group2 = new ObjectId();
+    ObjectId comment1 = new ObjectId();
+    ObjectId comment2 = new ObjectId();
+    ObjectId post1 = new ObjectId();
+    ObjectId post2 = new ObjectId();
+
 
     @Override
     public void run(String... args) throws Exception {
@@ -57,25 +68,32 @@ public class MongoDataInitializer implements CommandLineRunner {
             new Document("_id", new ObjectId())
                 .append("commonName", "American Goldfinch")
                 .append("imageURL", "https://example.com/images/american-goldfinch.jpg")
-        };
-        
-        collection.insertMany(java.util.Arrays.asList(birds));
+        };  
+        collection.insertMany(Arrays.asList(birds));
     }
 
     private void populateGroups(MongoCollection<Document> collection) {
+        Document groups[] = {
+            new Document("_id", group1)
+            .append("groupName", "DFW birders")
+            .append("owner", user1.toString())
+            .append("members", Arrays.asList(user1.toString(), user2.toString()))
+            .append("requests", Arrays.asList()),
 
+            new Document("_id", group2)
+            .append("groupName", "Coastal Bird Committee")
+            .append("owner", user2.toString())
+            .append("members", Arrays.asList(user2.toString(), user1.toString(), user3.toString()))
+            .append("requests", Arrays.asList(user4.toString()))
+        };
+        collection.insertMany(Arrays.asList(groups));
     }
 
     private void populatePosts(MongoCollection<Document> collection) {
-        
+
     }
 
     private void populateUsers(MongoCollection<Document> collection) {
-        ObjectId user1 = new ObjectId();
-        ObjectId user2 = new ObjectId();
-        ObjectId user3 = new ObjectId();
-        ObjectId user4 = new ObjectId();
-
         //TODO, link to actual groups / posts
         Document users[] = {
             new Document("_id", user1)
