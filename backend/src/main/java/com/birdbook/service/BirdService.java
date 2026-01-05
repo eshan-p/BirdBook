@@ -15,6 +15,11 @@ public class BirdService {
         this.birdDAO = birdDAO;
     }
 
+    // Just for testing Spring Boot, can be removed later
+    public Bird getBirdByCommonName(String commonName) {
+        return birdDAO.findByCommonName(commonName);
+    }
+
     public List<Bird> getAllBirds() {
         System.out.println(birdDAO.findAll());
         return birdDAO.findAll();

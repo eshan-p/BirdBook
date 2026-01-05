@@ -15,6 +15,12 @@ public class Bird {
     public Bird() {
     }
 
+    public Bird(ObjectId id, String commonName, String imageURL) {
+        this.id = id;
+        this.commonName = commonName;
+        this.imageURL = imageURL;
+    }
+
     /**
      * @return ObjectId return the id
      */

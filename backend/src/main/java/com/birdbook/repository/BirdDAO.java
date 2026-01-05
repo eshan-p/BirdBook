@@ -8,5 +8,5 @@ import com.birdbook.models.Bird;
 
 @Repository
 public interface BirdDAO extends MongoRepository<Bird, ObjectId> {
-    
+    Bird findByCommonName(String commonName);
 }
