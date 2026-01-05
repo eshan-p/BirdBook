@@ -75,28 +75,28 @@ public class MongoDataInitializer implements CommandLineRunner {
 
     private void populateBirds(MongoCollection<Document> collection) {
         Document[] birds = {
-            new Document("_id", bird1.toString())
+            new Document("_id", bird1)
                 .append("commonName", "American Robin")
                 .append("imageURL", "https://example.com/images/american-robin.jpg"),
-            new Document("_id", bird2.toString())
+            new Document("_id", bird2)
                 .append("commonName", "Northern Cardinal")
                 .append("imageURL", "https://example.com/images/northern-cardinal.jpg"),
-            new Document("_id", bird3.toString())
+            new Document("_id", bird3)
                 .append("commonName", "Black-capped Chickadee")
                 .append("imageURL", "https://example.com/images/chickadee.jpg"),
-            new Document("_id", bird4.toString())
+            new Document("_id", bird4)
                 .append("commonName", "Blue Jay")
                 .append("imageURL", "https://example.com/images/blue-jay.jpg"),
-            new Document("_id", bird5.toString())
+            new Document("_id", bird5)
                 .append("commonName", "House Finch")
                 .append("imageURL", "https://example.com/images/house-finch.jpg"),
-            new Document("_id", bird6.toString())
+            new Document("_id", bird6)
                 .append("commonName", "Downy Woodpecker")
                 .append("imageURL", "https://example.com/images/downy-woodpecker.jpg"),
-            new Document("_id", bird7.toString())
+            new Document("_id", bird7)
                 .append("commonName", "Tufted Titmouse")
                 .append("imageURL", "https://example.com/images/tufted-titmouse.jpg"),
-            new Document("_id", bird8.toString())
+            new Document("_id", bird8)
                 .append("commonName", "American Goldfinch")
                 .append("imageURL", "https://example.com/images/american-goldfinch.jpg")
         };  
