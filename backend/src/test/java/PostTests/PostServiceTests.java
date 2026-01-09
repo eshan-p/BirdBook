@@ -1,7 +1,9 @@
 package PostTests;
 import com.birdbook.models.Comment;
 import com.birdbook.models.Post;
+import com.birdbook.models.User;
 import com.birdbook.repository.PostDAO;
+import com.birdbook.repository.UserDAO;
 import com.birdbook.service.PostService;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.sql.Array;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
@@ -24,6 +27,9 @@ public class PostServiceTests {
     @Mock
     private PostDAO postDAO;
 
+    @Mock
+    UserDAO userDAO;
+
     @InjectMocks
     private PostService postService;
 
@@ -31,6 +37,8 @@ public class PostServiceTests {
     private ObjectId postId;
     private ObjectId birdId;
     private ObjectId groupId;
+    private ObjectId userId;
+    private User testUser;
 
     @BeforeEach
     void setup(){
@@ -39,6 +47,12 @@ public class PostServiceTests {
         postId = new ObjectId();
         birdId = new ObjectId();
         groupId = new ObjectId();
+        userId = new ObjectId();
+
+        testUser = new User();
+        ObjectId[] testPostArray = {postId};
+        testUser.setPosts(testPostArray);
+        testUser.setId(userId);
 
         //setup test pokemon model
         testPost = new Post();
@@ -154,14 +168,28 @@ public class PostServiceTests {
     //get all friends posts
     @Test
     void getAllPostsGivenFriendIds_Success_ReturnsPosts(){
-        ArrayList friendList = new ArrayList<ObjectId>();
-        //NOTE TO CHANGE THIS LATERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-        friendList.add(postId);
+        List<ObjectId> friendList = new ArrayList<>();
+        friendList.add(testUser.getId());
 
-        when(postDAO.findAllByFriends()).thenReturn(List.of(testPost));
+        ObjectId friendId = new ObjectId();
 
-        List<Post> result = postService.findAllByFriends();
+        testUser.setFriends(new ObjectId[]{ friendId });
 
+        testUser.setFriends(friendList.toArray(new ObjectId[0]));
+        //testUser.setPosts(new ObjectId[]{ postId });
+
+        User testFriend = new User();
+        testFriend.setId(friendId);
+        testFriend.setPosts(new ObjectId[]{ postId });
+
+        when(userDAO.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        when(userDAO.findAllById(anyList())).thenReturn(List.of(testFriend));
+        when(postDAO.findAllById(anyList())).thenReturn(List.of(testPost));
+
+        //act
+        List<Post> result = postService.getAllPostsByFriends(testUser.getId());
+
+        //assert
         assertEquals(1,result.size());
     }
 
