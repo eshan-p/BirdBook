@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 
 import java.sql.Array;
 import java.sql.SQLException;
@@ -29,6 +31,10 @@ public class PostServiceTests {
 
     @Mock
     UserDAO userDAO;
+
+    @Mock
+    private MongoTemplate mongoTemplate;
+
 
     @InjectMocks
     private PostService postService;
@@ -195,12 +201,96 @@ public class PostServiceTests {
 
     @Test
     void getAllPostsGivenFriendsIds_Empty_ReturnsEmpty(){
+        List<ObjectId> friendList = new ArrayList<>();
+        friendList.add(testUser.getId());
 
+        ObjectId friendId = new ObjectId();
+
+        testUser.setFriends(new ObjectId[]{ friendId });
+
+        testUser.setFriends(friendList.toArray(new ObjectId[0]));
+        //testUser.setPosts(new ObjectId[]{ postId });
+
+        User testFriend = new User();
+        testFriend.setId(friendId);
+        testFriend.setPosts(new ObjectId[]{ postId });
+
+        when(userDAO.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        when(userDAO.findAllById(anyList())).thenReturn(List.of(testFriend));
+        when(postDAO.findAllById(anyList())).thenReturn(new ArrayList<>());
+
+        //act
+        List<Post> result = postService.getAllPostsByFriends(testUser.getId());
+
+        //assert
+        assertEquals(0,result.size());
     }
 
+    @Test
+    void getAllPostsByFriends_NoFriends_ReturnsEmpty() {
+
+        ObjectId userId = new ObjectId();
+
+        User user = new User();
+        user.setId(userId);
+        user.setFriends(new ObjectId[]{}); // no friends
+
+        when(userDAO.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        List<Post> result = postService.getAllPostsByFriends(userId);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getAllPostsByFriends_UserNotFound_ThrowsException() {
+
+        ObjectId userId = new ObjectId();
+
+        when(userDAO.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> postService.getAllPostsByFriends(userId));
+    }
+
+
     //create post and return postid
+    @Test
+    void createPost_Success_ReturnsSavedPost() {
+
+        when(postDAO.save(testPost))
+                .thenReturn(testPost);
+
+        Post result = postService.createPost(testPost);
+
+        assertNotNull(result);
+        assertEquals(testPost.getHeader(), result.getHeader());
+    }
+
+    //delete
+    @Test
+    void deletePostById_DeletesPost() {
+
+        postService.deletePostById(postId);
+
+        verify(postDAO).deleteById(postId);
+    }
 
     //Retrieve list of posts by tags
+    @Test
+    void getAllPostsByTags_ReturnsMatchingPosts() {
 
-    //return post info from id
+        Map<String, String> tags = new HashMap<>();
+        tags.put("location", "Lumiose");
+
+        when(mongoTemplate.find(any(Query.class), eq(Post.class)))
+                .thenReturn(List.of(testPost));
+
+        List<Post> result = postService.getAllPostsByTags(tags);
+
+        assertEquals(1, result.size());
+        assertEquals("Staraptor", result.get(0).getHeader());
+    }
 }
