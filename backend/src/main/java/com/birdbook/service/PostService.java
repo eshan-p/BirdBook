@@ -12,10 +12,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class PostService {
@@ -76,10 +73,13 @@ public class PostService {
     public Post createPost(Post newPost) {
         return sDAO.save(newPost);
     }
-    
+
     public List<Post> getAllPostsByFriends(ObjectId userId) {
         //use userids to get friends list
         User user = userDAO.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found."));
+
+        //System.out.println("FRIENDS: " + Arrays.toString(user.getFriends()));
+
         ObjectId[] friendIds = user.getFriends();
 
         if (friendIds == null || friendIds.length ==0){
@@ -88,6 +88,8 @@ public class PostService {
 
         // fetch all friends
         List<User> friends = userDAO.findAllById(List.of(friendIds));
+
+        //System.out.println("FRIENDS FOUND: " + friends.size());
 
         //collect all post ids from friends
         List<ObjectId> allPostIds = new ArrayList<>();
@@ -101,6 +103,8 @@ public class PostService {
         if (allPostIds.isEmpty()){
             return List.of();
         }
+
+        //System.out.println("TOTAL POST IDS: " + allPostIds.size());
 
         //finally setch posts by ids
         return sDAO.findAllById(allPostIds);

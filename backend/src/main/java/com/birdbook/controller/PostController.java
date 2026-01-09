@@ -24,11 +24,10 @@ public class PostController {
         return sService.getAllPosts();
     }
 
-    /*
-    @GetMapping("/user/{id}")
+    @GetMapping("/user/{userId}")
     public List<Post> getAllPostsByFriends(@PathVariable ObjectId userId) {
         return sService.getAllPostsByFriends(userId);
-    }*/
+    }
 
     //GET /sightings/by-tags?location=Texas&bird=BlueJay&etc=etc
     @GetMapping("/by-tags")
