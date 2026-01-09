@@ -1,7 +1,11 @@
 package com.birdbook.service;
 
+import com.birdbook.controller.UserController;
 import com.birdbook.models.Post;
+import com.birdbook.models.User;
 import com.birdbook.repository.PostDAO;
+import com.birdbook.repository.UserDAO;
+import com.birdbook.service.UserService;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -15,12 +19,14 @@ import java.util.Optional;
 
 @Service
 public class PostService {
-    private final PostDAO sDAO;
 
+    private final PostDAO sDAO;
+    private final UserDAO userDAO;
     private final MongoTemplate mongoTemplate;
 
-    public PostService(PostDAO sDAO, MongoTemplate mongoTemplate) {
+    public PostService(PostDAO sDAO, UserDAO userDAO, MongoTemplate mongoTemplate) {
         this.sDAO = sDAO;
+        this.userDAO = userDAO;
         this.mongoTemplate = mongoTemplate;
     }
 
@@ -70,12 +76,34 @@ public class PostService {
     public Post createPost(Post newPost) {
         return sDAO.save(newPost);
     }
-
-    //TODO
+    
     public List<Post> getAllPostsByFriends(ObjectId userId) {
         //use userids to get friends list
-        ArrayList<ObjectId> friends = new ArrayList<>();
-        return sDAO.findAllById(friends);
+        User user = userDAO.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found."));
+        ObjectId[] friendIds = user.getFriends();
+
+        if (friendIds == null || friendIds.length ==0){
+            return List.of();
+        }
+
+        // fetch all friends
+        List<User> friends = userDAO.findAllById(List.of(friendIds));
+
+        //collect all post ids from friends
+        List<ObjectId> allPostIds = new ArrayList<>();
+
+        for (User friend: friends){
+            if(friend.getPosts()!= null){
+                allPostIds.addAll(List.of(friend.getPosts()));
+            }
+        }
+
+        if (allPostIds.isEmpty()){
+            return List.of();
+        }
+
+        //finally setch posts by ids
+        return sDAO.findAllById(allPostIds);
     }
 
     public List<Post> getAllPostsByTags(Map<String,String> tags) {
