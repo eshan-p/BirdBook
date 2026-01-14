@@ -1,4 +1,4 @@
-package PostTests;
+package com.birdbook.PostTests;
 import com.birdbook.models.Comment;
 import com.birdbook.models.Post;
 import com.birdbook.models.User;
