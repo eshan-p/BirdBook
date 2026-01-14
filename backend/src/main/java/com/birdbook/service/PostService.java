@@ -11,7 +11,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Service
@@ -40,7 +45,7 @@ public class PostService {
         sDAO.deleteById(id);
     }
 
-    public Post updatePost(ObjectId id, Post update){
+    /*public Post updatePost(ObjectId id, Post update){
         Post existingPost = sDAO.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
@@ -68,10 +73,75 @@ public class PostService {
         }
 
         return sDAO.save(existingPost);
+    }*/
+
+    public Post updatePost(ObjectId id, Post updatedPost, MultipartFile imageFile) {
+        Post existingPost = sDAO.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        // Update only fields that are not null
+        if (updatedPost.getHeader() != null) {
+            existingPost.setHeader(updatedPost.getHeader());
+        }
+        if (updatedPost.getTextBody() != null) {
+            existingPost.setTextBody(updatedPost.getTextBody());
+        }
+        if (updatedPost.getComments() != null && !updatedPost.getComments().isEmpty()) {
+            existingPost.setComments(updatedPost.getComments());
+        }
+        if (updatedPost.getLikes() != null) {
+            existingPost.setLikes(updatedPost.getLikes());
+        }
+        if (updatedPost.getTags() != null) {
+            existingPost.setTags(updatedPost.getTags());
+        }
+        if (updatedPost.getFlagged() != null) {
+            existingPost.setFlagged(updatedPost.getFlagged());
+        }
+        if (updatedPost.getHelp() != null) {
+            existingPost.setHelp(updatedPost.getHelp());
+        }
+
+        // Handle image file if provided
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imagePath = saveImage(imageFile);
+            existingPost.setImage(imagePath);
+        }
+
+        return sDAO.save(existingPost);
     }
 
-    public Post createPost(Post newPost) {
+    /* public Post createPost(Post newPost) {
         return sDAO.save(newPost);
+    } */
+
+    public Post createPost(Post newPost, MultipartFile imageFile) {
+        // Handle image file if provided
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imagePath = saveImage(imageFile);
+            newPost.setImage(imagePath);
+        }
+
+        return sDAO.save(newPost);
+    }
+
+    // Helper method to save image file for adding/updating a post; returns the file path
+    private String saveImage(MultipartFile imageFile){
+        try {
+
+            String uploadDir = "images";
+            Files.createDirectories(Paths.get(uploadDir));
+
+            String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir, fileName);
+
+            Files.copy(imageFile.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            return "/" + uploadDir + "/" + fileName;
+
+        } catch (IOException e){
+            throw new RuntimeException("Failed to store image", e);
+        }
     }
 
     public List<Post> getAllPostsByFriends(ObjectId userId) {

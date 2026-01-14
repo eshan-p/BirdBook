@@ -2,11 +2,19 @@ package com.birdbook.models;
 
 import org.bson.types.ObjectId;
 
+import com.birdbook.serializers.ObjectIdSerializer;
+import com.birdbook.serializers.ObjectIdDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.util.Date;
 
 public class Comment {
 
+    @JsonSerialize(using = ObjectIdSerializer.class)
+    @JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId userId;
+    
     private String textBody;
     private Date timestamp;
 
