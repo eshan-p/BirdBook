@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.birdbook.models.Bird;
 import org.bson.types.ObjectId;
-import org.springframework.stereotype.Service;;
+import org.springframework.stereotype.Service;
 import com.birdbook.repository.BirdDAO;
 
 @Service
