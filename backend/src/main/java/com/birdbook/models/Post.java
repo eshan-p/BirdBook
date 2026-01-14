@@ -4,6 +4,11 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.birdbook.serializers.ObjectIdSerializer;
+import com.birdbook.serializers.ObjectIdDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,10 +23,16 @@ public class Post {
     private String header;
     private Map<String, String> tags;
 
+    @JsonSerialize(using = ObjectIdSerializer.class)
+    @JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId bird;
+
     private Boolean flagged = false;
 
+    @JsonSerialize(using = ObjectIdSerializer.class)
+    @JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId group;
+    
     private Boolean help = false;
 
     private List<ObjectId> likes = new ArrayList<>();

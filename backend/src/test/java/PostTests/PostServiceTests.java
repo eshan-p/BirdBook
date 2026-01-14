@@ -119,7 +119,7 @@ public class PostServiceTests {
         when(postDAO.findById(postId)).thenReturn(Optional.of(testPost));
         when(postDAO.save(any(Post.class))).thenAnswer(i -> i.getArgument(0));
 
-        Post result = postService.updatePost(postId, update);
+        Post result = postService.updatePost(postId, update, null);
 
         assertEquals("Updated Header", result.getHeader());
         assertEquals(1, result.getComments().size());
@@ -137,7 +137,7 @@ public class PostServiceTests {
         when(postDAO.findById(postId)).thenReturn(Optional.of(testPost));
         when(postDAO.save(any(Post.class))).thenAnswer(i -> i.getArgument(0));
 
-        Post result = postService.updatePost(postId, update);
+        Post result = postService.updatePost(postId, update, null);
 
         assertEquals("San Antonio, TX", result.getTags().get("location"));
     }
@@ -149,7 +149,7 @@ public class PostServiceTests {
         Post update = new Post();
 
         assertThrows(RuntimeException.class,
-                () -> postService.updatePost(postId, update));
+                () -> postService.updatePost(postId, update, null));
     }
 
     //get all posts
@@ -263,7 +263,7 @@ public class PostServiceTests {
         when(postDAO.save(testPost))
                 .thenReturn(testPost);
 
-        Post result = postService.createPost(testPost);
+        Post result = postService.createPost(testPost, null);
 
         assertNotNull(result);
         assertEquals(testPost.getHeader(), result.getHeader());
