@@ -14,7 +14,7 @@ export default function Login() {
       localStorage.setItem("token", data.token);
       setMessage("Login successful. Token saved.");
     } catch (err) {
-      setMessage("Login failed.");
+      setMessage("Login failed:" + err);
     }
   }
 
