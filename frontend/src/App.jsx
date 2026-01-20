@@ -4,9 +4,11 @@ import {
     Routes, 
     Route, 
 } from "react-router-dom";
+
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
 import Sighting from "./pages/Sighting";
+import Feed from "./pages/Feed";
 
 export default function App() {
     return(
@@ -15,6 +17,7 @@ export default function App() {
                 {/* TODO: NAV */}
                 <Route path="/" element={<Landing/>}/>
                 <Route path="/login" element={<Login/>}/>
+                <Route path="/feed" element={<Feed/>}/>
                 <Route path="/sighting" element={<Sighting/>}/>
             </Routes>
         </Router>
