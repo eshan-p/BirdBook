@@ -63,7 +63,7 @@ class BirdServiceTest {
     void addBird_insertsAndReturnsBird() {
         when(birdDAO.insert(bird)).thenReturn(bird);
 
-        Bird result = birdService.addBird(bird);
+        Bird result = birdService.addBird(bird, null);
 
         assertNotNull(result);
         verify(birdDAO).insert(bird);
@@ -100,7 +100,7 @@ class BirdServiceTest {
         when(birdDAO.findById(birdId)).thenReturn(Optional.of(bird));
         when(birdDAO.save(any(Bird.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Bird updatedBird = birdService.updateBird(birdId, updateRequest);
+        Bird updatedBird = birdService.updateBird(birdId, updateRequest, null);
 
         assertEquals("Blue Jay", updatedBird.getCommonName());
         assertEquals("new-image-url", updatedBird.getImageURL());
@@ -113,7 +113,7 @@ class BirdServiceTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> birdService.updateBird(birdId, bird)
+                () -> birdService.updateBird(birdId, bird, null)
         );
 
         assertEquals("Bird not found.", exception.getMessage());

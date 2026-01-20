@@ -2,22 +2,26 @@ package com.birdbook.controller;
 
 import java.util.List;
 
-import com.birdbook.models.User;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.birdbook.models.Bird;
 import com.birdbook.service.BirdService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/birds")
 public class BirdController {
     private final BirdService birdService;
+    private final ObjectMapper objectMapper;
 
-    public BirdController(BirdService birdService) {
+    public BirdController(BirdService birdService, ObjectMapper objectMapper) {
         this.birdService = birdService;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping
@@ -25,16 +29,36 @@ public class BirdController {
         return birdService.getAllBirds();
     }
 
-    // just for testing Spring Boot, can be removed later
     @GetMapping("/by-name")
     public Bird getBirdByCommonName(String commonName) {
         return birdService.getBirdByCommonName(commonName);
     }
 
-    //addBird(Bird newBird)
-    @PostMapping("/new")
-    public Bird addBird(@RequestBody Bird newBird){
-        return birdService.addBird(newBird);
+    @PostMapping(value = {"/new"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> addBirdMultipart(
+        @RequestPart("bird") String birdJson,
+        @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        try{
+            Bird newBird = objectMapper.readValue(birdJson, Bird.class);
+            return ResponseEntity.ok(birdService.addBird(newBird, image));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid bird data: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Bird updateBirdMultipart(
+        @PathVariable("id") ObjectId id,
+        @RequestPart("bird") String birdJson,
+        @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        try{
+            Bird birdRequest = objectMapper.readValue(birdJson, Bird.class);
+            return birdService.updateBird(id, birdRequest, image);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update bird", e);
+        }
     }
 
     @DeleteMapping("/delete/{id}")
@@ -46,12 +70,18 @@ public class BirdController {
         return new ResponseEntity<String>("Bird deleted successfully", HttpStatus.OK);
     }
 
-    @PutMapping("/update/{id}")
+    //addBird(Bird newBird)
+    /* @PostMapping("/new")
+    public Bird addBird(@RequestBody Bird newBird){
+        return birdService.addBird(newBird);
+    }*/
+
+    /* @PutMapping("/update/{id}")
     public ResponseEntity<Bird> updateBird(@PathVariable String id, @RequestBody Bird birdRequest){
 
         ObjectId userId = new ObjectId(id);
         Bird updatedBird = birdService.updateBird(userId, birdRequest);
 
         return ResponseEntity.ok(updatedBird);
-    }
+    } */
 }

@@ -1,9 +1,15 @@
 package com.birdbook.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.birdbook.models.User;
 import com.birdbook.repository.UserDAO;
@@ -34,12 +40,27 @@ public class UserService {
         userDAO.insert(newUser);
     }
 
-    public User updateUser(ObjectId id, User updatedData){
+    /* public User updateUser(ObjectId id, User updatedData){
 
         User existingUser = userDAO.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found."));
 
         existingUser.setUsername(updatedData.getUsername());
         existingUser.setPassword(updatedData.getPassword());
+
+        return userDAO.save(existingUser);
+    } */
+
+    public User updateUser(ObjectId id, User updatedUser, MultipartFile imageFile){
+        User existingUser = userDAO.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("User not found."));
+
+        existingUser.setUsername(updatedUser.getUsername());
+        existingUser.setPassword(updatedUser.getPassword());
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imagePath = saveImage(imageFile);
+            existingUser.setProfilePic(imagePath);
+        }
 
         return userDAO.save(existingUser);
     }
@@ -71,5 +92,24 @@ public class UserService {
         ObjectId[] friendIds = user.getFriends();
 
         return userDAO.findAllById(List.of(friendIds));
-    }    
+    } 
+    
+    // Helper method to save image file for adding/updating a post; returns the file path
+    private String saveImage(MultipartFile imageFile){
+        try {
+
+            String uploadDir = "images";
+            Files.createDirectories(Paths.get(uploadDir));
+
+            String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir, fileName);
+
+            Files.copy(imageFile.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            return "/" + uploadDir + "/" + fileName;
+
+        } catch (IOException e){
+            throw new RuntimeException("Failed to store image", e);
+        }
+    }
 }

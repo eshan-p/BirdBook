@@ -93,7 +93,7 @@ public class UserServiceTest {
         when(userDAO.findById(id)).thenReturn(Optional.of(existingUser));
         when(userDAO.save(any(User.class))).thenReturn(existingUser);
 
-        User result = userService.updateUser(id, updatedData);
+        User result = userService.updateUser(id, updatedData, null);
 
         verify(userDAO, times(1)).save(existingUser);
         assertEquals("updateduser", result.getUsername());
@@ -108,7 +108,7 @@ public class UserServiceTest {
 
         when(userDAO.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(id, updatedData));
+        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(id, updatedData, null));
         verify(userDAO, times(0)).save(any(User.class));
     }
 

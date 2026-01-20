@@ -1,11 +1,9 @@
 package com.birdbook.service;
 
-import com.birdbook.controller.UserController;
 import com.birdbook.models.Post;
 import com.birdbook.models.User;
 import com.birdbook.repository.PostDAO;
 import com.birdbook.repository.UserDAO;
-import com.birdbook.service.UserService;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -45,36 +43,6 @@ public class PostService {
         sDAO.deleteById(id);
     }
 
-    /*public Post updatePost(ObjectId id, Post update){
-        Post existingPost = sDAO.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
-
-        // Update only fields that are not null
-        if (update.getHeader() != null) {
-            existingPost.setHeader(update.getHeader());
-        }
-        if (update.getTextBody() != null) {
-            existingPost.setTextBody(update.getTextBody());
-        }
-        if (update.getComments() != null && !update.getComments().isEmpty()) {
-            existingPost.setComments(update.getComments());
-        }
-        if (update.getLikes() != null) {
-            existingPost.setLikes(update.getLikes());
-        }
-        if (update.getTags() != null) {
-            existingPost.setTags(update.getTags());
-        }
-        if (update.getFlagged() != null) {
-            existingPost.setFlagged(update.getFlagged());
-        }
-        if (update.getHelp() != null) {
-            existingPost.setHelp(update.getHelp());
-        }
-
-        return sDAO.save(existingPost);
-    }*/
-
     public Post updatePost(ObjectId id, Post updatedPost, MultipartFile imageFile) {
         Post existingPost = sDAO.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
@@ -110,10 +78,6 @@ public class PostService {
 
         return sDAO.save(existingPost);
     }
-
-    /* public Post createPost(Post newPost) {
-        return sDAO.save(newPost);
-    } */
 
     public Post createPost(Post newPost, MultipartFile imageFile) {
         // Handle image file if provided
@@ -192,4 +156,38 @@ public class PostService {
 
         return mongoTemplate.find(query, Post.class);
     }
+
+    /* public Post createPost(Post newPost) {
+        return sDAO.save(newPost);
+    } */
+
+    /*public Post updatePost(ObjectId id, Post update){
+        Post existingPost = sDAO.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        // Update only fields that are not null
+        if (update.getHeader() != null) {
+            existingPost.setHeader(update.getHeader());
+        }
+        if (update.getTextBody() != null) {
+            existingPost.setTextBody(update.getTextBody());
+        }
+        if (update.getComments() != null && !update.getComments().isEmpty()) {
+            existingPost.setComments(update.getComments());
+        }
+        if (update.getLikes() != null) {
+            existingPost.setLikes(update.getLikes());
+        }
+        if (update.getTags() != null) {
+            existingPost.setTags(update.getTags());
+        }
+        if (update.getFlagged() != null) {
+            existingPost.setFlagged(update.getFlagged());
+        }
+        if (update.getHelp() != null) {
+            existingPost.setHelp(update.getHelp());
+        }
+
+        return sDAO.save(existingPost);
+    }*/
 }
