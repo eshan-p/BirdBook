@@ -9,12 +9,13 @@ import Login from "./pages/Login";
 import Landing from "./pages/Landing";
 import Sighting from "./pages/Sighting";
 import Feed from "./pages/Feed";
+import Header from "./components/layout/Header";
 
 export default function App() {
     return(
         <Router>
+            <Header/>
             <Routes>
-                {/* TODO: NAV */}
                 <Route path="/" element={<Landing/>}/>
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/feed" element={<Feed/>}/>
