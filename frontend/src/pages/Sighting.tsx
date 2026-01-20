@@ -1,11 +1,124 @@
-import React from 'react'
+import React from 'react';
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
-function Sighting() {
-  return (
-    <div>
-      
-    </div>
-  )
+//src/types/Post.ts
+export interface Post {
+  //mongo userid must be treated as  a string in ts
+  id: string;
+
+  header:string;
+  tags:Record<string,string>;
+
+  bird:string;
+  flagged:string;
+
+  group?:string|null;
+  help:boolean;
+
+  likes:string[];
+
+  imageUrl?:string|null;
+  textBody:string;
+  
+  timeStamp: string;
+
+  comments:Comment[];
+
+  userId:string;
 }
 
-export default Sighting
+//src/types/Comment.ts
+export interface Comment {
+  userId:string;
+  textBody:string;
+  timeStamp:string;//iso date string
+}
+
+//fetch function - src/api.sightings.ts
+//import {Post} from "../types/Post";
+const BASE_URL = "http://localhost:8080";
+
+export async function getSightingById(postId:string): Promise<Post>{
+  const response = await fetch(`${BASE_URL}/sightings/${postId}`);
+
+  if (!response.ok){
+    if (response.status == 404){
+      throw new Error("Post not found");
+    }
+    throw new Error("Failed to fetch Post");
+  }// if response not ok
+
+  return response.json();
+}//get sighting by Id
+
+
+//Actual page
+//import { getSightingById } from "../api/sightings";
+//import { Post } from "../types/Post";
+
+
+function Sighting() {
+  //grabs params from the current url
+  const {postId} = useParams<{postId:string}>();
+
+  //these return value and functions to update the values
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!postId) return;
+
+    setLoading(true);
+
+    getSightingById(postId)
+      .then(setPost)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [postId]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!post) return <p>Post not found</p>;
+
+  return (
+    <div>
+      <h1>{post.header}</h1>
+      <small>Likes: {post.likes.length}</small>
+      <p>{post.textBody}</p>
+
+      {post.imageUrl && (
+        <img src={post.imageUrl} alt={post.header} />
+      )}
+
+      <p>Posted by: {post.userId}</p>
+      {post.tags?.location && (<p>Location: {post.tags.location}</p>)}
+      {post.tags?.bird && (<p>Bird: {post.tags.bird}</p>)}
+      {post && renderComments(post.comments)}
+    </div>
+  );
+}
+
+export default Sighting;
+
+//keep this nested here in the sighting page, as its only used here
+//TODO, add usernames given userIds
+function renderComments(comments:Comment[]){
+  if(comments.length ===0){
+    return <p>No Comments yet...</p>
+  }
+
+  return (
+    <ul>
+      {comments.map((comment, index) => (
+        <li key={index}>
+          <p>{comment.textBody}</p>
+          <small>
+            {new Date(comment.timeStamp).toLocaleString()}
+          </small>
+        </li>
+      ))}
+    </ul>
+  );
+}

@@ -19,7 +19,7 @@ export default function App() {
                 <Route path="/" element={<Landing/>}/>
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/feed" element={<Feed/>}/>
-                <Route path="/sighting" element={<Sighting/>}/>
+                <Route path="/sightings/:postId" element={<Sighting/>}/>
             </Routes>
         </Router>
     )
