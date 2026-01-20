@@ -36,8 +36,8 @@ public class PostController {
         return sService.getAllPostsByFriends(userId);
     }
 
-    //GET /sightings/by-tags?location=Texas&bird=BlueJay&etc=etc
-    @GetMapping("/by-tags")
+    //GET /sightings/tags?location=Texas&bird=BlueJay&etc=etc
+    @GetMapping("/tags")
     public List<Post> getAllPostsByTags(@RequestParam Map<String,String> tags) {
         return sService.getAllPostsByTags(tags);
     }
@@ -78,7 +78,7 @@ public class PostController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePost(@PathVariable String id){
         ObjectId pId = new ObjectId(id);
         sService.deletePostById(pId);

@@ -29,12 +29,12 @@ public class BirdController {
         return birdService.getAllBirds();
     }
 
-    @GetMapping("/by-name")
-    public Bird getBirdByCommonName(String commonName) {
+    @GetMapping("/{commonName}")
+    public Bird getBirdByCommonName(@PathVariable String commonName) {
         return birdService.getBirdByCommonName(commonName);
     }
 
-    @PostMapping(value = {"/new"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> addBirdMultipart(
         @RequestPart("bird") String birdJson,
         @RequestPart(value = "image", required = false) MultipartFile image
@@ -47,7 +47,7 @@ public class BirdController {
         }
     }
 
-    @PatchMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Bird updateBirdMultipart(
         @PathVariable("id") ObjectId id,
         @RequestPart("bird") String birdJson,
@@ -61,7 +61,7 @@ public class BirdController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable String id){
 
         ObjectId bId = new ObjectId(id);

@@ -29,19 +29,37 @@ public class GroupController {
         this.groupService = groupService;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public List<Group> getAllGroups() {
         return groupService.getAllGroups();
     }
 
     @GetMapping("/{id}")
-    public Group getGroup(@PathVariable String groupId) {
+    public Group getGroup(@PathVariable String id) {
         
-        ObjectId groupObjId = new ObjectId(groupId);
+        ObjectId groupObjId = new ObjectId(id);
         return groupService.getGroupById(groupObjId);
     }
 
-    @PostMapping("/create")
+    @GetMapping("/{groupId}/join-requests")
+    public ResponseEntity<List<User>> getAllRequests(@PathVariable String groupId) {
+
+        ObjectId groupObjId = new ObjectId(groupId);
+        List<User> requestedUsers = groupService.getRequestedUsers(groupObjId);
+
+        return ResponseEntity.ok(requestedUsers);
+    }
+
+    @GetMapping("/{groupId}/members")
+    public ResponseEntity<List<User>> getAllMembers(@PathVariable String groupId) {
+
+        ObjectId groupObjId = new ObjectId(groupId);
+        List<User> members = groupService.getGroupMembers(groupObjId);
+
+        return ResponseEntity.ok(members);
+    }
+
+    @PostMapping
     public ResponseEntity<String> createGroup(@RequestBody Group groupRequest) {
 
         groupService.createGroup(groupRequest.getName(), groupRequest.getId());
@@ -49,53 +67,17 @@ public class GroupController {
         return new ResponseEntity<String>("Group created successfully", HttpStatus.CREATED);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Group> updateGroup(@PathVariable String groupId, @RequestBody Group groupRequest) {
+    @PostMapping("/{groupId}/join-requests")
+    public ResponseEntity<String> userRequestToJoin(@PathVariable String groupId, @RequestBody User user) {
 
         ObjectId groupObjId = new ObjectId(groupId);
-        Group updatedGroup = groupService.updateGroup(groupObjId, groupRequest);
-
-        return ResponseEntity.ok(updatedGroup);
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteGroup(@PathVariable String groupId) {
-
-        ObjectId groupObjId = new ObjectId(groupId);
-        groupService.deleteGroup(groupObjId);
-
-        return new ResponseEntity<String>("Group deleted successfully", HttpStatus.OK);
-    }
-
-    @GetMapping("/getAllRequests/{groupId}")
-    public ResponseEntity<List<User>> getAllRequests(@PathVariable String groupId) {
-
-        ObjectId groupObjId = new ObjectId(groupId);
-        List<User> requestedUsers = groupService.getRequestedUsers(groupObjId);
-        
-        return ResponseEntity.ok(requestedUsers);
-    }
-
-    @GetMapping("/getAllMembers/{groupId}")
-    public ResponseEntity<List<User>> getAllMembers(@PathVariable String groupId) {
-
-        ObjectId groupObjId = new ObjectId(groupId);
-        List<User> members = groupService.getGroupMembers(groupObjId);
-        
-        return ResponseEntity.ok(members);
-    }
-
-    @PostMapping("/requestToJoin/{groupId}/{userId}")
-    public ResponseEntity<String> userRequestToJoin(@PathVariable String groupId, @PathVariable String userId) {
-        
-        ObjectId groupObjId = new ObjectId(groupId);
-        ObjectId userObjId = new ObjectId(userId);
+        ObjectId userObjId = user.getId();
         groupService.userRequestToJoin(userObjId, groupObjId);
 
         return new ResponseEntity<String>("Join request sent successfully", HttpStatus.OK);
     }
 
-    @PutMapping("/approve/{groupId}/{userId}")
+    @PutMapping("/{groupId}/join-requests/{userId}/approve")
     public ResponseEntity<String> approveJoinRequest(@PathVariable String groupId, @PathVariable String userId) {
 
         ObjectId groupObjId = new ObjectId(groupId);
@@ -105,7 +87,7 @@ public class GroupController {
         return new ResponseEntity<String>("Join request approved successfully", HttpStatus.OK);
     }
 
-    @PutMapping("/deny/{groupId}/{userId}")
+    @PutMapping("/{groupId}/join-requests/{userId}/deny")
     public ResponseEntity<String> denyJoinRequest(@PathVariable String groupId, @PathVariable String userId) {
 
         ObjectId groupObjId = new ObjectId(groupId);
@@ -113,5 +95,23 @@ public class GroupController {
         groupService.denyJoinRequest(userObjId, groupObjId);
 
         return new ResponseEntity<String>("Join request denied successfully", HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Group> updateGroup(@PathVariable String id, @RequestBody Group groupRequest) {
+
+        ObjectId groupObjId = new ObjectId(id);
+        Group updatedGroup = groupService.updateGroup(groupObjId, groupRequest);
+
+        return ResponseEntity.ok(updatedGroup);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteGroup(@PathVariable String id) {
+
+        ObjectId groupObjId = new ObjectId(id);
+        groupService.deleteGroup(groupObjId);
+
+        return new ResponseEntity<String>("Group deleted successfully", HttpStatus.OK);
     }
 }

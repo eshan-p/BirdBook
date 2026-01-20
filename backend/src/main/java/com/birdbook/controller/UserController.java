@@ -35,7 +35,7 @@ public class UserController {
         this.objectMapper = objectMapper;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
@@ -47,7 +47,14 @@ public class UserController {
         return userService.getUserById(userId);
     }
 
-    @PostMapping("/register")
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable String id) {
+
+        ObjectId userId = new ObjectId(id);
+        return userService.getFriendsList(userId);
+    }
+
+    @PostMapping
     public ResponseEntity<String> registerUser(@RequestBody User userRequest){ 
         
         userService.registerUser(userRequest.getUsername(), userRequest.getPassword());
@@ -55,7 +62,7 @@ public class UserController {
         return new ResponseEntity<String>("User registered successfully", HttpStatus.CREATED);
     }
 
-    @PutMapping("/addFriend/{id}/{friendId}")
+    @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<String> addFriend(@PathVariable String id, @PathVariable String friendId) {
 
         ObjectId userId = new ObjectId(id);
@@ -65,12 +72,7 @@ public class UserController {
         return new ResponseEntity<String>("Friend added successfully", HttpStatus.OK);
     }
 
-    @GetMapping("/getFriends/{id}")
-    public List<User> getFriends(@PathVariable String id) {
-        
-        ObjectId userId = new ObjectId(id);
-        return userService.getFriendsList(userId);
-    }
+
 
     /*@PutMapping("/update/{id}")
     public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User userRequest){
@@ -81,7 +83,7 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }*/
     
-    @PatchMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public User updateUserMultipart(
         @PathVariable("id") ObjectId id,
         @RequestPart("user") String userJson,
@@ -95,7 +97,7 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable String id){
 
         ObjectId userId = new ObjectId(id);
