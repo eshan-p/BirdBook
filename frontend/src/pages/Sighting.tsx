@@ -28,6 +28,13 @@ export interface Post {
   userId:string;
 }
 
+//src/types/User.ts
+export interface User {
+  id: string;
+
+  username: string;
+}
+
 //src/types/Comment.ts
 export interface Comment {
   userId:string;
@@ -35,7 +42,7 @@ export interface Comment {
   timeStamp:string;//iso date string
 }
 
-//fetch function - src/api.sightings.ts
+//fetch function - src/api/sightings.ts
 //import {Post} from "../types/Post";
 const BASE_URL = "http://localhost:8080";
 
@@ -52,6 +59,23 @@ export async function getSightingById(postId:string): Promise<Post>{
   return response.json();
 }//get sighting by Id
 
+//second fetch function - src/api/users.ts
+//import {User} from "../types/User";
+//const BASE_URL = "http://localhost:8080";
+
+export async function getUserById(userId:string): Promise<User>{
+  const response = await fetch(`${BASE_URL}/users/${userId}`);
+
+  if (!response.ok){
+    if (response.status == 404){
+      throw new Error("User not found");
+    }
+    throw new Error("Failed to fetch User");
+  }// if response not ok
+
+  return response.json();
+}
+
 
 //Actual page
 //import { getSightingById } from "../api/sightings";
@@ -66,7 +90,9 @@ function Sighting() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [user,setUser] = useState<User | null>(null);
 
+  //first fetch post
   useEffect(() => {
     if (!postId) return;
 
@@ -76,7 +102,20 @@ function Sighting() {
       .then(setPost)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+
   }, [postId]);
+
+  //then fetch user
+  useEffect(() => {
+  if (!post) return;
+
+  getUserById(post.userId)
+    .then(setUser)
+    .catch((err) => {
+      console.error(err);
+      setUser(null);
+    });
+}, [post]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -92,7 +131,7 @@ function Sighting() {
         <img src={post.imageUrl} alt={post.header} />
       )}
 
-      <p>Posted by: {post.userId}</p>
+      <p>Posted by: {user? user.username:"Unknown user"}</p>
       {post.tags?.location && (<p>Location: {post.tags.location}</p>)}
       {post.tags?.bird && (<p>Bird: {post.tags.bird}</p>)}
       {post && renderComments(post.comments)}
