@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./auth.css";
 
-export default function Login() {
+export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,7 +13,7 @@ export default function Login() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:8080/auth/login", {
+      const res = await fetch("http://localhost:8080/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -23,15 +23,9 @@ export default function Login() {
         })
       });
 
-      if (!res.ok) throw new Error("Invalid credentials");
+      if (!res.ok) throw new Error("Signup failed");
 
-      const data = await res.json();
-
-      localStorage.setItem("token", data.token);
-
-      console.log("JWT saved:", data.token);
-
-      navigate("/feed"); // or wherever you want
+      navigate("/login");
     } catch (err) {
       setError(err.message);
     }
@@ -40,7 +34,7 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h2>Login</h2>
+        <h2>Sign Up</h2>
 
         <form onSubmit={handleSubmit}>
           <input
@@ -61,14 +55,14 @@ export default function Login() {
           />
 
           <button className="auth-button" type="submit">
-            Log In
+            Create Account
           </button>
         </form>
 
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         <div className="auth-link">
-          Don’t have an account? <Link to="/signup">Sign up</Link>
+          Already have an account? <Link to="/login">Log in</Link>
         </div>
       </div>
     </div>
