@@ -18,7 +18,7 @@ export interface Post {
   imageUrl?:string|null;
   textBody:string;
   
-  timeStamp: string;
+  timestamp: string;
 
   comments:Comment[];
 

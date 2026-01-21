@@ -96,50 +96,58 @@ public class MongoDataInitializer implements CommandLineRunner {
 
     private void populatePosts(MongoCollection<Document> collection) {
         Document[] posts = {
-            new Document("_id", post1)
-                .append("userId", user1)
-                .append("header", "Rare Tufted Titmouse spotting!")
-                .append("tags", new Document("location", "San Antonio, TX"))
-                .append("bird", bird7)
-                .append("flagged", false)
-                .append("group", group1)
-                .append("help", false)
-                .append("likes", Arrays.asList(user2))
-                .append("image", "TODO")
-                .append("textBody", "Found this Tufted Titmouse, let me know what you guys think!")
-                .append("timestamp", new Date())
-                .append("comments", Arrays.asList(
-                    new Document("userId", user2)
-                        .append("textBody", "Great shot!")
-                        .append("timestamp", new Date()),
-                    new Document("userId", user1)
-                        .append("textBody", "Awesome bird! My favorite!")
+                new Document("_id", post1)
+                        .append("userId", user1)
+                        .append("header", "Rare Tufted Titmouse spotting!")
+                        .append("tags", new Document("location",
+                                new Document("latitude", 32.9858)
+                                        .append("longitude", -96.7501)
+                        ))
+                        .append("bird", bird7)
+                        .append("flagged", false)
+                        .append("group", group1)
+                        .append("help", false)
+                        .append("likes", Arrays.asList(user2))
+                        .append("image", "TODO")
+                        .append("textBody", "Found this Tufted Titmouse, let me know what you guys think!")
                         .append("timestamp", new Date())
+                        .append("comments", Arrays.asList(
+                        new Document("userId", user2)
+                                .append("textBody", "Great shot!")
+                                .append("timestamp", new Date()),
+                        new Document("userId", user1)
+                                .append("textBody", "Awesome bird! My favorite!")
+                                .append("timestamp", new Date())
                 )),
 
-            new Document("_id", post2)
-                .append("userId", user2)
-                .append("header", "Downy Woodpecker at the park")
-                .append("tags", new Document("location", "Richardson, TX"))
-                .append("bird", bird6)
-                .append("flagged", false)
-                .append("group", group2)
-                .append("help", false)
-                .append("likes", Arrays.asList(user4, user3, user1))
-                .append("image", "TODO")
-                .append("textBody", "Found this Downy Woodpecker at the park!")
-                .append("timestamp", new Date())
-                .append("comments", Arrays.asList(
-                    new Document("userId", user4)
-                        .append("textBody", "One of my favorite parks to go spotting")
-                        .append("timestamp", new Date()),
-                    new Document("userId", user3)
-                        .append("textBody", "Great work!")
+                new Document("_id", post2)
+                        .append("userId", user2)
+                        .append("header", "Downy Woodpecker at the park")
+                        .append("tags", new Document("location",
+                                new Document("latitude", 33.0002)
+                                        .append("longitude", -96.6989)
+                        ))
+                        .append("bird", bird6)
+                        .append("flagged", false)
+                        .append("group", group2)
+                        .append("help", false)
+                        .append("likes", Arrays.asList(user4, user3, user1))
+                        .append("image", "TODO")
+                        .append("textBody", "Found this Downy Woodpecker at the park!")
                         .append("timestamp", new Date())
+                        .append("comments", Arrays.asList(
+                        new Document("userId", user4)
+                                .append("textBody", "One of my favorite parks to go spotting")
+                                .append("timestamp", new Date()),
+                        new Document("userId", user3)
+                                .append("textBody", "Great work!")
+                                .append("timestamp", new Date())
                 ))
         };
+
         collection.insertMany(Arrays.asList(posts));
     }
+
 
     private void populateUsers(MongoCollection<Document> collection) {
         Document[] users = {

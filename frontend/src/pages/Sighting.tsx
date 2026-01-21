@@ -8,6 +8,8 @@ import { getUserById } from "../api/Users";
 import { Post } from "../types/Post";
 import { User } from "../types/User";
 import { Comment } from "../types/Comment";
+import { parseDate } from '../utils/dateTime';
+import { getTimeSince } from '../utils/dateTime';
 
 function Sighting() {
   //grabs params from the current url
@@ -70,6 +72,7 @@ useEffect(() => {
   return (
     <div>
       <h1>{post.header}</h1>
+      <small>Posted {parseDate(post.timestamp).toDateString()}  ·{"  "}</small>
       <small>Likes: {post.likes.length}</small>
       <p>{post.textBody}</p>
 
@@ -94,12 +97,12 @@ function CommentsList({comments}: {comments:Comment[]}){
   if(comments.length ===0){
     return <p>No Comments yet...</p>
   }
-  //console.log(comments[0].timeStamp)
+  //console.log(comments[0].timestamp)
   return (
     <ul>
       {comments.map((comment) => (
         <CommentItem
-          key={`${comment.userId}-${comment.timeStamp}`}
+          key={`${comment.userId}-${comment.timestamp}`}
           comment={comment}
         />
       ))}
@@ -120,11 +123,13 @@ function CommentItem({ comment }: { comment: Comment }) {
       .catch(() => setUser(null));
   }, [comment.userId]);
 
+  //console.log(comment.timestamp);
   return (
     <li>
       <small>
-        {user ? user.username : "Unknown user"} ·{" "}
-        {new Date(comment.timeStamp).toLocaleString()}
+        {user ? user.username : "Unknown user"}  ·{"  "}
+        
+        {parseDate(comment.timestamp).toDateString()}
       </small>
       <p>{comment.textBody}</p>
     </li>
