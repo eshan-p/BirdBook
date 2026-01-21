@@ -11,7 +11,7 @@ function Header() {
       </div>
       <div className='basis-1/3 flex flex-row justify-center shrink-0'></div>
       <div className='basis-1/3 flex flex-row justify-end shrink-0'>
-        <ProfileIcon/>
+        <ProfileIcon size='sm'/>
       </div>
     </div>
   )

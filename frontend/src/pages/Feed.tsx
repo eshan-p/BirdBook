@@ -16,9 +16,9 @@ const mockPost = {
 
 function Feed() {
   return (
-    <div className='flex flex-row h-full'>
+    <div className='flex flex-row h-full bg-[#F7F7F7]'>
         {/* Left Sidebar */}
-        <div className='basis-1/4 bg-amber-100'>
+        <div className='basis-1/4'>
           <div></div>
           <div>
             <div>Groups</div>
@@ -26,11 +26,11 @@ function Feed() {
           </div>
         </div>
         {/* Main Feed */}
-        <div className='basis-1/2 bg-amber-200'>
+        <div className='basis-1/2 m-6'>
           <PostCard {...mockPost}/>
         </div>
         {/* Right Sidebar */}
-        <div className='basis-1/4 bg-amber-300'>
+        <div className='basis-1/4'>
           <div>Birds</div>
         </div>
     </div>
