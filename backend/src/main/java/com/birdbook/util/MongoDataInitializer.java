@@ -97,7 +97,7 @@ public class MongoDataInitializer implements CommandLineRunner {
     private void populatePosts(MongoCollection<Document> collection) {
         Document[] posts = {
                 new Document("_id", post1)
-                        .append("userId", user1)
+                        .append("userId", user3)
                         .append("header", "Rare Tufted Titmouse spotting!")
                         .append("tags", new Document("location",
                                 new Document("latitude", 32.9858)

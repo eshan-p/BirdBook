@@ -24,8 +24,10 @@ export const formatCoords = (coords: Coordinates, decimals = 4): string => {
     return `${coords.latitude.toFixed(decimals)}, ${coords.longitude.toFixed(decimals)}`;
 }
 
+
 export const reverseCoordsToCityState = async (coords: Coordinates): Promise<string> => {
-    const {latitude, longitude} = coords;
+    const latitude = coords.latitude;
+    const longitude = coords.longitude;
     try{
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
         const data = await response.json();
