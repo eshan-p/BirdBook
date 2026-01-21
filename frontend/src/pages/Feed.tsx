@@ -7,6 +7,9 @@ import GroupCard from '../components/features/GroupCard';
 import { Group } from '../types/Group';
 import FriendCard from '../components/features/FriendCard';
 import { Friend } from '../types/Friend';
+import { Bird } from '../types/Bird';
+import BirdCard from '../components/features/BirdCard';
+import SearchBar from '../components/common/SearchBar';
 
 // TODO: Delete when have real data
 const mockPost = {
@@ -75,6 +78,39 @@ const mockFriends: Friend[] = [
   }
 ]
 
+const mockBirds: Bird[] = [
+  {
+    id: "1",
+    commonName: "House Finch",
+    image: "",
+  },
+  {
+    id: "2",
+    commonName: "American Bittern",
+    image: "",
+  },
+  {
+    id: "3",
+    commonName: "Spotted Owl",
+    image: "",
+  },
+  {
+    id: "1",
+    commonName: "Crested Kingfisher",
+    image: "",
+  },
+  {
+    id: "1",
+    commonName: "Mourning Dove",
+    image: "",
+  },
+  {
+    id: "1",
+    commonName: "American Robin",
+    image: "",
+  },
+]
+
 function Feed() {
   const [groups, setGroups] = useState<Group[]>([]);
 
@@ -113,7 +149,16 @@ function Feed() {
 
         {/* Right Sidebar */}
         <div className='basis-1/4 m-6 ml-0 h-fit w-full bg-white p-4 drop-shadow'>
-          <div>Birds</div>
+          <div className='flex flex-row w-full border-b border-gray-300 mb-3 items-center'>
+            <img src="src/assets/bird.svg" alt="groups"className='w-5 h-5'/>
+            <div className='text-lg ml-3'>Birds</div>
+          </div>
+          <div className='mb-3'>
+            <SearchBar/>
+          </div>
+          {mockBirds.map((bird) => (
+            <BirdCard key={bird.id} bird={bird}/>
+          ))}
         </div>
     </div>
   )
