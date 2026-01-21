@@ -5,6 +5,8 @@ import ProfileCard from '../components/features/ProfileCard';
 import { reverseCoordsToCityState } from '../utils/geolocation';
 import GroupCard from '../components/features/GroupCard';
 import { Group } from '../types/Group';
+import FriendCard from '../components/features/FriendCard';
+import { Friend } from '../types/Friend';
 import { getSightings } from '../api/Sightings';
 import { Post } from '../types/Post';
 import { parseDate } from '../utils/dateTime';
@@ -55,20 +57,23 @@ const mockGroups: Group[] = [
   }
 ]
 
-const mockFriends = [
+const mockFriends: Friend[] = [
   {
-    profilePhoto: "src/assets/profilephoto.jpg",
+    id: "1",
     name: "Marcus Thompson",
+    profilePhoto: "src/assets/profilephoto.jpg",
     location: [35.5955, -82.5519],
   },
   {
-    groupPhoto: "src/assets/profilephoto.jpg",
-    groupName: "Elena Rodriguez",
+    id: "2",
+    name: "Elena Rodriguez",
+    profilePhoto: "src/assets/profilephoto.jpg",
     location: [32.7153, -117.1573],
   },
   {
-    groupPhoto: "src/assets/profilephoto.jpg",
-    groupName: "James Mitchell",
+    id: "3",
+    name: "James Mitchell",
+    profilePhoto: "src/assets/profilephoto.jpg",
     location: [30.2672, -97.7431],
   }
 ]
@@ -105,10 +110,13 @@ useEffect(() => {
             {mockGroups.map((group) => (
               <GroupCard key={group.id} group={group}/>
             ))}
-            <div className='flex flex-row w-full border-b border-gray-300'>
+            <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
               <img src="src/assets/person.svg" alt="groups"/>
               <p className='text-lg ml-3'>Friends</p>
             </div>
+            {mockFriends.map((friend) => (
+              <FriendCard key={friend.id} friend={friend}/>
+            ))}
           </div>
         </div>
 
