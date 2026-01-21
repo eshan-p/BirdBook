@@ -2,86 +2,12 @@ import React from 'react';
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-//src/types/Post.ts
-export interface Post {
-  //mongo userid must be treated as  a string in ts
-  id: string;
-
-  header:string;
-  tags:Record<string,string>;
-
-  bird:string;
-  flagged:string;
-
-  group?:string|null;
-  help:boolean;
-
-  likes:string[];
-
-  imageUrl?:string|null;
-  textBody:string;
-  
-  timeStamp: string;
-
-  comments:Comment[];
-
-  userId:string;
-}
-
-//src/types/User.ts
-export interface User {
-  id: string;
-
-  username: string;
-}
-
-//src/types/Comment.ts
-export interface Comment {
-  id: string;
-  userId:string;
-  textBody:string;
-  timeStamp:string;//iso date string
-}
-
-//fetch function - src/api/sightings.ts
-//import {Post} from "../types/Post";
-const BASE_URL = "http://localhost:8080";
-
-export async function getSightingById(postId:string): Promise<Post>{
-  const response = await fetch(`${BASE_URL}/sightings/${postId}`);
-
-  if (!response.ok){
-    if (response.status == 404){
-      throw new Error("Post not found");
-    }
-    throw new Error("Failed to fetch Post");
-  }// if response not ok
-
-  return response.json();
-}//get sighting by Id
-
-//second fetch function - src/api/users.ts
-//import {User} from "../types/User";
-//const BASE_URL = "http://localhost:8080";
-
-export async function getUserById(userId:string): Promise<User>{
-  const response = await fetch(`${BASE_URL}/users/${userId}`);
-
-  if (!response.ok){
-    if (response.status == 404){
-      throw new Error("User not found");
-    }
-    throw new Error("Failed to fetch User");
-  }// if response not ok
-
-  return response.json();
-}
-
-
 //Actual page
-//import { getSightingById } from "../api/sightings";
-//import { Post } from "../types/Post";
-
+import { getSightingById } from "../api/Sightings";
+import { getUserById } from "../api/Users";
+import { Post } from "../types/Post";
+import { User } from "../types/User";
+import { Comment } from "../types/Comment";
 
 function Sighting() {
   //grabs params from the current url

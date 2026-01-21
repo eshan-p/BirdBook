@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import Feed from "./pages/Feed";
 import Landing from "./pages/Landing";
 import Header from "./components/layout/Header";
+import Sighting from "./pages/Sighting";
 
 export default function App() {
   return (
