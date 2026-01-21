@@ -27,7 +27,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/sightings/**") // Path patterns
+        registry.addMapping("/**") // Path patterns
                 .allowedOrigins("http://localhost:5173") // Allow your frontend origin
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")

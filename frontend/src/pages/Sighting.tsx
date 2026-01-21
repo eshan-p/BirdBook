@@ -37,6 +37,7 @@ export interface User {
 
 //src/types/Comment.ts
 export interface Comment {
+  id: string;
   userId:string;
   textBody:string;
   timeStamp:string;//iso date string
@@ -97,6 +98,7 @@ function Sighting() {
     if (!postId) return;
 
     setLoading(true);
+    
 
     getSightingById(postId)
       .then(setPost)
@@ -104,10 +106,15 @@ function Sighting() {
       .finally(() => setLoading(false));
 
   }, [postId]);
-
+/*
   //then fetch user
   useEffect(() => {
-  if (!post) return;
+  if (!post || !post.userId) return;
+
+  //setLoading(true);
+  post.userId = '695c1b84f0e6716530e00b4c';
+
+  console.log(post.userId);
 
   getUserById(post.userId)
     .then(setUser)
@@ -116,6 +123,19 @@ function Sighting() {
       setUser(null);
     });
 }, [post]);
+*/
+
+useEffect(() => {
+  const testUserId = "695c1b84f0e6716530e00b4c";
+
+  getUserById(testUserId)
+    .then(setUser)
+    .catch((err) => {
+      console.error("User fetch failed:", err);
+      setUser(null);
+    });
+}, []);
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -134,7 +154,7 @@ function Sighting() {
       <p>Posted by: {user? user.username:"Unknown user"}</p>
       {post.tags?.location && (<p>Location: {post.tags.location}</p>)}
       {post.tags?.bird && (<p>Bird: {post.tags.bird}</p>)}
-      {post && renderComments(post.comments)}
+      {post && <CommentsList comments={post.comments} />}
     </div>
   );
 }
@@ -143,21 +163,45 @@ export default Sighting;
 
 //keep this nested here in the sighting page, as its only used here
 //TODO, add usernames given userIds
-function renderComments(comments:Comment[]){
+function CommentsList({comments}: {comments:Comment[]}){
+  
   if(comments.length ===0){
     return <p>No Comments yet...</p>
   }
-
+  //console.log(comments[0].timeStamp)
   return (
     <ul>
-      {comments.map((comment, index) => (
-        <li key={index}>
-          <p>{comment.textBody}</p>
-          <small>
-            {new Date(comment.timeStamp).toLocaleString()}
-          </small>
-        </li>
+      {comments.map((comment) => (
+        <CommentItem
+          key={`${comment.userId}-${comment.timeStamp}`}
+          comment={comment}
+        />
       ))}
     </ul>
   );
 }
+
+//comment item
+//new src/pages/commentItem
+function CommentItem({ comment }: { comment: Comment }) {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (!comment.userId) return;
+
+    getUserById(comment.userId)
+      .then(setUser)
+      .catch(() => setUser(null));
+  }, [comment.userId]);
+
+  return (
+    <li>
+      <small>
+        {user ? user.username : "Unknown user"} ·{" "}
+        {new Date(comment.timeStamp).toLocaleString()}
+      </small>
+      <p>{comment.textBody}</p>
+    </li>
+  );
+}
+
