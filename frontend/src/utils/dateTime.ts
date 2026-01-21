@@ -35,3 +35,12 @@ export const getTimeSince = (date: Date): string => {
     return `${years}y`
 
 }
+
+export const parseDate = (dateInput: Date | string): Date => {
+    if(dateInput instanceof Date) return dateInput;
+    const date = new Date(dateInput);
+    if(isNaN(date.getTime())) {
+        throw new Error(`Invalid date: ${dateInput}`);
+    }
+    return date;
+}
