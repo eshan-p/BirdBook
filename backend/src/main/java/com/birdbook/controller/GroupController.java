@@ -7,6 +7,8 @@ import com.birdbook.models.Group;
 import com.birdbook.models.User;
 import com.birdbook.service.GroupService;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 import org.bson.types.ObjectId;
@@ -60,7 +62,7 @@ public class GroupController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createGroup(@RequestBody Group groupRequest) {
+    public ResponseEntity<String> createGroup(@Valid @RequestBody Group groupRequest) {
 
         groupService.createGroup(groupRequest.getName(), groupRequest.getId());
 

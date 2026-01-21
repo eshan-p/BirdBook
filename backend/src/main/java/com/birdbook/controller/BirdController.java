@@ -1,6 +1,9 @@
 package com.birdbook.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
@@ -13,15 +16,20 @@ import com.birdbook.models.Bird;
 import com.birdbook.service.BirdService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+
 @RestController
 @RequestMapping("/birds")
 public class BirdController {
     private final BirdService birdService;
     private final ObjectMapper objectMapper;
+    private final Validator validator;
 
-    public BirdController(BirdService birdService, ObjectMapper objectMapper) {
+    public BirdController(BirdService birdService, ObjectMapper objectMapper, Validator validator) {
         this.birdService = birdService;
         this.objectMapper = objectMapper;
+        this.validator = validator;
     }
 
     @GetMapping
@@ -41,6 +49,17 @@ public class BirdController {
     ) {
         try{
             Bird newBird = objectMapper.readValue(birdJson, Bird.class);
+
+            Set<ConstraintViolation<Bird>> violations = validator.validate(newBird);
+
+            if (!violations.isEmpty()) {
+                Map<String, String> errors = new HashMap<>();
+                for (ConstraintViolation<Bird> v : violations) {
+                    errors.put(v.getPropertyPath().toString(), v.getMessage());
+                }
+                return ResponseEntity.badRequest().body(errors);
+            }
+
             return ResponseEntity.ok(birdService.addBird(newBird, image));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Invalid bird data: " + e.getMessage());

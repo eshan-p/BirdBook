@@ -7,6 +7,9 @@ import com.birdbook.serializers.ObjectIdDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.util.Date;
 
 public class Comment {
@@ -15,6 +18,8 @@ public class Comment {
     @JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId userId;
     
+    @NotBlank(message = "Comment cannot be blank")
+    @Size(max = 280, message = "Comment cannot exceed 280 characters.")
     private String textBody;
     private Date timestamp;
 

@@ -1,5 +1,6 @@
 package com.birdbook.service;
 
+import com.birdbook.models.Comment;
 import com.birdbook.models.Post;
 import com.birdbook.models.User;
 import com.birdbook.repository.PostDAO;
@@ -86,13 +87,26 @@ public class PostService {
             newPost.setImage(imagePath);
         }
 
-        return sDAO.save(newPost);
+        Post savedPost = sDAO.save(newPost);
+
+        ObjectId userId = savedPost.getUserId();
+
+        User user = userDAO.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        ObjectId[] currentPosts = user.getPosts();
+        ObjectId[] updatedPosts = Arrays.copyOf(currentPosts, currentPosts.length + 1);
+
+        updatedPosts[currentPosts.length] = savedPost.getId();
+        user.setPosts(updatedPosts);
+
+        userDAO.save(user);
+
+        return savedPost;
     }
 
     // Helper method to save image file for adding/updating a post; returns the file path
     private String saveImage(MultipartFile imageFile){
         try {
-
             String uploadDir = "images";
             Files.createDirectories(Paths.get(uploadDir));
 
@@ -155,6 +169,51 @@ public class PostService {
         }
 
         return mongoTemplate.find(query, Post.class);
+    }
+
+    public Post addComment(ObjectId postId, Comment comment) {
+        Post post = sDAO.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        post.getComments().add(comment);
+        return sDAO.save(post);
+    }
+
+    public Post updateComment(ObjectId postId, ObjectId userId, Comment updatedComment) {
+
+        Post post = sDAO.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        boolean updated = false;
+
+        for (Comment c : post.getComments()) {
+            if (c.getUserId().equals(userId) && c.getTimestamp().equals(updatedComment.getTimestamp())) {
+                c.setTextBody(updatedComment.getTextBody());
+                updated = true;
+                break;
+            }
+        }
+
+        if (!updated) {
+            throw new IllegalArgumentException("Comment not found or unauthorized");
+        }
+
+        return sDAO.save(post);
+    }
+
+    public Post deleteComment(ObjectId postId, ObjectId userId, Date timestamp) {
+
+        Post post = sDAO.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        boolean removed = post.getComments().removeIf(
+            c -> c.getUserId().equals(userId)
+            && c.getTimestamp().equals(timestamp)
+        );
+
+        if (!removed) {
+            throw new IllegalArgumentException("Comment not found or unauthorized");
+        }
+
+        return sDAO.save(post);
     }
 
     /* public Post createPost(Post newPost) {

@@ -6,8 +6,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.birdbook.serializers.ObjectIdSerializer;
 import com.birdbook.serializers.ObjectIdDeserializer;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,7 +24,13 @@ public class Post {
     @Id
     private ObjectId id;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private ObjectId userId;
+
+    @NotBlank(message = "Header cannot be blank")
+    @Size(max = 100, message = "Header cannot exceed 280 characters.")
     private String header;
+
     private Map<String, String> tags;
 
     @JsonSerialize(using = ObjectIdSerializer.class)
@@ -35,12 +45,17 @@ public class Post {
     
     private Boolean help = false;
 
+    @JsonSerialize(contentUsing = ObjectIdSerializer.class)
+    @JsonDeserialize(contentUsing = ObjectIdDeserializer.class)
     private List<ObjectId> likes = new ArrayList<>();
 
     private String image;
-    private String textBody;
-    private Date timestamp = new Date();
 
+    @NotBlank(message = "Description cannot be blank")
+    @Size(max = 280, message = "Description cannot exceed 280 characters.")
+    private String textBody;
+
+    private Date timestamp = new Date();
     private List<Comment> comments = new ArrayList<>();
 
     // Required by Spring Data
@@ -62,6 +77,14 @@ public class Post {
 
     public void setId(ObjectId id) {
         this.id = id;
+    }
+
+    public ObjectId getUserId() {
+        return userId;
+    }
+    
+    public void setUserId(ObjectId userId) {
+        this.userId = userId;
     }
 
     public String getHeader() {
@@ -151,4 +174,13 @@ public class Post {
     public void setComments(List<Comment> comments) {
         this.comments = comments;
     }
+
+    public Boolean isFlagged() {
+        return flagged;
+    }
+
+    public Boolean isHelp() {
+        return help;
+    }
+
 }

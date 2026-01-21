@@ -4,12 +4,19 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 @Document(collection = "groups")
 public class Group {
     
     @Id
     private ObjectId id;
+
+    @NotBlank(message = "Group Name cannot be blank")
+    @Size(max = 40, message = "Group Name cannot exceed 40 characters.")
     private String name;
+
     private ObjectId ownerId;
     private ObjectId[] members;
     private ObjectId[] requests;
