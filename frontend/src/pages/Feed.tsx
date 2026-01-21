@@ -7,6 +7,9 @@ import GroupCard from '../components/features/GroupCard';
 import { Group } from '../types/Group';
 import FriendCard from '../components/features/FriendCard';
 import { Friend } from '../types/Friend';
+import { getSightings } from '../api/Sightings';
+import { Post } from '../types/Post';
+import { parseDate } from '../utils/dateTime';
 import { Bird } from '../types/Bird';
 import BirdCard from '../components/features/BirdCard';
 import SearchBar from '../components/common/SearchBar';
@@ -113,6 +116,17 @@ const mockBirds: Bird[] = [
 
 function Feed() {
   const [groups, setGroups] = useState<Group[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+
+useEffect(() => {
+  getSightings()
+    .then(setPosts)
+    .catch(err => setError(err.message))
+    .finally(() => setLoading(false));
+}, []);
 
   useEffect(() => {
     //TODO: Replace with fetch
@@ -144,7 +158,17 @@ function Feed() {
 
         {/* Main Feed */}
         <div className='basis-1/2 m-6'>
-          <PostCard {...mockPost}/>
+          {posts.map(post => (
+              <PostCard
+                key={post.id}
+                description={post.header}
+                author={post.userId}
+                dateTime={parseDate(post.timestamp)}
+                location={post.tags?.location}
+                likes={post.likes.length}
+                comments={post.comments.length}
+              />
+          ))}
         </div>
 
         {/* Right Sidebar */}
