@@ -19,6 +19,14 @@ export const coordsToPoint = (latitude: number, longitude: number): Point => {
     }
 }
 
+//IMPORTANT: make sure it's in correct oder (lat, lon)
+export const arrayToCoords = (arr: [number, number]): Coordinates => {
+    return{
+        longitude: arr[1],
+        latitude: arr[0]
+    }
+}
+
 //Format coords for display
 export const formatCoords = (coords: Coordinates, decimals = 4): string => {
     return `${coords.latitude.toFixed(decimals)}, ${coords.longitude.toFixed(decimals)}`;
@@ -27,8 +35,10 @@ export const formatCoords = (coords: Coordinates, decimals = 4): string => {
 export const reverseCoordsToCityState = async (coords: Coordinates): Promise<string> => {
     const {latitude, longitude} = coords;
     try{
+        console.log(latitude, longitude)
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
         const data = await response.json();
+        console.log(data)
         const city = data.address.city || data.address.town || data.address.village;
         const state = data.address.state;
         if(city && state){
