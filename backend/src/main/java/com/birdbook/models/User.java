@@ -4,13 +4,24 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
 @Document(collection = "users")
 public class User {
     
     @Id
     private ObjectId id;
+
+    @NotBlank(message = "Username cannot be blank.")
+    @Pattern(regexp = "^[a-zA-Z0-9]{5,20}$", message = "username must be of 5 to 20 length with no special characters")
     private String username;
+
+    @NotBlank(message = "Password cannot be blank.")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{4,12}$"
+    , message = "password must be min 4 and max 12 length containing atleast 1 uppercase, 1 lowercase, 1 special character and 1 digit ")
     private String password;
+
     private String profilePic;
     private ObjectId[] friends;
     private ObjectId[] posts;

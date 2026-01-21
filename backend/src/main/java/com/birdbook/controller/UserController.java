@@ -1,6 +1,7 @@
 package com.birdbook.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.birdbook.models.User;
 import com.birdbook.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,8 +57,21 @@ public class UserController {
         return userService.getFriendsList(userId);
     }
 
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<Map<String, Object>> getUserStats(@PathVariable String id) {
+        try {
+            ObjectId userObjId = new ObjectId(id);
+            Map<String, Object> stats = userService.getUserStats(userObjId);
+            return ResponseEntity.ok(stats);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR) .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping
-    public ResponseEntity<String> registerUser(@RequestBody User userRequest){ 
+    public ResponseEntity<String> registerUser(@Valid @RequestBody User userRequest){ 
         
         userService.registerUser(userRequest.getUsername(), userRequest.getPassword());
 
@@ -71,8 +87,6 @@ public class UserController {
 
         return new ResponseEntity<String>("Friend added successfully", HttpStatus.OK);
     }
-
-
 
     /*@PutMapping("/update/{id}")
     public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User userRequest){

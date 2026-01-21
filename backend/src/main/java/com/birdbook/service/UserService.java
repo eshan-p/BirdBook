@@ -4,26 +4,45 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.time.*;
 
 import org.bson.types.ObjectId;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.birdbook.models.Post;
 import com.birdbook.models.User;
+import com.birdbook.repository.PostDAO;
 import com.birdbook.repository.UserDAO;
 
 @Service
 public class UserService {
     private final UserDAO userDAO;
+    private final PostDAO postDAO;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserDAO userDAO){
+    public UserService(UserDAO userDAO, PostDAO postDAO, PasswordEncoder passwordEncoder){
         this.userDAO = userDAO;
+        this.postDAO = postDAO;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAllUsers() {
         return userDAO.findAll();
+    }
+
+    public Optional<User> getByUsername(String username) {
+        return userDAO.findByUsername(username);
     }
 
     public User getUserById(ObjectId id){
@@ -36,7 +55,9 @@ public class UserService {
             throw new IllegalArgumentException("Username already taken.");
         }
 
-        User newUser = new User(username, password);
+        String hashedPassword = passwordEncoder.encode(password);
+        User newUser = new User(username, hashedPassword);
+
         userDAO.insert(newUser);
     }
 
@@ -55,7 +76,10 @@ public class UserService {
             .orElseThrow(() -> new IllegalArgumentException("User not found."));
 
         existingUser.setUsername(updatedUser.getUsername());
-        existingUser.setPassword(updatedUser.getPassword());
+
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
 
         if (imageFile != null && !imageFile.isEmpty()) {
             String imagePath = saveImage(imageFile);
@@ -111,5 +135,116 @@ public class UserService {
         } catch (IOException e){
             throw new RuntimeException("Failed to store image", e);
         }
+    }
+
+    // User stats methods below
+
+    public Map<String, Object> getUserStats(ObjectId userId) {
+        User user = userDAO.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        List<Post> posts = postDAO.findAllById(List.of(user.getPosts()));
+
+        Map<String, Object> stats = new HashMap<>();
+
+        stats.put("totalSpottings", posts.size());
+        stats.put("firstSightingDate", calculateFirstSighting(posts));
+        stats.put("uniqueBirdsSpotted", calculateUniqueBirds(posts));
+        stats.put("mostSpottedBird", calculateMostSpottedBird(posts));
+        stats.put("topBirdsAllTime", topBirdsAllTime(posts));
+        stats.put("topBirdsThisMonth", topBirdsThisMonth(posts));
+        stats.put("badges", calculateBadges(stats));
+
+        return stats;
+    }
+
+    private Date calculateFirstSighting(List<Post> posts) {
+        return posts.stream()
+                .map(Post::getTimestamp)
+                .min(Date::compareTo)
+                .orElse(null);
+    }
+
+    private int calculateUniqueBirds(List<Post> posts){
+        return (int) posts.stream()
+            .map(Post::getBird)
+            .filter(Objects::nonNull)
+            .distinct()
+            .count();
+    }
+
+    private ObjectId calculateMostSpottedBird(List<Post> posts) {
+        return posts.stream()
+            .map(Post::getBird)
+            .filter(Objects::nonNull)
+            .collect(Collectors.groupingBy(b -> b, Collectors.counting()))
+            .entrySet()
+            .stream()
+            .max(Map.Entry.comparingByValue())
+            .map(Map.Entry::getKey)
+            .orElse(null);
+    }
+
+    private List<Map<String, Object>> topBirdsAllTime(List<Post> posts) {
+        Map<ObjectId, Long> counts = posts.stream()
+            .map(Post::getBird)
+            .filter(Objects::nonNull)
+            .collect(Collectors.groupingBy(b -> b, Collectors.counting()));
+
+        return counts.entrySet().stream()
+            .sorted(Map.Entry.<ObjectId, Long>comparingByValue().reversed())
+            .map(entry -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("birdId", entry.getKey());
+                map.put("count", entry.getValue());
+                return map;
+            })
+            .toList();
+    }
+
+
+    private List<Map<String, Object>> topBirdsThisMonth(List<Post> posts) {
+        YearMonth currentMonth = YearMonth.now();
+
+        Map<ObjectId, Long> counts = posts.stream()
+            .filter(post -> {
+                LocalDate date = post.getTimestamp()
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+                    return YearMonth.from(date).equals(currentMonth);
+            })
+            .map(Post::getBird)
+            .filter(Objects::nonNull)
+            .collect(Collectors.groupingBy(b -> b, Collectors.counting()));
+
+        return counts.entrySet().stream()
+            .sorted(Map.Entry.<ObjectId, Long>comparingByValue().reversed())
+            .map(entry -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("birdId", entry.getKey());
+                map.put("count", entry.getValue());
+                return map;
+            })
+            .toList();
+    }
+
+    public List<String> calculateBadges(Map<String, Object> stats) {
+        List<String> badges = new ArrayList<>();
+
+        int totalSpottings = (int) stats.getOrDefault("totalSpottings", 0);
+        int uniqueBirds = (int) stats.getOrDefault("uniqueBirdsSpotted", 0);
+
+        if (totalSpottings >= 1) {
+            badges.add("First Sighting");
+        }
+        else if (uniqueBirds >= 10) {
+            badges.add("Bird Collector");
+        }
+        else if (totalSpottings >= 50) {
+            badges.add("Popular Spotter");
+        }
+        
+        return badges;
     }
 }
