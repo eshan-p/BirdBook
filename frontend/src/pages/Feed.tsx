@@ -1,5 +1,6 @@
 import React from 'react'
 import PostCard from '../components/features/PostCard'
+import ProfileIcon from '../components/common/ProfileIcon';
 
 // TODO: Delete when have real data
 const mockPost = {
@@ -16,11 +17,28 @@ const mockPost = {
 
 function Feed() {
   return (
-    <div className='flex flex-row h-full bg-[#F7F7F7]'>
+    <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
         {/* Left Sidebar */}
-        <div className='basis-1/4'>
-          <div></div>
-          <div>
+        <div className='flex flex-col basis-1/4 m-6 mr-0'>
+          <div className=' h-fit w-full bg-white p-4 drop-shadow flex flex-col items-center'>
+            <ProfileIcon size='lg'/>
+            <h3 className='text-xl mt-1'>Peyton Barre</h3>
+            <div className='flex flex-row items-center w-full justify-between px-3 mt-4'>
+              <div className='flex flex-col items-center'>
+                <p>311</p>
+                <p>Spottings</p>
+              </div>
+              <div className='flex flex-col items-center'>
+                <p>17</p>
+                <p>Friends</p>
+              </div>
+              <div className='flex flex-col items-center'>
+                <p>4</p>
+                <p>Groups</p>
+              </div>
+            </div>
+          </div>
+          <div className='h-fit w-full mt-6 bg-white p-4 drop-shadow'>
             <div>Groups</div>
             <div>Friends</div>
           </div>
@@ -30,7 +48,7 @@ function Feed() {
           <PostCard {...mockPost}/>
         </div>
         {/* Right Sidebar */}
-        <div className='basis-1/4'>
+        <div className='basis-1/4 m-6 ml-0 h-fit w-full bg-white p-4 drop-shadow'>
           <div>Birds</div>
         </div>
     </div>

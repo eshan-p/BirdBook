@@ -11,7 +11,7 @@ function ProfileIcon({size, src = "/src/assets/profilephoto.jpg"}: ProfileIconPr
     const sizeClasses = {
         sm: 'w-10 h-10',
         md: 'w-14 h-14',
-        lg: 'w-16 h-16'
+        lg: 'w-28 h-28'
     }
     return (
         <div className={`${sizeClasses[size]} rounded-full bg-gray-500 border border-gray-500 overflow-hidden`}>
