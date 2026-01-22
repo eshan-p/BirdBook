@@ -44,6 +44,9 @@ public class SecurityConfig {
 
                 //  PUBLIC
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/groups/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/users/**").permitAll()
+
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/users/**").permitAll()
                 .requestMatchers("/sightings/**").permitAll()
 

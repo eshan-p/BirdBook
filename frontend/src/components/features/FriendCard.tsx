@@ -1,29 +1,20 @@
-import React, { useEffect, useState } from 'react'
-import { Friend } from '../../types/Friend'
-import { arrayToCoords, reverseCoordsToCityState } from '../../utils/geolocation'
-import ProfileIcon from '../common/ProfileIcon'
+import ProfileIcon from "../common/ProfileIcon"
+import { User } from "../../types/User"
 
-function FriendCard({friend} : {friend: Friend}) {
-    const [cityState, setCityState] = useState<string>("")
-
-    useEffect(() => {
-        if(friend.location){
-            reverseCoordsToCityState(arrayToCoords(friend.location)).then(setCityState);
-        }else{
-            console.error("Location in friend not valid")
-        }
-    }, [friend.location])
-
+function FriendCard({ user }: { user: User }) {
     return (
-        <div className='flex flex-row items-center'>
-            <div className='mb-5'>
-                <ProfileIcon size='sm'/>
-            </div>
-            <div className='ml-3 mb-4'>
-                <h3 className='text-base/4 font-bold'>{friend.name}</h3>
-                <p className='text-xs opacity-75'>{cityState}</p>
-                {/* TODO */}
-                {/* <p className='text-xs'>{group.followers} followers</p> */}
+        <div className="flex items-center gap-4 px-2">
+            {/* Profile Pic */}
+            <ProfileIcon size="sm" />
+
+            <div className="flex flex-col justify-center">
+                <h3 className="text-sm font-semibold text-gray-900 leading-tight">
+                    {user.username}
+                </h3>
+
+                <p className="text-xs text-gray-500">
+                    {user.friends?.length || 0} friends
+                </p>
             </div>
         </div>
     )

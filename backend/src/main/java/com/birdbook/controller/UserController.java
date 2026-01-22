@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.birdbook.models.Group;
 import com.birdbook.models.User;
 import com.birdbook.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,6 +56,13 @@ public class UserController {
 
         ObjectId userId = new ObjectId(id);
         return userService.getFriendsList(userId);
+    }
+
+    @GetMapping("/{id}/groups")
+    public List<Group> getGroups(@PathVariable String id) {
+
+        ObjectId userId = new ObjectId(id);
+        return userService.getGroupsList(userId);
     }
 
     @GetMapping("/{id}/stats")
