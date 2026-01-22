@@ -84,35 +84,40 @@ const mockFriends: Friend[] = [
 const mockBirds: Bird[] = [
   {
     id: "1",
-    commonName: "House Finch",
-    image: "",
+    commonName: "Crested Kingfisher",
+    scientificName: "Megaceryle lugubris",
+    image: "src/assets/crested-kingfisher.jpg",
+    location: [-82.5519, 35.5955]
   },
   {
     id: "2",
     commonName: "American Bittern",
-    image: "",
+    scientificName: "Botaurus lentiginosus",
+    image: "src/assets/american-bittern.jpg",
+    location: [-95.7129, 37.2688]
   },
   {
     id: "3",
-    commonName: "Spotted Owl",
-    image: "",
+    commonName: "Northern Bobwhite",
+    scientificName: "Colinus virginianus",
+    image: "src/assets/northern-bobwhite.jpg",
+    location: [-78.6382, 35.4676]
   },
   {
-    id: "1",
-    commonName: "Crested Kingfisher",
-    image: "",
+    id: "4",
+    commonName: "Stellar's Jay",
+    scientificName: "Cyanocitta stelleri",
+    image: "src/assets/stellars-jay.jpg",
+    location: [-120.5, 45.5]
   },
   {
-    id: "1",
+    id: "5",
     commonName: "Mourning Dove",
-    image: "",
-  },
-  {
-    id: "1",
-    commonName: "American Robin",
-    image: "",
-  },
-]
+    scientificName: "Zenaida macroura",
+    image: "src/assets/mourning-dove.jpg",
+    location: [-96.8158, 33.2148]
+  }
+];
 
 function Feed() {
   const [groups, setGroups] = useState<Group[]>([]);
