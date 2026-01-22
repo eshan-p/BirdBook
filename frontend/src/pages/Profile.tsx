@@ -4,6 +4,8 @@ import TopBirds from '../components/features/TopBirds';
 import MapView from '../components/features/MapView';
 import { Bird } from '../types/Bird';
 import { Post } from '../types/Post';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const mockBirds: Bird[] = [
   {
@@ -45,11 +47,26 @@ const mockBirds: Bird[] = [
 
 function Profile() {
   const [posts, setPosts] = useState<Post[]>([]);
+  const { token, loading } = useAuth();
+  const [pageLoading, setPageLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
+
   useEffect(() => {
     fetch('/api/posts')
     .then(r => r.json())
-    .then(setPosts);
+    .then(setPosts)
+    .finally( () => setPageLoading(false));
   }, []);
+
+  useEffect(() => {
+    if(!token && !loading){
+      navigate('/login')
+      console.error("Not signed in!")
+    }
+  }, [token, loading, navigate]);
+
+  if (loading) return <div>loading</div>
+
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
       <div className='basis-2/3 m-6'>

@@ -8,19 +8,22 @@ import Landing from "./pages/Landing";
 import Header from "./components/layout/Header";
 import Sighting from "./pages/Sighting";
 import Profile from "./pages/Profile";
+import { AuthProvider } from "./context/AuthContext";
 
 export default function App() {
   return (
-    <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/feed" element={<Feed />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/sightings/:postId" element={<Sighting/>}/>
-      </Routes>
-    </Router>
+    <AuthProvider>
+        <Router>
+        <Header />
+        <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/sightings/:postId" element={<Sighting/>}/>
+        </Routes>
+        </Router>
+    </AuthProvider>
   );
 }

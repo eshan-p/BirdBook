@@ -49,7 +49,7 @@ public class UserService {
         return userDAO.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    public void registerUser(String username, String password){
+    public User registerUser(String username, String password){
 
         if (userDAO.findByUsername(username).isPresent()){
             throw new IllegalArgumentException("Username already taken.");
@@ -59,6 +59,8 @@ public class UserService {
         User newUser = new User(username, hashedPassword);
 
         userDAO.insert(newUser);
+
+        return newUser;
     }
 
     /* public User updateUser(ObjectId id, User updatedData){

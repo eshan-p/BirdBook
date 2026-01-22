@@ -1,37 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./auth.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
+  const { setToken } = useAuth();
+  const { token } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if(token) navigate("/feed");
+  }, [token])
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-
     try {
-      const res = await fetch("http://localhost:8080/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username,
-          password,
-          role: "BASIC"
-        })
+      const res = await fetch('http://localhost:8080/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
       });
-
-      if (!res.ok) throw new Error("Invalid credentials");
-
+      if (!res.ok) throw new Error("Invalid credentials client");
       const data = await res.json();
-
-      localStorage.setItem("token", data.token);
-
-      console.log("JWT saved:", data.token);
-
-      navigate("/feed"); // or wherever you want
+      setToken(data.token);
+      navigate("/feed");
     } catch (err) {
       setError(err.message);
     }
