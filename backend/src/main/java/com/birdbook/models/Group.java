@@ -7,9 +7,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Document(collection = "groups")
 public class Group {
-    
+
     @Id
     private ObjectId id;
 
@@ -17,89 +20,57 @@ public class Group {
     @Size(max = 40, message = "Group Name cannot exceed 40 characters.")
     private String name;
 
-    private ObjectId ownerId;
-    private ObjectId[] members;
-    private ObjectId[] requests;
+    private PostUser owner;
+    private List<PostUser> members;
+    private List<PostUser> requests;
 
-    public Group(){
+    public Group() {}
 
-    }
-
-    public Group(String name, ObjectId ownerId) {
+    public Group(String name, PostUser owner) {
         this.id = new ObjectId();
         this.name = name;
-        this.ownerId = ownerId;
-        this.members = new ObjectId[0];
-        this.requests = new ObjectId[0];
+        this.owner = owner;
+        this.members = new ArrayList<>();
+        this.requests = new ArrayList<>();
     }
 
-    /**
-     * @return ObjectId return the id
-     */
     public ObjectId getId() {
         return id;
     }
 
-    /**
-     * @param id the id to set
-     */
     public void setId(ObjectId id) {
         this.id = id;
     }
 
-    /**
-     * @return String return the name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * @param name the name to set
-     */
     public void setName(String name) {
         this.name = name;
     }
 
-    /**
-     * @return ObjectId return the ownerId
-     */
-    public ObjectId getOwnerId() {
-        return ownerId;
+    public PostUser getOwner() {
+        return owner;
     }
 
-    /**
-     * @param ownerId the ownerId to set
-     */
-    public void setOwnerId(ObjectId ownerId) {
-        this.ownerId = ownerId;
+    public void setOwner(PostUser owner) {
+        this.owner = owner;
     }
 
-    /**
-     * @return ObjectId[] return the members
-     */
-    public ObjectId[] getMembers() {
+    public List<PostUser> getMembers() {
         return members;
     }
 
-    /**
-     * @param members the members to set
-     */
-    public void setMembers(ObjectId[] members) {
+    public void setMembers(List<PostUser> members) {
         this.members = members;
     }
 
-    /**
-     * @return ObjectId[] return the requests
-     */
-    public ObjectId[] getRequests() {
+    public List<PostUser> getRequests() {
         return requests;
     }
 
-    /**
-     * @param requests the requests to set
-     */
-    public void setRequests(ObjectId[] requests) {
+    public void setRequests(List<PostUser> requests) {
         this.requests = requests;
     }
 }

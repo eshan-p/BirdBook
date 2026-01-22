@@ -186,7 +186,7 @@ public class PostService {
         boolean updated = false;
 
         for (Comment c : post.getComments()) {
-            if (c.getUserId().equals(userId) && c.getTimestamp().equals(updatedComment.getTimestamp())) {
+            if (c.getUser().getUserId().equals(userId) && c.getTimestamp().equals(updatedComment.getTimestamp())) {
                 c.setTextBody(updatedComment.getTextBody());
                 updated = true;
                 break;
@@ -205,7 +205,7 @@ public class PostService {
         Post post = sDAO.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
         boolean removed = post.getComments().removeIf(
-            c -> c.getUserId().equals(userId)
+            c -> c.getUser().getUserId().equals(userId)
             && c.getTimestamp().equals(timestamp)
         );
 

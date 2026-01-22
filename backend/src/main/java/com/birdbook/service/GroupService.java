@@ -1,24 +1,21 @@
 package com.birdbook.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import com.birdbook.repository.UserDAO;
+
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import com.birdbook.models.Group;
-import com.birdbook.models.User;
+import com.birdbook.models.PostUser;
 import com.birdbook.repository.GroupDAO;
 
 @Service
 public class GroupService {
 
-    private final UserDAO userDAO;
     private final GroupDAO groupDAO;
 
-    public GroupService(GroupDAO groupDAO, UserDAO userDAO) {
+    public GroupService(GroupDAO groupDAO) {
         this.groupDAO = groupDAO;
-        this.userDAO = userDAO;
     }
 
     public List<Group> getAllGroups() {
@@ -26,100 +23,88 @@ public class GroupService {
     }
 
     public Group getGroupById(ObjectId groupId) {
-        return groupDAO.findById(groupId).orElseThrow(() -> new IllegalArgumentException("Group not found."));
+        return groupDAO.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found."));
     }
 
-    public void createGroup(String groupName, ObjectId creatorId) {
-        Group newGroup = new Group(groupName, creatorId);
+    public void createGroup(String groupName, PostUser owner) {
+        Group newGroup = new Group(groupName, owner);
         groupDAO.insert(newGroup);
     }
 
     public Group updateGroup(ObjectId groupId, Group updatedData) {
-        Group existingGroup = groupDAO.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found."));
-
-        existingGroup.setName(updatedData.getName());
-
-        return groupDAO.save(existingGroup);
+        Group group = getGroupById(groupId);
+        group.setName(updatedData.getName());
+        return groupDAO.save(group);
     }
 
     public void deleteGroup(ObjectId groupId) {
         if (!groupDAO.existsById(groupId)) {
             throw new IllegalArgumentException("Group not found.");
         }
-
         groupDAO.deleteById(groupId);
     }
 
+    /* =========================
+       MEMBERS / REQUESTS
+       ========================= */
 
-    public List<User> getRequestedUsers(ObjectId groupId){
-        Group group = groupDAO.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found."));
-        
-        ObjectId[] requestIds = group.getRequests();
-        return userDAO.findAllById(List.of(requestIds));
+    public List<PostUser> getRequestedUsers(ObjectId groupId) {
+        return getGroupById(groupId).getRequests();
     }
 
-
-    public List<User> getGroupMembers(ObjectId groupId){
-        Group group = groupDAO.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found."));
-
-        ObjectId[] memberIds = group.getMembers();
-        return userDAO.findAllById(List.of(memberIds));
+    public List<PostUser> getGroupMembers(ObjectId groupId) {
+        return getGroupById(groupId).getMembers();
     }
 
+    public void userRequestToJoin(PostUser user, ObjectId groupId) {
+        Group group = getGroupById(groupId);
 
-    public void userRequestToJoin(ObjectId userId, ObjectId groupId) {
-        Group group = groupDAO.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found."));
+        boolean alreadyRequested = group.getRequests().stream()
+                .anyMatch(u -> u.getUserId().equals(user.getUserId()));
 
-        List<ObjectId> requests = new ArrayList<>(List.of(group.getRequests()));
-        if (requests.contains(userId)){
+        if (alreadyRequested) {
             throw new IllegalArgumentException("Request already sent.");
         }
-        else if (List.of(group.getMembers()).contains(userId)){
-            throw new IllegalArgumentException("User is already a member of the group.");
+
+        boolean alreadyMember = group.getMembers().stream()
+                .anyMatch(u -> u.getUserId().equals(user.getUserId()));
+
+        if (alreadyMember) {
+            throw new IllegalArgumentException("User is already a member.");
         }
 
-        requests.add(userId);
-        group.setRequests(requests.toArray(new ObjectId[0]));
+        group.getRequests().add(user);
         groupDAO.save(group);
     }
 
+    public void approveJoinRequest(PostUser user, ObjectId groupId) {
+        Group group = getGroupById(groupId);
 
-    public void approveJoinRequest(ObjectId userId, ObjectId groupId) {
-        Group group = groupDAO.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found."));
+        boolean exists = group.getRequests().stream()
+                .anyMatch(u -> u.getUserId().equals(user.getUserId()));
 
-        List<ObjectId> requests = new ArrayList<>(List.of(group.getRequests()));
-        if (!requests.contains(userId)){
+        if (!exists) {
             throw new IllegalArgumentException("No join request from this user.");
         }
 
-        requests.remove(userId);
-        group.setRequests(requests.toArray(new ObjectId[0]));
-
-        List<ObjectId> members = new ArrayList<>(List.of(group.getMembers()));
-        members.add(userId);
-        group.setMembers(members.toArray(new ObjectId[0]));
+        group.getRequests().removeIf(u -> u.getUserId().equals(user.getUserId()));
+        group.getMembers().add(user);
 
         groupDAO.save(group);
     }
 
+    public void denyJoinRequest(PostUser user, ObjectId groupId) {
+        Group group = getGroupById(groupId);
 
-    public void denyJoinRequest(ObjectId userId, ObjectId groupId) {
-        Group group = groupDAO.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found."));
+        boolean exists = group.getRequests().stream()
+                .anyMatch(u -> u.getUserId().equals(user.getUserId()));
 
-        List<ObjectId> requests = new ArrayList<>(List.of(group.getRequests()));
-        if (!requests.contains(userId)){
+        if (!exists) {
             throw new IllegalArgumentException("No join request from this user.");
         }
 
-        requests.remove(userId);
-        group.setRequests(requests.toArray(new ObjectId[0]));
-
+        group.getRequests().removeIf(u -> u.getUserId().equals(user.getUserId()));
         groupDAO.save(group);
     }
 }

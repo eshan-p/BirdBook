@@ -29,15 +29,16 @@ interface NominatimResponse {
 function PostCard({description, author, dateTime, location, likes, comments}: PostCardProps) {
   const [locationName, setLocationName] = useState<String>('Loading...');
   const [timeSince, setTimeSince] = useState<String>('');
-  const [user, setUser] = useState<User | null>(null);
+  //const [user, setUser] = useState<User | null>(null);
   
+  /*
     useEffect(() => {
       if (!author) return;
   
       getUserById(author)
         .then(setUser)
         .catch(() => setUser(null));
-    }, []);
+    }, []); */
 
   /*
   useEffect(() => {
@@ -93,7 +94,7 @@ useEffect(() => {
       <div className='flex flex-row mb-3'>
         <ProfileIcon size="md"/>
         <div className='h-14 w-full ml-3'>
-          <h3 className='font-bold text-base'>{user ? user.username : "Unknown user"}</h3>
+          <h3 className='font-bold text-base'>{author ? author : "Unknown user"}</h3>
           <p className='text-sm/3 opacity-85'>{locationName}</p>
           <p className='text-sm/6 opacity-85'>{timeSince}</p>
         </div>

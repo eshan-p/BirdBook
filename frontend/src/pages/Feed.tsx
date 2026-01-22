@@ -132,9 +132,19 @@ function Feed() {
       .finally(() => setLoading(false));
     //TODO: Replace with fetch
     setGroups(mockGroups);
-  }, []);
+  }, [])
 
-  // if(loading) return <>todo</>
+  const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+
+  const pagedPosts = posts.slice(
+    page * PAGE_SIZE,
+    (page + 1) * PAGE_SIZE
+  );
+
+  if (loading) return <p>Loading...</p>;
+
+  //console.log("posts:", posts);
+  console.log("pagedPosts:", pagedPosts);
 
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
@@ -165,7 +175,7 @@ function Feed() {
               <PostCard
                 key={post.id}
                 description={post.header}
-                author={post.userId}
+                author={post.user.username}
                 dateTime={parseDate(post.timestamp)}
                 location={post.tags?.location}
                 likes={post.likes.length}
