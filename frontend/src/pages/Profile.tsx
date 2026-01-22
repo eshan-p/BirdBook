@@ -1,0 +1,108 @@
+import React, { useEffect, useState } from 'react';
+import ProfileIcon from '../components/common/ProfileIcon';
+import TopBirds from '../components/features/TopBirds';
+import MapView from '../components/features/MapView';
+import { Bird } from '../types/Bird';
+import { Post } from '../types/Post';
+
+const mockBirds: Bird[] = [
+  {
+    id: "1",
+    commonName: "Crested Kingfisher",
+    scientificName: "Megaceryle lugubris",
+    image: "src/assets/crested-kingfisher.jpg",
+    location: [-82.5519, 35.5955]
+  },
+  {
+    id: "2",
+    commonName: "American Bittern",
+    scientificName: "Botaurus lentiginosus",
+    image: "src/assets/american-bittern.jpg",
+    location: [-95.7129, 37.2688]
+  },
+  {
+    id: "3",
+    commonName: "Northern Bobwhite",
+    scientificName: "Colinus virginianus",
+    image: "src/assets/northern-bobwhite.jpg",
+    location: [-78.6382, 35.4676]
+  },
+  {
+    id: "4",
+    commonName: "Stellar's Jay",
+    scientificName: "Cyanocitta stelleri",
+    image: "src/assets/stellars-jay.jpg",
+    location: [-120.5, 45.5]
+  },
+  {
+    id: "5",
+    commonName: "Mourning Dove",
+    scientificName: "Zenaida macroura",
+    image: "src/assets/mourning-dove.jpg",
+    location: [-96.8158, 33.2148]
+  }
+];
+
+function Profile() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  useEffect(() => {
+    fetch('/api/posts')
+    .then(r => r.json())
+    .then(setPosts);
+  }, []);
+  return (
+    <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
+      <div className='basis-2/3 m-6'>
+        <div className='bg-white h-fit w-full p-4 drop-shadow flex flex-col'>
+            <div className='flex flex-row py-8 border-b border-gray-300 mb-3 px-3'>
+                <ProfileIcon size="lg"/>
+                <div>
+                    <h2 className='text-xl mt-1 ml-4'>Peyton Barre</h2>
+                    <div className='flex flex-row ml-4 mb-2'>
+                        <img src="src/assets/pin.svg" alt="location"/>
+                        <p className='text-base/4 opacity-65 ml-1'>Plano, TX</p>
+                    </div>
+                    <div className='flex flex-row items-center w-full justify-between px-3 gap-4'>
+                        <div className='flex flex-col items-center'>
+                            <p className='text-xl font-light text-[#0700D3]'>311</p>
+                            <p className='text-sm font-extralight'>Spottings</p>
+                        </div>
+                        <div className='flex flex-col items-center'>
+                            <p className='text-xl font-light text-[#0700D3]'>17</p>
+                            <p className='text-sm font-extralight'>Friends</p>
+                        </div>
+                        <div className='flex flex-col items-center'>
+                            <p className='text-xl font-light text-[#0700D3]'>4</p>
+                            <p className='text-sm font-extralight'>Groups</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className='px-3 flex flex-col pb-6 border-b border-gray-300 mb-3'>
+                <TopBirds birds={mockBirds}/>
+            </div>
+            <div className='px-3 flex flex-col pb-6'>
+                <h2 className='text-xl opacity-70 mb-4'>Sighting Map</h2>
+                <MapView posts={posts}/>
+            </div>
+        </div>
+      </div>
+      <div className='basis-1/3 m-6 ml-0'>
+        <div className='bg-white h-fit w-full p-4 drop-shadow mb-6'>
+            <div className='flex flex-row w-full border-b border-gray-300 pb-2'>
+                <img src="src/assets/post.svg" alt="posts"/>
+                <h3 className='ml-3 text-lg'>Posts</h3>
+            </div>
+        </div>
+        <div className='bg-white h-fit w-full p-4 drop-shadow mb-6'>
+            <div className='flex flex-row w-full border-b border-gray-300 pb-2'>
+                <img src="src/assets/badge.svg" alt="posts"/>
+                <h3 className='ml-3 text-lg'>Badges</h3>
+            </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Profile

@@ -25,6 +25,8 @@ public class Post {
     private ObjectId id;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonSerialize(using = ObjectIdSerializer.class)
+    @JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId userId;
 
     @NotBlank(message = "Header cannot be blank")

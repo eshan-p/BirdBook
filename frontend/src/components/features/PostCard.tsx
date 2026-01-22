@@ -3,17 +3,21 @@ import { Point } from 'geojson'
 import { pointToCoords, reverseCoordsToCityState } from '../../utils/geolocation';
 import ProfileIcon from '../common/ProfileIcon';
 import { getTimeSince } from '../../utils/dateTime';
+import { Post } from '../../types/Post';
+import { getSightings } from '../../api/Sightings';
+import { User } from '../../types/User';
+import { getUserById } from '../../api/Users';
 
 interface PostCardProps {
   description: string;
   author: string;
   dateTime: Date;
-  location: Point;
+  location?: {latitude:number,longitude:number};
   likes: number;
   comments: number;
 }
 
-interface NominatimResponse {
+interface NominatimResponse { 
   display_name: string;
   address: {
     city?: string;
@@ -21,14 +25,60 @@ interface NominatimResponse {
   }
 }
 
+
 function PostCard({description, author, dateTime, location, likes, comments}: PostCardProps) {
   const [locationName, setLocationName] = useState<String>('Loading...');
   const [timeSince, setTimeSince] = useState<String>('');
+  const [user, setUser] = useState<User | null>(null);
+  
+    useEffect(() => {
+      if (!author) return;
+  
+      getUserById(author)
+        .then(setUser)
+        .catch(() => setUser(null));
+    }, []);
 
+  /*
   useEffect(() => {
     const coords = pointToCoords(location);
     reverseCoordsToCityState(coords).then(setLocationName);
-  }, [location.coordinates]);
+  }, [location.coordinates]); */
+
+useEffect(() => {
+  if (!location) return;
+
+  let raw = location as any;
+  //console.log("RAW location tag:", raw);
+
+  // 🔑 FIX: handle stringified JSON
+  if (typeof raw === "string") {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      console.error("Location is not valid JSON:", raw);
+      return;
+    }
+  }
+
+  const latitude = Number(raw.latitude);
+  const longitude = Number(raw.longitude);
+
+  //console.log("latitude:", latitude, "type:", typeof latitude);
+  //console.log("longitude:", longitude, "type:", typeof longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    console.error("Invalid coordinates AFTER parsing:", raw);
+    return;
+  }
+
+  reverseCoordsToCityState({ latitude, longitude })
+    .then(setLocationName)
+    .catch((err) => {
+      console.error("Reverse geocode failed:", err);
+      //setLocationName(null);
+    });
+  }, []);
 
   useEffect(() => {
     setTimeSince(getTimeSince(dateTime));
@@ -43,7 +93,7 @@ function PostCard({description, author, dateTime, location, likes, comments}: Po
       <div className='flex flex-row mb-3'>
         <ProfileIcon size="md"/>
         <div className='h-14 w-full ml-3'>
-          <h3 className='font-bold text-base'>{author}</h3>
+          <h3 className='font-bold text-base'>{user ? user.username : "Unknown user"}</h3>
           <p className='text-sm/3 opacity-85'>{locationName}</p>
           <p className='text-sm/6 opacity-85'>{timeSince}</p>
         </div>

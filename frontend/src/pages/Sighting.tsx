@@ -8,6 +8,9 @@ import { getUserById } from "../api/Users";
 import { Post } from "../types/Post";
 import { User } from "../types/User";
 import { Comment } from "../types/Comment";
+import { parseDate } from '../utils/dateTime';
+import { getTimeSince } from '../utils/dateTime';
+import { reverseCoordsToCityState } from '../utils/geolocation';
 
 function Sighting() {
   //grabs params from the current url
@@ -18,6 +21,7 @@ function Sighting() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user,setUser] = useState<User | null>(null);
+  const [locationLabel, setLocationLabel] = useState<string | null>(null);
 
   //first fetch post
   useEffect(() => {
@@ -32,35 +36,67 @@ function Sighting() {
       .finally(() => setLoading(false));
 
   }, [postId]);
-/*
+
   //then fetch user
-  useEffect(() => {
-  if (!post || !post.userId) return;
+useEffect(() => {
+  if (!post?.userId) return;
 
-  //setLoading(true);
-  post.userId = '695c1b84f0e6716530e00b4c';
+  let userId: any = post.userId;
 
-  console.log(post.userId);
+  // 🔑 Normalize ObjectId-shaped values
+  if (typeof userId === "object") {
+    userId = userId.id || userId._id || userId.$oid;
+  }
 
-  getUserById(post.userId)
+  if (typeof userId !== "string") {
+    console.error("Invalid post userId:", post.userId);
+    return;
+  }
+
+  getUserById(userId)
     .then(setUser)
     .catch((err) => {
       console.error(err);
       setUser(null);
     });
-}, [post]);
-*/
+}, [post?.userId]);
 
+
+//finally fetch location
 useEffect(() => {
-  const testUserId = "695c1b84f0e6716530e00b4c";
+  if (!post?.tags?.location) return;
 
-  getUserById(testUserId)
-    .then(setUser)
+  let raw = post.tags.location as any;
+  //console.log("RAW location tag:", raw);
+
+  // 🔑 FIX: handle stringified JSON
+  if (typeof raw === "string") {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      console.error("Location is not valid JSON:", raw);
+      return;
+    }
+  }
+
+  const latitude = Number(raw.latitude);
+  const longitude = Number(raw.longitude);
+
+  //console.log("latitude:", latitude, "type:", typeof latitude);
+  //console.log("longitude:", longitude, "type:", typeof longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    console.error("Invalid coordinates AFTER parsing:", raw);
+    return;
+  }
+
+  reverseCoordsToCityState({ latitude, longitude })
+    .then(setLocationLabel)
     .catch((err) => {
-      console.error("User fetch failed:", err);
-      setUser(null);
+      console.error("Reverse geocode failed:", err);
+      setLocationLabel(null);
     });
-}, []);
+}, [post?.tags?.location]);
 
 
   if (loading) return <p>Loading...</p>;
@@ -70,6 +106,7 @@ useEffect(() => {
   return (
     <div>
       <h1>{post.header}</h1>
+      <small>Posted {parseDate(post.timestamp).toDateString()}  ·{"  "}</small>
       <small>Likes: {post.likes.length}</small>
       <p>{post.textBody}</p>
 
@@ -78,8 +115,8 @@ useEffect(() => {
       )}
 
       <p>Posted by: {user? user.username:"Unknown user"}</p>
-      {post.tags?.location && (<p>Location: {post.tags.location}</p>)}
-      {post.tags?.bird && (<p>Bird: {post.tags.bird}</p>)}
+      {locationLabel && <p>Location: {locationLabel}</p>}
+      {post.bird && (<p>Bird: {post.bird}</p>)}
       {post && <CommentsList comments={post.comments} />}
     </div>
   );
@@ -94,12 +131,12 @@ function CommentsList({comments}: {comments:Comment[]}){
   if(comments.length ===0){
     return <p>No Comments yet...</p>
   }
-  //console.log(comments[0].timeStamp)
+  //console.log(comments[0].timestamp)
   return (
     <ul>
       {comments.map((comment) => (
         <CommentItem
-          key={`${comment.userId}-${comment.timeStamp}`}
+          key={`${comment.userId}-${comment.timestamp}`}
           comment={comment}
         />
       ))}
@@ -120,11 +157,13 @@ function CommentItem({ comment }: { comment: Comment }) {
       .catch(() => setUser(null));
   }, [comment.userId]);
 
+  //console.log(comment.timestamp);
   return (
     <li>
       <small>
-        {user ? user.username : "Unknown user"} ·{" "}
-        {new Date(comment.timeStamp).toLocaleString()}
+        {user ? user.username : "Unknown user"}  ·{"  "}
+        
+        {parseDate(comment.timestamp).toDateString()}
       </small>
       <p>{comment.textBody}</p>
     </li>

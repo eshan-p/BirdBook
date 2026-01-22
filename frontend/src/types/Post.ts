@@ -1,11 +1,20 @@
 import { Comment } from "../types/Comment";
 
+export interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
 export interface Post {
   //mongo userid must be treated as  a string in ts
   id: string;
 
   header:string;
-  tags:Record<string,string>;
+  
+  tags?: {
+    location?: Coordinates;
+    bird?: string;
+  };
 
   bird:string;
   flagged:string;
@@ -18,7 +27,7 @@ export interface Post {
   imageUrl?:string|null;
   textBody:string;
   
-  timeStamp: string;
+  timestamp: string;
 
   comments:Comment[];
 

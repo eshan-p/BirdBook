@@ -7,6 +7,7 @@ import Feed from "./pages/Feed";
 import Landing from "./pages/Landing";
 import Header from "./components/layout/Header";
 import Sighting from "./pages/Sighting";
+import Profile from "./pages/Profile";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/feed" element={<Feed />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/sightings/:postId" element={<Sighting/>}/>
       </Routes>
     </Router>
