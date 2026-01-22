@@ -53,3 +53,21 @@ export const reverseCoordsToCityState = async (coords: Coordinates): Promise<str
         return formatCoords(coords)
     }
 }
+
+export const reverseCoordsToRegion = async (coords: Coordinates): Promise<string> => {
+    const latitude = coords.latitude;
+    const longitude = coords.longitude;
+    try{
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
+        const data = await response.json();
+        const continent = data.address.continent;
+        if(continent){
+            return `${continent}`;
+        }else{
+            return "Unknown";
+        }
+    }catch(err){
+        console.error("Error reversing Geo Code: " + err);
+        return formatCoords(coords)
+    }
+}

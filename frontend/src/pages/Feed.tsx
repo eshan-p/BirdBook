@@ -18,6 +18,14 @@ import SearchBar from '../components/common/SearchBar';
 const PAGE_SIZE = 5; // easy to tweak later
 
 
+import FriendCard from '../components/features/FriendCard';
+import { Friend } from '../types/Friend';
+import { getSightings } from '../api/Sightings';
+import { Post } from '../types/Post';
+import { parseDate } from '../utils/dateTime';
+import { Bird } from '../types/Bird';
+import BirdCard from '../components/features/BirdCard';
+import SearchBar from '../components/common/SearchBar';
 
 // TODO: Delete when have real data
 const mockPost = {
@@ -65,23 +73,64 @@ const mockGroups: Group[] = [
   }
 ]
 
-const mockFriends = [
+const mockFriends: Friend[] = [
   {
-    profilePhoto: "src/assets/profilephoto.jpg",
+    id: "1",
     name: "Marcus Thompson",
+    profilePhoto: "src/assets/profilephoto.jpg",
     location: [35.5955, -82.5519],
   },
   {
-    groupPhoto: "src/assets/profilephoto.jpg",
-    groupName: "Elena Rodriguez",
+    id: "2",
+    name: "Elena Rodriguez",
+    profilePhoto: "src/assets/profilephoto.jpg",
     location: [32.7153, -117.1573],
   },
   {
-    groupPhoto: "src/assets/profilephoto.jpg",
-    groupName: "James Mitchell",
+    id: "3",
+    name: "James Mitchell",
+    profilePhoto: "src/assets/profilephoto.jpg",
     location: [30.2672, -97.7431],
   }
 ]
+
+const mockBirds: Bird[] = [
+  {
+    id: "1",
+    commonName: "Crested Kingfisher",
+    scientificName: "Megaceryle lugubris",
+    image: "src/assets/crested-kingfisher.jpg",
+    location: [-82.5519, 35.5955]
+  },
+  {
+    id: "2",
+    commonName: "American Bittern",
+    scientificName: "Botaurus lentiginosus",
+    image: "src/assets/american-bittern.jpg",
+    location: [-95.7129, 37.2688]
+  },
+  {
+    id: "3",
+    commonName: "Northern Bobwhite",
+    scientificName: "Colinus virginianus",
+    image: "src/assets/northern-bobwhite.jpg",
+    location: [-78.6382, 35.4676]
+  },
+  {
+    id: "4",
+    commonName: "Stellar's Jay",
+    scientificName: "Cyanocitta stelleri",
+    image: "src/assets/stellars-jay.jpg",
+    location: [-120.5, 45.5]
+  },
+  {
+    id: "5",
+    commonName: "Mourning Dove",
+    scientificName: "Zenaida macroura",
+    image: "src/assets/mourning-dove.jpg",
+    location: [-96.8158, 33.2148]
+  }
+];
 
 function Feed() {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -133,10 +182,13 @@ useEffect(() => {
             {mockGroups.map((group) => (
               <GroupCard key={group.id} group={group}/>
             ))}
-            <div className='flex flex-row w-full border-b border-gray-300'>
+            <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
               <img src="src/assets/person.svg" alt="groups"/>
               <p className='text-lg ml-3'>Friends</p>
             </div>
+            {mockFriends.map((friend) => (
+              <FriendCard key={friend.id} friend={friend}/>
+            ))}
           </div>
         </div>
 
