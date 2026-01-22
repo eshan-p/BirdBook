@@ -17,13 +17,14 @@ public class MongoDataInitializer implements CommandLineRunner {
     private final ObjectId adminUser = new ObjectId();
     private final ObjectId superUser = new ObjectId();
     private final List<ObjectId> basicUsers = new ArrayList<>();
+    private final Map<ObjectId, String> userNames = new HashMap<>();
 
     // ===== GROUPS =====
     private final ObjectId groupDFW = new ObjectId();
     private final ObjectId groupCoastal = new ObjectId();
 
     // ===== BIRDS =====
-    private final List<ObjectId> birds = Arrays.asList(
+    private final List<ObjectId> birds = List.of(
             new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(),
             new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId()
     );
@@ -48,6 +49,67 @@ public class MongoDataInitializer implements CommandLineRunner {
         if (db.countDocuments() == 0) populatePosts(db);
     }
 
+    // =====================================================
+    // USERS
+    // =====================================================
+
+    private void populateUsers(MongoCollection<Document> collection) {
+        List<Document> docs = new ArrayList<>();
+
+        userNames.put(adminUser, "admin_alice");
+        docs.add(userDoc(adminUser, "admin_alice", "Admin1!", Role.ADMIN_USER));
+
+        userNames.put(superUser, "super_sam");
+        docs.add(userDoc(superUser, "super_sam", "Super1!", Role.SUPER_USER));
+
+        for (int i = 0; i < 25; i++) {
+            ObjectId id = new ObjectId();
+            String username = "birder" + i;
+
+            basicUsers.add(id);
+            userNames.put(id, username);
+
+            docs.add(userDoc(id, username, "Bird1!", Role.BASIC_USER));
+        }
+
+        collection.insertMany(docs);
+    }
+
+    private Document userDoc(ObjectId id, String username, String password, Role role) {
+        return new Document("_id", id)
+                .append("username", username)
+                .append("password", password)
+                .append("role", role.name())
+                .append("profilePic", "backend_profile_pictures/default_pfp.jpg")
+                .append("friends", List.of())
+                .append("posts", List.of())
+                .append("groups", List.of());
+    }
+
+    // =====================================================
+    // GROUPS
+    // =====================================================
+
+    private void populateGroups(MongoCollection<Document> collection) {
+        collection.insertMany(List.of(
+                new Document("_id", groupDFW)
+                        .append("name", "DFW Birders")
+                        .append("owner", postUser(adminUser))
+                        .append("members", basicUsers.stream().map(this::postUser).toList())
+                        .append("requests", List.of()),
+
+                new Document("_id", groupCoastal)
+                        .append("name", "Coastal Bird Committee")
+                        .append("owner", postUser(superUser))
+                        .append("members", basicUsers.subList(0, 10).stream().map(this::postUser).toList())
+                        .append("requests", List.of())
+        ));
+    }
+
+    // =====================================================
+    // BIRDS
+    // =====================================================
+
     private void populateBirds(MongoCollection<Document> collection) {
         String[] names = {
                 "American Robin", "Northern Cardinal", "Black-capped Chickadee",
@@ -61,80 +123,42 @@ public class MongoDataInitializer implements CommandLineRunner {
                     .append("commonName", names[i])
                     .append("imageURL", "https://example.com/birds/" + i + ".jpg"));
         }
-        collection.insertMany(docs);
-    }
-
-    private void populateUsers(MongoCollection<Document> collection) {
-        List<Document> docs = new ArrayList<>();
-
-        docs.add(userDoc(adminUser, "admin_alice", "Admin1!", Role.ADMIN_USER));
-        docs.add(userDoc(superUser, "super_sam", "Super1!", Role.SUPER_USER));
-
-        for (int i = 0; i < 25; i++) {
-            ObjectId id = new ObjectId();
-            basicUsers.add(id);
-            docs.add(userDoc(id, "birder" + i, "Bird1!", Role.BASIC_USER));
-        }
 
         collection.insertMany(docs);
     }
 
-    private Document userDoc(ObjectId id, String username, String password, Role role) {
-        return new Document("_id", id)
-                .append("username", username)
-                .append("password", password)
-                .append("role", role.name())
-                .append("profilePic", "backend_profile_pictures/default_pfp.jpg")
-                .append("friends", new ArrayList<>())
-                .append("posts", new ArrayList<>())
-                .append("groups", new ArrayList<>());
-    }
-
-    private void populateGroups(MongoCollection<Document> collection) {
-        collection.insertMany(Arrays.asList(
-                new Document("_id", groupDFW)
-                        .append("name", "DFW Birders")
-                        .append("ownerId", adminUser)
-                        .append("members", basicUsers)
-                        .append("requests", List.of()),
-
-                new Document("_id", groupCoastal)
-                        .append("name", "Coastal Bird Committee")
-                        .append("ownerId", superUser)
-                        .append("members", basicUsers.subList(0, 10))
-                        .append("requests", List.of())
-        ));
-    }
+    // =====================================================
+    // POSTS + COMMENTS
+    // =====================================================
 
     private void populatePosts(MongoCollection<Document> collection) {
         Random rand = new Random();
         List<Document> docs = new ArrayList<>();
 
+        long baseTime = System.currentTimeMillis() - 2_000_000_000L;
+
         for (int i = 0; i < 100; i++) {
             ObjectId postId = new ObjectId();
             posts.add(postId);
 
-            ObjectId author = basicUsers.get(rand.nextInt(basicUsers.size()));
+            ObjectId authorId = basicUsers.get(rand.nextInt(basicUsers.size()));
             ObjectId bird = birds.get(rand.nextInt(birds.size()));
 
             docs.add(new Document("_id", postId)
-                    .append("userId", author)
+                    .append("user", postUser(authorId))
                     .append("header", "Bird Sighting #" + i)
-                    .append("tags", new Document("location",
-                            new Document("latitude", 32.5 + rand.nextDouble())
-                                    .append("longitude", -96.5 + rand.nextDouble())
-                    ))
                     .append("bird", bird)
-                    .append("flagged", false)
                     .append("group", rand.nextBoolean() ? groupDFW : groupCoastal)
+                    .append("flagged", false)
                     .append("help", rand.nextBoolean())
                     .append("likes", List.of())
                     .append("image", "TODO")
                     .append("textBody", "Automated test post content " + i)
-                    .append("timestamp", new Date(System.currentTimeMillis() - rand.nextInt(1_000_000_000)))
+                    .append("timestamp", new Date(baseTime + (i * 10_000)))
                     .append("comments", generateComments(rand))
             );
         }
+
         collection.insertMany(docs);
     }
 
@@ -142,12 +166,26 @@ public class MongoDataInitializer implements CommandLineRunner {
         int count = rand.nextInt(5);
         List<Document> comments = new ArrayList<>();
 
+        long baseTime = System.currentTimeMillis() - 500_000;
+
         for (int i = 0; i < count; i++) {
-            comments.add(new Document("userId",
-                    basicUsers.get(rand.nextInt(basicUsers.size())))
+            ObjectId uid = basicUsers.get(rand.nextInt(basicUsers.size()));
+
+            comments.add(new Document("user", postUser(uid))
                     .append("textBody", "Nice spotting! " + i)
-                    .append("timestamp", new Date()));
+                    .append("timestamp", new Date(baseTime + (i * 5_000)))
+            );
         }
+
         return comments;
+    }
+
+    // =====================================================
+    // HELPERS
+    // =====================================================
+
+    private Document postUser(ObjectId id) {
+        return new Document("id", id)
+                .append("username", userNames.get(id));
     }
 }

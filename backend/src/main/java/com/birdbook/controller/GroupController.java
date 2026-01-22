@@ -1,7 +1,8 @@
 package com.birdbook.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.birdbook.models.PostUser;
+import com.birdbook.service.PostUserService;
+import org.springframework.web.bind.annotation.*;
 
 import com.birdbook.models.Group;
 import com.birdbook.models.User;
@@ -14,21 +15,17 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
 @RequestMapping("/groups")
 public class GroupController {
     private final GroupService groupService;
+    private final PostUserService puService;
 
-    public GroupController(GroupService groupService) {
+    public GroupController(GroupService groupService, PostUserService puService) {
         this.groupService = groupService;
+        this.puService = puService;
     }
 
     @GetMapping
@@ -44,49 +41,40 @@ public class GroupController {
     }
 
     @GetMapping("/{groupId}/join-requests")
-    public ResponseEntity<List<User>> getAllRequests(@PathVariable String groupId) {
-
-        ObjectId groupObjId = new ObjectId(groupId);
-        List<User> requestedUsers = groupService.getRequestedUsers(groupObjId);
-
-        return ResponseEntity.ok(requestedUsers);
+    public List<PostUser> getRequests(@PathVariable String groupId) {
+        return groupService.getRequestedUsers(new ObjectId(groupId));
     }
 
     @GetMapping("/{groupId}/members")
-    public ResponseEntity<List<User>> getAllMembers(@PathVariable String groupId) {
-
-        ObjectId groupObjId = new ObjectId(groupId);
-        List<User> members = groupService.getGroupMembers(groupObjId);
-
-        return ResponseEntity.ok(members);
+    public List<PostUser> getMembers(@PathVariable String groupId) {
+        return groupService.getGroupMembers(new ObjectId(groupId));
     }
 
     @PostMapping
-    public ResponseEntity<String> createGroup(@Valid @RequestBody Group groupRequest) {
-
-        groupService.createGroup(groupRequest.getName(), groupRequest.getId());
-
-        return new ResponseEntity<String>("Group created successfully", HttpStatus.CREATED);
+    public ResponseEntity<String> createGroup(@RequestParam String name, @RequestParam String ownerId) {
+        PostUser owner = puService.buildPostUser(new ObjectId(ownerId));
+        groupService.createGroup(name, owner);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Group created successfully");
     }
 
     @PostMapping("/{groupId}/join-requests")
-    public ResponseEntity<String> userRequestToJoin(@PathVariable String groupId, @RequestBody User user) {
-
-        ObjectId groupObjId = new ObjectId(groupId);
-        ObjectId userObjId = user.getId();
-        groupService.userRequestToJoin(userObjId, groupObjId);
-
-        return new ResponseEntity<String>("Join request sent successfully", HttpStatus.OK);
+    public ResponseEntity<String> requestToJoin(
+            @PathVariable String groupId,
+            @RequestParam String userId
+    ) {
+        PostUser user = puService.buildPostUser(new ObjectId(userId));
+        groupService.userRequestToJoin(user, new ObjectId(groupId));
+        return ResponseEntity.ok("Join request sent");
     }
 
     @PutMapping("/{groupId}/join-requests/{userId}/approve")
-    public ResponseEntity<String> approveJoinRequest(@PathVariable String groupId, @PathVariable String userId) {
-
-        ObjectId groupObjId = new ObjectId(groupId);
-        ObjectId userObjId = new ObjectId(userId);
-        groupService.approveJoinRequest(userObjId, groupObjId);
-
-        return new ResponseEntity<String>("Join request approved successfully", HttpStatus.OK);
+    public ResponseEntity<String> approveJoin(
+            @PathVariable String groupId,
+            @PathVariable String userId
+    ) {
+        PostUser user = puService.buildPostUser(new ObjectId(userId));
+        groupService.approveJoinRequest(user, new ObjectId(groupId));
+        return ResponseEntity.ok("Join request approved");
     }
 
     @PutMapping("/{groupId}/join-requests/{userId}/deny")
@@ -94,7 +82,7 @@ public class GroupController {
 
         ObjectId groupObjId = new ObjectId(groupId);
         ObjectId userObjId = new ObjectId(userId);
-        groupService.denyJoinRequest(userObjId, groupObjId);
+        groupService.denyJoinRequest(puService.buildPostUser(userObjId), groupObjId);
 
         return new ResponseEntity<String>("Join request denied successfully", HttpStatus.OK);
     }

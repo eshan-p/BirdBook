@@ -31,5 +31,8 @@ export interface Post {
 
   comments:Comment[];
 
-  userId:string;
+  user:{
+    id: string,
+    username: string
+  };
 }

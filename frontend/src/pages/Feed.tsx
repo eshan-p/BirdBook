@@ -158,7 +158,7 @@ useEffect(() => {
   if (loading) return <p>Loading...</p>;
 
   //console.log("posts:", posts);
-  //console.log("pagedPosts:", pagedPosts);
+  console.log("pagedPosts:", pagedPosts);
 
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
@@ -189,7 +189,7 @@ useEffect(() => {
               <PostCard
                 key={post.id}
                 description={post.header}
-                author={post.userId}
+                author={post.user.username}
                 dateTime={parseDate(post.timestamp)}
                 location={post.tags?.location}
                 likes={post.likes.length}

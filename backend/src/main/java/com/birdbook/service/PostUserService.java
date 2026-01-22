@@ -1,4 +1,21 @@
 package com.birdbook.service;
 
+import com.birdbook.models.PostUser;
+import org.bson.types.ObjectId;
+import com.birdbook.service.UserService;
+import org.springframework.stereotype.Service;
+
+@Service
 public class PostUserService {
+    private UserService uService;
+
+    public PostUserService (UserService uService){
+        this.uService = uService;
+    }
+    public PostUser buildPostUser(ObjectId userId){
+        PostUser temp = new PostUser();
+        temp.setUserId(userId);
+        temp.setUsername(uService.getUserById(userId).getUsername());
+        return temp;
+    }
 }

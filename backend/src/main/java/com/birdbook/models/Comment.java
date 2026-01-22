@@ -1,7 +1,5 @@
 package com.birdbook.models;
 
-import org.bson.types.ObjectId;
-
 import com.birdbook.serializers.ObjectIdSerializer;
 import com.birdbook.serializers.ObjectIdDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -16,7 +14,7 @@ public class Comment {
 
     @JsonSerialize(using = ObjectIdSerializer.class)
     @JsonDeserialize(using = ObjectIdDeserializer.class)
-    private ObjectId userId;
+    private PostUser user;
     
     @NotBlank(message = "Comment cannot be blank")
     @Size(max = 280, message = "Comment cannot exceed 280 characters.")
@@ -25,18 +23,18 @@ public class Comment {
 
     public Comment() {}
 
-    public Comment(ObjectId userId, String textBody) {
-        this.userId = userId;
+    public Comment(PostUser user, String textBody) {
+        this.user = user;
         this.textBody = textBody;
         this.timestamp = new Date();
     }
 
-    public ObjectId getUserId() {
-        return userId;
+    public PostUser getUser() {
+        return user;
     }
 
-    public void setUserId(ObjectId userId) {
-        this.userId = userId;
+    public void setUser(PostUser userId) {
+        this.user = user;
     }
 
     public String getTextBody() {

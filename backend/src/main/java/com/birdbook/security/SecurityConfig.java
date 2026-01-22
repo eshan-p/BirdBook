@@ -1,7 +1,9 @@
 package com.birdbook.security;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -37,26 +39,26 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
-            .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth
 
-                // Preflight
-                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        // Preflight
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
-                //  PUBLIC
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/users/**").permitAll()
-                .requestMatchers("/sightings/**").permitAll()
+                        // PUBLIC
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/users/**").permitAll()
+                        .requestMatchers("/sightings","/sightings/**").permitAll()
 
-                //  ROLE BASED
-                .requestMatchers("/posts/**")
-                    .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                        // ROLE BASED
+                        .requestMatchers("/posts/**")
+                        .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
 
-                .requestMatchers("/admin/**")
-                    .hasAnyRole("ADMIN_USER", "SUPER_USER")
+                        .requestMatchers("/admin/**")
+                        .hasAnyRole("ADMIN_USER", "SUPER_USER")
 
-                //  EVERYTHING ELSE
-                .anyRequest().authenticated()
-            )
+                        // EVERYTHING ELSE
+                        .anyRequest().authenticated()
+                )
 
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
