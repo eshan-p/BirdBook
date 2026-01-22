@@ -5,6 +5,19 @@ import ProfileCard from '../components/features/ProfileCard';
 import { reverseCoordsToCityState } from '../utils/geolocation';
 import GroupCard from '../components/features/GroupCard';
 import { Group } from '../types/Group';
+import FriendCard from '../components/features/FriendCard';
+import { Friend } from '../types/Friend';
+import { getSightings } from '../api/Sightings';
+import { Post } from '../types/Post';
+import { parseDate } from '../utils/dateTime';
+import { Bird } from '../types/Bird';
+import BirdCard from '../components/features/BirdCard';
+import SearchBar from '../components/common/SearchBar';
+
+//page logic
+const PAGE_SIZE = 5; // easy to tweak later
+
+
 
 // TODO: Delete when have real data
 const mockPost = {
@@ -72,11 +85,40 @@ const mockFriends = [
 
 function Feed() {
   const [groups, setGroups] = useState<Group[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [page, setPage] = useState(0); // zero-based index
+  
+  // Reset page if posts change
+  useEffect(() => {
+    setPage(0);
+  }, [posts]);
+
+useEffect(() => {
+  getSightings()
+    .then(setPosts)
+    .catch(err => setError(err.message))
+    .finally(() => setLoading(false));
+}, []);
 
   useEffect(() => {
     //TODO: Replace with fetch
     setGroups(mockGroups);
   }, [])
+
+  const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+
+  const pagedPosts = posts.slice(
+    page * PAGE_SIZE,
+    (page + 1) * PAGE_SIZE
+  );
+
+  if (loading) return <p>Loading...</p>;
+
+  //console.log("posts:", posts);
+  //console.log("pagedPosts:", pagedPosts);
 
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
@@ -100,13 +142,53 @@ function Feed() {
 
         {/* Main Feed */}
         <div className='basis-1/2 m-6'>
-          <PostCard {...mockPost}/>
+          {pagedPosts.map(post => (
+              <PostCard
+                key={post.id}
+                description={post.header}
+                author={post.userId}
+                dateTime={parseDate(post.timestamp)}
+                location={post.tags?.location}
+                likes={post.likes.length}
+                comments={post.comments.length}
+              />
+          ))}
         </div>
 
         {/* Right Sidebar */}
         <div className='basis-1/4 m-6 ml-0 h-fit w-full bg-white p-4 drop-shadow'>
-          <div>Birds</div>
+          <div className='flex flex-row w-full border-b border-gray-300 mb-3 items-center'>
+            <img src="src/assets/bird.svg" alt="groups"className='w-5 h-5'/>
+            <div className='text-lg ml-3'>Birds</div>
+          </div>
+          <div className='mb-3'>
+            <SearchBar/>
+          </div>
+          {mockBirds.map((bird) => (
+            <BirdCard key={bird.id} bird={bird}/>
+          ))}
         </div>
+
+         {/* Pagination controls */}
+      <div className="pagination">
+        <button
+          disabled={page === 0}
+          onClick={() => setPage(p => p - 1)}
+        >
+          Previous
+        </button>
+
+        <span>
+          Page {page + 1} of {totalPages}
+        </span>
+
+        <button
+          disabled={page + 1 >= totalPages}
+          onClick={() => setPage(p => p + 1)}
+        >
+          Next
+        </button>
+      </div>
     </div>
   )
 }
