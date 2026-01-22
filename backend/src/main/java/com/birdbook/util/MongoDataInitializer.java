@@ -1,9 +1,8 @@
 package com.birdbook.util;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import com.birdbook.models.Role;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.boot.CommandLineRunner;
