@@ -47,7 +47,7 @@ const mockBirds: Bird[] = [
 
 function Profile() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const { token, loading } = useAuth();
+  const { user, loading } = useAuth();
   const [pageLoading, setPageLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
@@ -59,11 +59,11 @@ function Profile() {
   }, []);
 
   useEffect(() => {
-    if(!token && !loading){
+    if(!user && !loading){
       navigate('/login')
       console.error("Not signed in!")
     }
-  }, [token, loading, navigate]);
+  }, [user, loading, navigate]);
 
   if (loading) return <div>loading</div>
 

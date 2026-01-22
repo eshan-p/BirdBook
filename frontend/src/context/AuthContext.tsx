@@ -1,9 +1,15 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 const BASE_URL = "http://localhost:8080";
 
+interface User{
+    id: string;
+    username: string;
+    role: string;
+}
+
 interface AuthContextType{
-    token: string | null;
-    setToken: (token: string | null) => void;
+    user: User | null;
+    setUser: (user: User | null) => void;
     logout: () => void;
     loading: boolean;
 }
@@ -11,7 +17,7 @@ interface AuthContextType{
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({children} : {children: ReactNode}) => {
-    const [token, setToken] = useState<string | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
@@ -22,8 +28,7 @@ export const AuthProvider = ({children} : {children: ReactNode}) => {
                 })
                 if(res.ok){
                     const data = await res.json();
-                    setToken(data.username);
-                    console.log("Token set to:", data.username);
+                    setUser(data);
                 }
             } catch(err) {
                 throw new Error("Error checking auth: " + err);
@@ -35,11 +40,11 @@ export const AuthProvider = ({children} : {children: ReactNode}) => {
     }, [])
 
     const logout = () => {
-        setToken(null);
+        setUser(null);
     };
 
     return(
-        <AuthContext.Provider value={{token, setToken, logout, loading}}>
+        <AuthContext.Provider value={{user, setUser, logout, loading}}>
             {children}
         </AuthContext.Provider>
     );

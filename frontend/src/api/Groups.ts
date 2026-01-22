@@ -1,18 +1,19 @@
 import {Group} from "../types/Group";
 const BASE_URL = "http://localhost:8080";
 
-function getHeaders() {
-    const token = localStorage.getItem("token");
-    return {
-        "Content-Type": "application/json",
-        ...(token && { "Authorization": `Bearer ${token}` })
-    };
-}
+// function getHeaders() {
+//     const token = localStorage.getItem("token");
+//     return {
+//         "Content-Type": "application/json",
+//         ...(token && { "Authorization": `Bearer ${token}` })
+//     };
+// }
 
 export async function getAllGroups(): Promise<Group[]>{
     try {
         const response = await fetch(`${BASE_URL}/groups`, {
-            headers: getHeaders()
+            headers: { "Content-Type": "application/json" },
+            credentials: "include"
         });
         
         if (!response.ok){
@@ -32,7 +33,8 @@ export async function getAllGroups(): Promise<Group[]>{
 
 export async function getUserGroups(userId:string): Promise<Group[]>{
     const response = await fetch(`${BASE_URL}/users/${userId}/groups`, {
-        headers: getHeaders()
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
     });
 
     if (!response.ok){
@@ -48,7 +50,8 @@ export async function getUserGroups(userId:string): Promise<Group[]>{
 export async function requestToJoinGroup(groupId: string, userId: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/groups/${groupId}/join-requests`, {
         method: "POST",
-        headers: getHeaders(),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ id: userId }),
     });
 
@@ -60,7 +63,8 @@ export async function requestToJoinGroup(groupId: string, userId: string): Promi
 export async function leaveGroup(groupId: string, userId: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/groups/${groupId}/members/${userId}`, {
         method: "DELETE",
-        headers: getHeaders()
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
     });
 
     if (!response.ok) {

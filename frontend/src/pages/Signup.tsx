@@ -7,7 +7,7 @@ export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { setToken } = useAuth();
+  const { setUser } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -27,7 +27,7 @@ export default function Signup() {
 
       if (!res.ok) throw new Error("Signup failed");
       const data = await res.json();
-      setToken(data.username);
+      setUser(data);
       navigate("/profile");
     } catch (err) {
       setError(err.message);

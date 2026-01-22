@@ -9,6 +9,8 @@ import Header from "./components/layout/Header";
 import Sighting from "./pages/Sighting";
 import Profile from "./pages/Profile";
 import { AuthProvider } from "./context/AuthContext";
+import Groups from "./pages/Groups";
+import Friends from "./pages/Friends";
 
 export default function App() {
   return (
@@ -21,6 +23,8 @@ export default function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/feed" element={<Feed />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/groups" element={<Groups />} />
+            <Route path="/friends" element={<Friends />} />
             <Route path="/sightings/:postId" element={<Sighting/>}/>
         </Routes>
         </Router>

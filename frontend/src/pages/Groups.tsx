@@ -3,12 +3,16 @@ import { Group } from "../types/Group";
 import { getAllGroups, getUserGroups, requestToJoinGroup, leaveGroup } from "../api/Groups";
 import SearchBar from "../components/common/SearchBar";
 import GroupCard from "../components/features/GroupCard";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Groups() {
     const [allGroups, setAllGroups] = useState<Group[]>([]);
     const [userGroups, setUserGroups] = useState<Group[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [pageLoading, setPageLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { user, loading } = useAuth();
+    const navigate = useNavigate();
 
     const currentUserId = localStorage.getItem('userId') || '';
 
@@ -25,12 +29,19 @@ export default function Groups() {
             } catch (err: any) {
                 setError(err.message || "Failed to fetch groups.");
             } finally {
-                setLoading(false);
+                setPageLoading(false);
             }
         }
 
         fetchGroups();
     }, [currentUserId]);
+
+    useEffect(() => {
+        if(!user && !loading){
+            navigate('/login')
+            console.error("Not signed in!")
+        }
+    }, [user, loading, navigate]);
 
     const handleJoin = async (groupId: string) => {
         if (!currentUserId) {
@@ -65,7 +76,7 @@ export default function Groups() {
         }
     };
 
-    if (loading) return <p>Loading...</p>;
+    if (pageLoading) return <p>Loading...</p>;
 
     return (
         <main className="max-w-3xl mx-auto m-6 p-6 bg-white rounded-lg shadow-sm">

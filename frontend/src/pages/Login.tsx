@@ -4,16 +4,15 @@ import "./auth.css";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const { setToken } = useAuth();
-  const { token } = useAuth();
+  const { user, setUser } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    if(token) navigate("/feed");
-  }, [token])
+    if(user) navigate("/feed");
+  }, [user])
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -27,8 +26,8 @@ export default function Login() {
       });
       if (!res.ok) throw new Error("Invalid credentials client");
       const data = await res.json();
-      setToken(data.token);
-      navigate("/feed");
+      setUser(data);
+      navigate("/profile");
     } catch (err) {
       setError(err.message);
     }
