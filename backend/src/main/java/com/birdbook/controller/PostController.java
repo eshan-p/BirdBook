@@ -25,6 +25,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/sightings")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PostController {
 
     private final PostService sService;
