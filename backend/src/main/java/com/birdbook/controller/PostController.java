@@ -47,34 +47,35 @@ public class PostController {
         return sService.getAllPostsByFriends(userId);
     }
 
-    //GET /sightings/tags?location=Texas&bird=BlueJay&etc=etc
     @GetMapping("/tags")
     public List<Post> getAllPostsByTags(@RequestParam Map<String,String> tags) {
         return sService.getAllPostsByTags(tags);
     }
 
-    // GET /sightings/[id]
     @GetMapping("/{id}")
     public ResponseEntity<Post> getPostById(@PathVariable ObjectId id) {
-        return sService.getPostById(id).map(ResponseEntity::ok)
+        return sService.getPostById(id)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Multipart post with optional image; can still pass JSON-only post but frontend request must still be multipart/form-data
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPostMultipart(
             @RequestPart("post") String postJson,
             @RequestPart(value = "image", required = false) MultipartFile image,
             Authentication authentication
     ) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication required");
+        }
+
         try {
-            ObjectId userId = new ObjectId(authentication.getPrincipal().toString());
+            ObjectId userId = new ObjectId(authentication.getName());
 
             Post newPost = objectMapper.readValue(postJson, Post.class);
             newPost.setUserId(userId);
 
             Set<ConstraintViolation<Post>> violations = validator.validate(newPost);
-
             if (!violations.isEmpty()) {
                 Map<String, String> errors = new HashMap<>();
                 for (ConstraintViolation<Post> v : violations) {
@@ -89,18 +90,17 @@ public class PostController {
         }
     }
 
-    // Multipart post with optional image; can still update post w/ JSON-only data but frontend request must still be multipart/form-data
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Post updatePostMultipart(
+    public ResponseEntity<?> updatePostMultipart(
             @PathVariable("id") ObjectId id,
             @RequestPart("post") String postJson,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) {
         try {
             Post updatedPost = objectMapper.readValue(postJson, Post.class);
-            return sService.updatePost(id, updatedPost, image);
+            return ResponseEntity.ok(sService.updatePost(id, updatedPost, image));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to update post", e);
+            return ResponseEntity.badRequest().body("Failed to update post");
         }
     }
 
@@ -108,15 +108,18 @@ public class PostController {
     public ResponseEntity<String> deletePost(@PathVariable String id){
         ObjectId pId = new ObjectId(id);
         sService.deletePostById(pId);
-        return new ResponseEntity<String>("Post deleted successfully", HttpStatus.OK);
+        return ResponseEntity.ok("Post deleted successfully");
     }
 
     @PostMapping("/{id}/comments")
     public ResponseEntity<?> addComment(@PathVariable ObjectId id, @RequestBody Comment comment) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            ObjectId userId = new ObjectId(auth.getName());
+            if (auth == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication required");
+            }
 
+            ObjectId userId = new ObjectId(auth.getName());
             comment.setUserId(userId);
             comment.setTimestamp(new Date());
 
@@ -129,8 +132,12 @@ public class PostController {
     @PatchMapping("/{id}/comments")
     public ResponseEntity<?> updateComment(@PathVariable ObjectId id, @RequestBody Comment updatedComment) {
         try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication required");
+            }
 
-            ObjectId userId = new ObjectId(SecurityContextHolder.getContext().getAuthentication().getName());
+            ObjectId userId = new ObjectId(auth.getName());
             return ResponseEntity.ok(sService.updateComment(id, userId, updatedComment));
 
         } catch (Exception e) {
@@ -141,24 +148,18 @@ public class PostController {
     @DeleteMapping("/{id}/comments")
     public ResponseEntity<?> deleteComment(@PathVariable ObjectId id, @RequestBody Comment comment) {
         try {
-            
-            ObjectId userId = new ObjectId(SecurityContextHolder.getContext().getAuthentication().getName());
-            return ResponseEntity.ok(sService.deleteComment(id, userId, comment.getTimestamp()));
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication required");
+            }
+
+            ObjectId userId = new ObjectId(auth.getName());
+            return ResponseEntity.ok(
+                    sService.deleteComment(id, userId, comment.getTimestamp())
+            );
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-    /*@PostMapping
-    public String createPost(@RequestBody Post newPost){
-        Post success =  sService.createPost(newPost);
-        return String.format("{ \"id\" : %s }", success.getId().toHexString());
-    }*/
-
-    //updatePost(ObjectId id, String header)
-    /* @PatchMapping("/{id}")
-    public Post updatePost(@PathVariable("id") ObjectId id, @RequestBody Post updatedPost){
-        return sService.updatePost(id,updatedPost);
-    } */
 }
