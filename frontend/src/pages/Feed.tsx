@@ -18,15 +18,6 @@ import SearchBar from '../components/common/SearchBar';
 const PAGE_SIZE = 5; // easy to tweak later
 
 
-import FriendCard from '../components/features/FriendCard';
-import { Friend } from '../types/Friend';
-import { getSightings } from '../api/Sightings';
-import { Post } from '../types/Post';
-import { parseDate } from '../utils/dateTime';
-import { Bird } from '../types/Bird';
-import BirdCard from '../components/features/BirdCard';
-import SearchBar from '../components/common/SearchBar';
-
 // TODO: Delete when have real data
 const mockPost = {
   description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec hendrerit massa eu orci aliquet, sed tincidunt diam sodales. Etiam lobortis felis eu egestas varius. Nulla eleifend vestibulum lorem vel ultrices. Nunc ut lectus vel massa mollis consectetur non nec magna. Vivamus congue sollicitudin est nec pulvinar...",
