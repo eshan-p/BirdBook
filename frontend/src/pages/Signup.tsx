@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./auth.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { setUser } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -24,8 +26,9 @@ export default function Signup() {
       });
 
       if (!res.ok) throw new Error("Signup failed");
-
-      navigate("/login");
+      const data = await res.json();
+      setUser(data);
+      navigate("/profile");
     } catch (err) {
       setError(err.message);
     }

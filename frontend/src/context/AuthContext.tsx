@@ -1,0 +1,57 @@
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
+const BASE_URL = "http://localhost:8080";
+
+interface User{
+    id: string;
+    username: string;
+    role: string;
+}
+
+interface AuthContextType{
+    user: User | null;
+    setUser: (user: User | null) => void;
+    logout: () => void;
+    loading: boolean;
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({children} : {children: ReactNode}) => {
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            try{
+                const res = await fetch(BASE_URL + '/auth/me', {
+                    credentials: 'include'
+                })
+                if(res.ok){
+                    const data = await res.json();
+                    setUser(data);
+                }
+            } catch(err) {
+                throw new Error("Error checking auth: " + err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        checkAuth();
+    }, [])
+
+    const logout = () => {
+        setUser(null);
+    };
+
+    return(
+        <AuthContext.Provider value={{user, setUser, logout, loading}}>
+            {children}
+        </AuthContext.Provider>
+    );
+}
+
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if(!context) throw new Error('useAuth must be used in AuthProvider Object');
+    return context;
+}

@@ -124,19 +124,17 @@ function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-
-useEffect(() => {
-  getSightings()
-    .then(setPosts)
-    .catch(err => setError(err.message))
-    .finally(() => setLoading(false));
-}, []);
 
   useEffect(() => {
+    getSightings()
+      .then(setPosts)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
     //TODO: Replace with fetch
     setGroups(mockGroups);
-  }, [])
+  }, []);
+
+  // if(loading) return <>todo</>
 
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>

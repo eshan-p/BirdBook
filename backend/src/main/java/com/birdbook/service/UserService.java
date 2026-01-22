@@ -20,21 +20,26 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.birdbook.models.Group;
 import com.birdbook.models.Post;
 import com.birdbook.models.User;
+import com.birdbook.repository.GroupDAO;
 import com.birdbook.repository.PostDAO;
 import com.birdbook.repository.UserDAO;
 
 @Service
 public class UserService {
+
+    private final GroupDAO groupDAO;
     private final UserDAO userDAO;
     private final PostDAO postDAO;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserDAO userDAO, PostDAO postDAO, PasswordEncoder passwordEncoder){
+    public UserService(UserDAO userDAO, PostDAO postDAO, PasswordEncoder passwordEncoder, GroupDAO groupDAO){
         this.userDAO = userDAO;
         this.postDAO = postDAO;
         this.passwordEncoder = passwordEncoder;
+        this.groupDAO = groupDAO;
     }
 
     public List<User> getAllUsers() {
@@ -49,7 +54,15 @@ public class UserService {
         return userDAO.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    public void registerUser(String username, String password){
+    public List<Group> getGroupsList(ObjectId userId) {
+        User user = userDAO.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found."));
+        ObjectId[] groupIds = user.getGroups();
+
+        return groupDAO.findAllById(List.of(groupIds));
+    } 
+    
+
+    public User registerUser(String username, String password){
 
         if (userDAO.findByUsername(username).isPresent()){
             throw new IllegalArgumentException("Username already taken.");
@@ -59,6 +72,8 @@ public class UserService {
         User newUser = new User(username, hashedPassword);
 
         userDAO.insert(newUser);
+
+        return newUser;
     }
 
     /* public User updateUser(ObjectId id, User updatedData){
