@@ -14,7 +14,10 @@ const mockGroups: Group[] = [
   {
     id: "1",
     name: "Carolina Warblers United",
-    ownerId: "1",
+    owner: {
+      _id: "1",
+      username: "Peyton",
+    },
     members: [],
     requests: [],
     groupPhoto: "src/assets/profilephoto.jpg",
@@ -22,6 +25,7 @@ const mockGroups: Group[] = [
     followers: 814,
   },
 ];
+
 
 const mockFriends: Friend[] = [
   {
@@ -75,7 +79,6 @@ export default function Birds() {
           <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
         </div>
 
-        {/* SCROLLABLE BIRD LIST */}
         <div className="bg-white p-4 drop-shadow grid grid-cols-1 gap-2 max-h-[70vh] overflow-y-auto">
           {filteredBirds.map(bird => (
             <BirdCard key={bird._id} bird={bird} />

@@ -17,20 +17,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@RestController
+@RequestMapping("/api/birds")
 @CrossOrigin(
     origins = "http://localhost:5173",
     allowCredentials = "true"
 )
-@RestController
-@RequestMapping("/birds")
-@CrossOrigin(origins = "http://localhost:5173")
 public class BirdController {
 
     private final BirdService birdService;
     private final ObjectMapper objectMapper;
     private final Validator validator;
 
-    public BirdController(BirdService birdService, ObjectMapper objectMapper, Validator validator) {
+    public BirdController(
+            BirdService birdService,
+            ObjectMapper objectMapper,
+            Validator validator
+    ) {
         this.birdService = birdService;
         this.objectMapper = objectMapper;
         this.validator = validator;
@@ -38,23 +41,22 @@ public class BirdController {
 
     // GET ALL BIRDS
     @GetMapping
-    public List<Bird> getAllBirds() {
-        return birdService.getAllBirds();
+    public ResponseEntity<List<Bird>> getAllBirds() {
+        return ResponseEntity.ok(birdService.getAllBirds());
     }
 
-    // GET BIRD BY ID (needed for BirdDetail page)
+    // GET BIRD BY ID (USED BY BirdDetail PAGE)
     @GetMapping("/{id}")
-    public Bird getBirdById(@PathVariable String id) {
-        return birdService.getBirdById(id);
+    public ResponseEntity<Bird> getBirdById(@PathVariable String id) {
+        try {
+            Bird bird = birdService.getBirdById(id);
+            return ResponseEntity.ok(bird);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    // GET BIRD BY COMMON NAME (already existed)
-    @GetMapping("/{commonName}")
-    public Bird getBirdByCommonName(@PathVariable String commonName) {
-        return birdService.getBirdByCommonName(commonName);
-    }
-
-    // ADD BIRD (multipart)
+    // ADD BIRD (MULTIPART)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> addBirdMultipart(
             @RequestPart("bird") String birdJson,
@@ -72,34 +74,41 @@ public class BirdController {
                 return ResponseEntity.badRequest().body(errors);
             }
 
-            return ResponseEntity.ok(birdService.addBird(newBird, image));
+            Bird savedBird = birdService.addBird(newBird, image);
+            return ResponseEntity.ok(savedBird);
 
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Invalid bird data: " + e.getMessage());
+            return ResponseEntity
+                    .badRequest()
+                    .body("Invalid bird data: " + e.getMessage());
         }
     }
 
-    // UPDATE BIRD (multipart)
+    // UPDATE BIRD
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Bird updateBirdMultipart(
-            @PathVariable ObjectId id,
+    public ResponseEntity<Bird> updateBirdMultipart(
+            @PathVariable String id,
             @RequestPart("bird") String birdJson,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) {
         try {
             Bird birdRequest = objectMapper.readValue(birdJson, Bird.class);
-            return birdService.updateBird(id, birdRequest, image);
+            Bird updatedBird = birdService.updateBird(
+                    new ObjectId(id),
+                    birdRequest,
+                    image
+            );
+            return ResponseEntity.ok(updatedBird);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to update bird", e);
+            return ResponseEntity.badRequest().build();
         }
     }
 
     // DELETE BIRD
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBird(@PathVariable String id) {
-        ObjectId objectId = new ObjectId(id);
-        birdService.deleteBird(objectId);
-        return new ResponseEntity<>("Bird deleted successfully", HttpStatus.OK);
+        birdService.deleteBird(new ObjectId(id));
+        return ResponseEntity.ok("Bird deleted successfully");
     }
 }
 

@@ -5,10 +5,12 @@ import java.util.List;
 import com.birdbook.repository.UserDAO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,22 +42,21 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
 
-                // PUBLIC READ ACCESS (Bird pages)
+                // PUBLIC BIRDS
                 .requestMatchers(HttpMethod.GET, "/api/birds/**").permitAll()
 
-                // AUTH + PUBLIC
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // AUTH / PUBLIC
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/groups/**").permitAll()
+                .requestMatchers("/sightings/**").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
-                .requestMatchers("/sightings/**").permitAll()
 
                 // ROLE-BASED
                 .requestMatchers("/posts/**")
-                    .hasAnyRole("ADMIN_USER", "SUPER_USER")
+                .hasAnyRole("ADMIN_USER", "SUPER_USER")
 
-                // EVERYTHING ELSE
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -64,22 +65,20 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config
+    ) throws Exception {
+        return config.getAuthenticationManager();
     }
 
-    // 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration
-    ) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
@@ -90,12 +89,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
 
         return source;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
     }
 
     @Bean
@@ -111,6 +104,4 @@ public class SecurityConfig {
                         new UsernameNotFoundException("User not found: " + username)
                 );
     }
-
-
 }

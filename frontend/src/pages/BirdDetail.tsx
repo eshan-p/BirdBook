@@ -48,9 +48,11 @@ export default function BirdDetail() {
         {bird.commonName}
       </h1>
 
-      <p className="text-gray-500 italic">
-        {bird.scientificName}
-      </p>
+      {bird.scientificName && (
+        <p className="text-gray-500 italic">
+          {bird.scientificName}
+        </p>
+      )}
 
       {bird.location && (
         <p className="mt-4 text-sm text-gray-600">
