@@ -12,7 +12,7 @@ export interface Post {
   header:string;
   
   tags?: {
-    location?: [number, number];
+    location?: Coordinates;
     bird?: string;
   };
 

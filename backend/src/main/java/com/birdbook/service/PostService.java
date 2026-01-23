@@ -89,7 +89,7 @@ public class PostService {
 
         Post savedPost = sDAO.save(newPost);
 
-        ObjectId userId = savedPost.getUserId();
+        ObjectId userId = savedPost.getUser().getUserId();
 
         User user = userDAO.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
 

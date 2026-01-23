@@ -20,7 +20,7 @@ function Sighting() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user,setUser] = useState<User | null>(null);
+  //const [user,setUser] = useState<User | null>(null);
   const [locationLabel, setLocationLabel] = useState<string | null>(null);
 
   //first fetch post
@@ -115,7 +115,7 @@ useEffect(() => {
         <img src={post.imageUrl} alt={post.header} />
       )}
 
-      <p>Posted by: {user? user.username:"Unknown user"}</p>
+      <p>Posted by: {post.user? post.user.username:"Unknown user"}</p>
       {locationLabel && <p>Location: {locationLabel}</p>}
       {post.bird && (<p>Bird: {post.bird}</p>)}
       {post && <CommentsList comments={post.comments} />}
@@ -148,7 +148,7 @@ function CommentsList({comments}: {comments:Comment[]}){
 //comment item
 //new src/pages/commentItem
 function CommentItem({ comment }: { comment: Comment }) {
-  const [user, setUser] = useState<User | null>(null);
+  //const [user, setUser] = useState<User | null>(null);
 
   /*
   useEffect(() => {

@@ -13,9 +13,11 @@ import { parseDate } from '../utils/dateTime';
 import { Bird } from '../types/Bird';
 import BirdCard from '../components/features/BirdCard';
 import SearchBar from '../components/common/SearchBar';
+import { useNavigate } from "react-router-dom";
 
 //page logic
 const PAGE_SIZE = 5; // easy to tweak later
+
 
 // TODO: Delete when have real data
 const mockPost = {
@@ -129,6 +131,8 @@ function Feed() {
   const [error, setError] = useState<string | null>(null);
 
   const [page, setPage] = useState(0); // zero-based index
+
+  const navigate = useNavigate();
   
   // Reset page if posts change
   useEffect(() => {
@@ -162,6 +166,8 @@ useEffect(() => {
   //console.log("posts:", posts);
   //console.log("pagedPosts:", pagedPosts);
 
+  
+
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
         {/* Left Sidebar */}
@@ -188,8 +194,9 @@ useEffect(() => {
         {/* Main Feed */}
         <div className='basis-1/2 m-6'>
           {pagedPosts.map(post => (
+            <div>
               <PostCard
-                key={post.id}
+                key={`${post.id?.toString() ?? post.timestamp}`}
                 description={post.header}
                 author={post.user.username}
                 dateTime={parseDate(post.timestamp)}
@@ -197,7 +204,16 @@ useEffect(() => {
                 likes={post.likes.length}
                 comments={post.comments.length}
               />
+              
+              <button
+                  onClick={() => navigate(`/sightings/${post.id.toString()}`)}
+                  className="mt-2"
+                >
+                    Click
+              </button>
+        </div>
           ))}
+          
         </div>
 
         {/* Right Sidebar */}
@@ -213,6 +229,26 @@ useEffect(() => {
             <BirdCard key={bird.id} bird={bird}/>
           ))}
         </div>
+            {/* Pagination controls */}
+      <div className="pagination">
+        <button
+          disabled={page === 0}
+          onClick={() => setPage(p => p - 1)}
+        >
+          Previous
+        </button>
+
+        <span>
+          Page {page + 1} of {totalPages}
+        </span>
+
+        <button
+          disabled={page + 1 >= totalPages}
+          onClick={() => setPage(p => p + 1)}
+        >
+          Next
+        </button>
+      </div>
     </div>
   )
 }

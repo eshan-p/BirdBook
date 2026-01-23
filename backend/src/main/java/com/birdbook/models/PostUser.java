@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class PostUser {
 
-    @JsonSerialize(using = ObjectIdSerializer.class)
-    @JsonDeserialize(using = ObjectIdDeserializer.class)
+    //@JsonSerialize(using = ObjectIdSerializer.class)
+    //@JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId userId;
 
     private String username;

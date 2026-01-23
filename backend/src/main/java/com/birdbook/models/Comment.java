@@ -12,8 +12,6 @@ import java.util.Date;
 
 public class Comment {
 
-    @JsonSerialize(using = ObjectIdSerializer.class)
-    @JsonDeserialize(using = ObjectIdDeserializer.class)
     private PostUser user;
     
     @NotBlank(message = "Comment cannot be blank")
@@ -33,7 +31,7 @@ public class Comment {
         return user;
     }
 
-    public void setUser(PostUser userId) {
+    public void setUser(PostUser user) {
         this.user = user;
     }
 
