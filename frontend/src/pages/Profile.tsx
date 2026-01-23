@@ -10,44 +10,6 @@ import { User } from '../types/User';
 import { getUserById } from '../api/Users';
 import { arrayToCoords, reverseCoordsToCityState } from '../utils/geolocation';
 
-const mockBirds: Bird[] = [
-  {
-    id: "1",
-    commonName: "Crested Kingfisher",
-    scientificName: "Megaceryle lugubris",
-    image: "src/assets/crested-kingfisher.jpg",
-    location: [-82.5519, 35.5955]
-  },
-  {
-    id: "2",
-    commonName: "American Bittern",
-    scientificName: "Botaurus lentiginosus",
-    image: "src/assets/american-bittern.jpg",
-    location: [-95.7129, 37.2688]
-  },
-  {
-    id: "3",
-    commonName: "Northern Bobwhite",
-    scientificName: "Colinus virginianus",
-    image: "src/assets/northern-bobwhite.jpg",
-    location: [-78.6382, 35.4676]
-  },
-  {
-    id: "4",
-    commonName: "Stellar's Jay",
-    scientificName: "Cyanocitta stelleri",
-    image: "src/assets/stellars-jay.jpg",
-    location: [-120.5, 45.5]
-  },
-  {
-    id: "5",
-    commonName: "Mourning Dove",
-    scientificName: "Zenaida macroura",
-    image: "src/assets/mourning-dove.jpg",
-    location: [-96.8158, 33.2148]
-  }
-];
-
 function Profile() {
   const [posts, setPosts] = useState<Post[]>([]);
   const { user, loading } = useAuth();
