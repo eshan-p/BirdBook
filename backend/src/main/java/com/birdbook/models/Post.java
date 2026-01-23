@@ -27,7 +27,7 @@ public class Post {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @JsonSerialize(using = ObjectIdSerializer.class)
     @JsonDeserialize(using = ObjectIdDeserializer.class)
-    private ObjectId userId;
+    private PostUser user;
 
     @NotBlank(message = "Header cannot be blank")
     @Size(max = 100, message = "Header cannot exceed 280 characters.")
@@ -81,12 +81,16 @@ public class Post {
         this.id = id;
     }
 
-    public ObjectId getUserId() {
-        return userId;
+    public PostUser getUser() {
+        return user;
+    }
+
+    public ObjectId getUserId(){
+        return user.getUserId();
     }
     
-    public void setUserId(ObjectId userId) {
-        this.userId = userId;
+    public void setUser(PostUser user) {
+        this.user = user;
     }
 
     public String getHeader() {

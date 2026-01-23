@@ -37,6 +37,7 @@ function Sighting() {
 
   }, [postId]);
 
+  /*
   //then fetch user
 useEffect(() => {
   if (!post?.userId) return;
@@ -60,7 +61,7 @@ useEffect(() => {
       setUser(null);
     });
 }, [post?.userId]);
-
+*/
 
 //finally fetch location
 useEffect(() => {
@@ -136,7 +137,7 @@ function CommentsList({comments}: {comments:Comment[]}){
     <ul>
       {comments.map((comment) => (
         <CommentItem
-          key={`${comment.userId}-${comment.timestamp}`}
+          key={`${comment.user.id}-${comment.timestamp}`}
           comment={comment}
         />
       ))}
@@ -149,19 +150,20 @@ function CommentsList({comments}: {comments:Comment[]}){
 function CommentItem({ comment }: { comment: Comment }) {
   const [user, setUser] = useState<User | null>(null);
 
+  /*
   useEffect(() => {
-    if (!comment.userId) return;
+    if (!comment.user) return;
 
     getUserById(comment.userId)
       .then(setUser)
       .catch(() => setUser(null));
-  }, [comment.userId]);
+  }, [comment.userId]); */
 
   //console.log(comment.timestamp);
   return (
     <li>
       <small>
-        {user ? user.username : "Unknown user"}  ·{"  "}
+        {comment.user ? comment.user.username : "Unknown user"}  ·{"  "}
         
         {parseDate(comment.timestamp).toDateString()}
       </small>

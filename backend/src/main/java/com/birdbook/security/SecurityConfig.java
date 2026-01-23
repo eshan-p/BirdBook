@@ -1,5 +1,7 @@
 package com.birdbook.security;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,8 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -37,10 +37,10 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
-            .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth
 
-                // Preflight
-                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        // Preflight
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
                 //  PUBLIC
                 .requestMatchers("/auth/**").permitAll()
@@ -50,16 +50,16 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/users/**").permitAll()
                 .requestMatchers("/sightings/**").permitAll()
 
-                //  ROLE BASED
-                .requestMatchers("/posts/**")
-                    .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                        // ROLE BASED
+                        .requestMatchers("/posts/**")
+                        .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
 
-                .requestMatchers("/admin/**")
-                    .hasAnyRole("ADMIN_USER", "SUPER_USER")
+                        .requestMatchers("/admin/**")
+                        .hasAnyRole("ADMIN_USER", "SUPER_USER")
 
-                //  EVERYTHING ELSE
-                .anyRequest().authenticated()
-            )
+                        // EVERYTHING ELSE
+                        .anyRequest().authenticated()
+                )
 
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

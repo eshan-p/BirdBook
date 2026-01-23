@@ -3,6 +3,7 @@ package com.birdbook.controller;
 import com.birdbook.models.Comment;
 import com.birdbook.models.Post;
 import com.birdbook.service.PostService;
+import com.birdbook.service.PostUserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.ConstraintViolation;
@@ -25,16 +26,19 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/sightings")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PostController {
 
     private final PostService sService;
     private final ObjectMapper objectMapper;
     private final Validator validator;
+    private final PostUserService puService;
 
-    public PostController(PostService sightService, ObjectMapper objectMapper, Validator validator) {
+    public PostController(PostService sightService, ObjectMapper objectMapper, Validator validator, PostUserService puService) {
         this.sService = sightService;
         this.objectMapper = objectMapper;
         this.validator = validator;
+        this.puService = puService;
     }
 
     @GetMapping
@@ -60,22 +64,16 @@ public class PostController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createPostMultipart(
+    public ResponseEntity<?> createPost(
             @RequestPart("post") String postJson,
             @RequestPart(value = "image", required = false) MultipartFile image,
-            Authentication authentication
+            @RequestParam String userId
     ) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication required");
-        }
-
         try {
-            ObjectId userId = new ObjectId(authentication.getName());
+            Post post = objectMapper.readValue(postJson, Post.class);
+            post.setUser(puService.buildPostUser(new ObjectId(userId)));
 
-            Post newPost = objectMapper.readValue(postJson, Post.class);
-            newPost.setUserId(userId);
-
-            Set<ConstraintViolation<Post>> violations = validator.validate(newPost);
+            Set<ConstraintViolation<Post>> violations = validator.validate(post);
             if (!violations.isEmpty()) {
                 Map<String, String> errors = new HashMap<>();
                 for (ConstraintViolation<Post> v : violations) {
@@ -84,9 +82,9 @@ public class PostController {
                 return ResponseEntity.badRequest().body(errors);
             }
 
-            return ResponseEntity.ok(sService.createPost(newPost, image));
+            return ResponseEntity.ok(sService.createPost(post, image));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Invalid post data: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -112,21 +110,14 @@ public class PostController {
     }
 
     @PostMapping("/{id}/comments")
-    public ResponseEntity<?> addComment(@PathVariable ObjectId id, @RequestBody Comment comment) {
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication required");
-            }
-
-            ObjectId userId = new ObjectId(auth.getName());
-            comment.setUserId(userId);
-            comment.setTimestamp(new Date());
-
-            return ResponseEntity.ok(sService.addComment(id, comment));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<?> addComment(
+            @PathVariable ObjectId id,
+            @RequestBody Comment comment,
+            @RequestParam String userId
+    ) {
+        comment.setUser(puService.buildPostUser(new ObjectId(userId)));
+        comment.setTimestamp(new Date());
+        return ResponseEntity.ok(sService.addComment(id, comment));
     }
 
     @PatchMapping("/{id}/comments")

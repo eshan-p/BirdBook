@@ -21,6 +21,7 @@ import jakarta.validation.Validator;
 
 @RestController
 @RequestMapping("/birds")
+@CrossOrigin(origins = "http://localhost:5173")
 public class BirdController {
     private final BirdService birdService;
     private final ObjectMapper objectMapper;

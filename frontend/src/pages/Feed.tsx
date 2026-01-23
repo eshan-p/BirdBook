@@ -14,6 +14,9 @@ import { Bird } from '../types/Bird';
 import BirdCard from '../components/features/BirdCard';
 import SearchBar from '../components/common/SearchBar';
 
+//page logic
+const PAGE_SIZE = 5; // easy to tweak later
+
 // TODO: Delete when have real data
 const mockPost = {
   description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec hendrerit massa eu orci aliquet, sed tincidunt diam sodales. Etiam lobortis felis eu egestas varius. Nulla eleifend vestibulum lorem vel ultrices. Nunc ut lectus vel massa mollis consectetur non nec magna. Vivamus congue sollicitudin est nec pulvinar...",
@@ -125,16 +128,37 @@ function Feed() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [page, setPage] = useState(0); // zero-based index
+  
+  // Reset page if posts change
   useEffect(() => {
-    getSightings()
-      .then(setPosts)
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
+    setPage(0);
+  }, [posts]);
+
+useEffect(() => {
+  getSightings()
+    .then(setPosts)
+    .catch(err => setError(err.message))
+    .finally(() => setLoading(false));
+}, []);
+
+  useEffect(() => {
     //TODO: Replace with fetch
     setGroups(mockGroups);
-  }, []);
+  }, [])
 
-  // if(loading) return <>todo</>
+  const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+
+  
+  const pagedPosts = posts.slice(
+    page * PAGE_SIZE,
+    (page + 1) * PAGE_SIZE
+  );
+
+  if (loading) return <p>Loading...</p>;
+
+  //console.log("posts:", posts);
+  //console.log("pagedPosts:", pagedPosts);
 
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
@@ -153,19 +177,19 @@ function Feed() {
               <img src="src/assets/person.svg" alt="groups"/>
               <p className='text-lg ml-3'>Friends</p>
             </div>
-            {mockFriends.map((friend) => (
+            {/*mockFriends.map((friend) => (
               <FriendCard key={friend.id} friend={friend}/>
-            ))}
+            ))*/}
           </div>
         </div>
 
         {/* Main Feed */}
         <div className='basis-1/2 m-6'>
-          {posts.map(post => (
+          {pagedPosts.map(post => (
               <PostCard
                 key={post.id}
                 description={post.header}
-                author={post.userId}
+                author={post.user.username}
                 dateTime={parseDate(post.timestamp)}
                 location={post.tags?.location}
                 likes={post.likes.length}
