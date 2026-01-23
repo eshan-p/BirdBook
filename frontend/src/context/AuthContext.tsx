@@ -26,12 +26,15 @@ export const AuthProvider = ({children} : {children: ReactNode}) => {
                 const res = await fetch(BASE_URL + '/auth/me', {
                     credentials: 'include'
                 })
-                if(res.ok){
+                if (res.ok) {
                     const data = await res.json();
                     setUser(data);
+                } else {
+                    setUser(null);
                 }
             } catch(err) {
-                throw new Error("Error checking auth: " + err);
+                console.warn("Not authenticated");
+                setUser(null);
             } finally {
                 setLoading(false);
             }
@@ -45,7 +48,7 @@ export const AuthProvider = ({children} : {children: ReactNode}) => {
 
     return(
         <AuthContext.Provider value={{user, setUser, logout, loading}}>
-            {children}
+            {!loading && children}
         </AuthContext.Provider>
     );
 }

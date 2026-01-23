@@ -66,6 +66,11 @@ public class PostController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/group/{groupId}")
+    public List<Post> getAllPostsByGroup(@PathVariable ObjectId groupId) {
+        return sService.getAllPostsByGroup(groupId);
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPost(
             @RequestPart("post") String postJson,
@@ -155,5 +160,56 @@ public class PostController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PutMapping("/{postId}/like/{userId}")
+    public ResponseEntity<Post> likePost(@PathVariable String postId, @PathVariable String userId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        ObjectId userObjId = new ObjectId(userId);
+        return ResponseEntity.ok(sService.likePost(postObjId, userObjId));
+    }
+
+    @PutMapping("/{postId}/unlike/{userId}")
+    public ResponseEntity<Post> unlikePost(@PathVariable String postId, @PathVariable String userId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        ObjectId userObjId = new ObjectId(userId);
+        return ResponseEntity.ok(sService.unlikePost(postObjId, userObjId));
+    }
+
+    @PutMapping("/{postId}/flag")
+    public ResponseEntity<Post> flagPost(@PathVariable String postId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        return ResponseEntity.ok(sService.flagPost(postObjId));
+    }
+
+    @PutMapping("/{postId}/unflag")
+    public ResponseEntity<Post> unflagPost(@PathVariable String postId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        return ResponseEntity.ok(sService.unflagPost(postObjId));
+    }
+
+    @PutMapping("/{postId}/help")
+    public ResponseEntity<Post> markNeedsHelp(@PathVariable String postId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        return ResponseEntity.ok(sService.markNeedsHelp(postObjId));
+    }
+
+    @PutMapping("/{postId}/help/remove")
+    public ResponseEntity<Post> removeHelpFlag(@PathVariable String postId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        return ResponseEntity.ok(sService.removeHelpFlag(postObjId));
+    }
+
+    @GetMapping("/{postId}/likes")
+    public ResponseEntity<List<Map<String, String>>> getUsersWhoLiked(@PathVariable String postId) {
+        
+        ObjectId postObjId = new ObjectId(postId);
+        return ResponseEntity.ok(sService.getUsersWhoLiked(postObjId));
     }
 }

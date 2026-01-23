@@ -107,4 +107,16 @@ public class GroupService {
         group.getRequests().removeIf(u -> u.getUserId().equals(user.getUserId()));
         groupDAO.save(group);
     }
+
+    public void removeGroupMember(ObjectId userId, ObjectId groupId) {
+        Group group = getGroupById(groupId);
+        
+        boolean removed = group.getMembers().removeIf(u -> u.getUserId().equals(userId));
+        
+        if (!removed) {
+            throw new IllegalArgumentException("User is not a member of this group");
+        }
+        
+        groupDAO.save(group);
+    }
 }

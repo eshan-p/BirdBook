@@ -12,8 +12,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.authentication.AuthenticationManager;
 
 import java.util.Map;
 
@@ -28,19 +32,22 @@ public class AuthController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
 
     public AuthController(
             UserService userService,
             PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil
+            JwtUtil jwtUtil,
+            AuthenticationManager authenticationManager
     ) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> body, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> body, HttpServletResponse response)  {
 
         String username = body.get("username");
         String password = body.get("password");
@@ -51,43 +58,60 @@ public class AuthController {
                     .body(Map.of("error", "Username and password are required"));
         }
 
-        User user = userService.getByUsername(username)
-                .orElse(null);
-
-        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
+        } catch (AuthenticationException e) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid credentials"));
         }
 
-        String token = jwtUtil.generateToken(
-            user.getId().toHexString(),
-            user.getUsername(),
-            user.getRole().name()
-        );
+        org.springframework.security.core.userdetails.User springUser =
+                (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
 
+        User user = userService
+                .getByUsername(springUser.getUsername())
+                .orElseThrow();
+
+        String token = jwtUtil.generateToken(
+                user.getId().toHexString(),
+                user.getUsername(),
+                user.getRole().name()
+        );
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false);
+        cookie.setSecure(false); // true ONLY if using HTTPS
         cookie.setPath("/");
-        cookie.setMaxAge(864000);
+        cookie.setMaxAge(60 * 60 * 24 * 7); // 7 days
         cookie.setDomain("localhost");
+
+        // Required so browser sends cookie on refresh
+        cookie.setAttribute("SameSite", "Lax");
+
         response.addCookie(cookie);
+
+
         return ResponseEntity.ok(
                 Map.of(
                         "token", token,
-                        "role", user.getRole().name(),
-                        "username", user.getUsername()
+                        "username", user.getUsername(),
+                        "role", user.getRole().name()
                 )
         );
     }
 
+
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> signup(
+            @RequestBody Map<String, String> body,
+            HttpServletResponse response
+    ) {
 
         String username = body.get("username");
         String password = body.get("password");
-        String role = body.get("role");
 
         if (username == null || password == null) {
             return ResponseEntity
@@ -98,18 +122,39 @@ public class AuthController {
         if (userService.getByUsername(username).isPresent()) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", "username already exists"));
+                    .body(Map.of("error", "Username already exists"));
         }
 
-        User savedUser = userService.registerUser(username, password);
+        //Create user
+        User user = userService.registerUser(username, password);
 
+        //Generate JWT (same as login)
+        String token = jwtUtil.generateToken(
+                user.getId().toHexString(),
+                user.getUsername(),
+                user.getRole().name()
+        );
+
+        //Store JWT in cookie
+        Cookie cookie = new Cookie("jwt", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false); // true in prod (https)
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 24 * 7); // 7 days
+        cookie.setDomain("localhost");
+
+        response.addCookie(cookie);
+
+        // Return logged-in user
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 Map.of(
-                    "role", savedUser.getRole().name(),
-                    "username", savedUser.getUsername()
+                        "id", user.getId().toHexString(),
+                        "username", user.getUsername(),
+                        "role", user.getRole().name()
                 )
         );
     }
+
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {

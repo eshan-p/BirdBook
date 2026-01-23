@@ -6,12 +6,19 @@ import com.birdbook.models.Role;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.mongodb.client.MongoCollection;
 
 @Component
 public class MongoDataInitializer implements CommandLineRunner {
+
+    private final PasswordEncoder passwordEncoder;
+
+    public MongoDataInitializer(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     // ===== USERS =====
     private final ObjectId adminUser = new ObjectId();
@@ -30,31 +37,31 @@ public class MongoDataInitializer implements CommandLineRunner {
     private final List<ObjectId> posts = new ArrayList<>();
 
     @Override
-    public void run(String... args) throws Exception {
-        MongoCollection<Document> birdsCollection = 
-            ConnectionHandler.getDatabase().getCollection("birds");
-        if(birdsCollection.countDocuments() == 0) {
+    public void run(String... args) {
+        MongoCollection<Document> birdsCollection =
+                ConnectionHandler.getDatabase().getCollection("birds");
+        if (birdsCollection.countDocuments() == 0) {
             populateBirds(birdsCollection);
             System.out.println("Bird data initialized successfully!");
         }
 
-        MongoCollection<Document> usersCollection = 
-            ConnectionHandler.getDatabase().getCollection("users");
-        if(usersCollection.countDocuments() == 0) {
+        MongoCollection<Document> usersCollection =
+                ConnectionHandler.getDatabase().getCollection("users");
+        if (usersCollection.countDocuments() == 0) {
             populateUsers(usersCollection);
             System.out.println("User data initialized successfully!");
         }
 
-        MongoCollection<Document> groupsCollection = 
-            ConnectionHandler.getDatabase().getCollection("groups");
-        if(groupsCollection.countDocuments() == 0) {
+        MongoCollection<Document> groupsCollection =
+                ConnectionHandler.getDatabase().getCollection("groups");
+        if (groupsCollection.countDocuments() == 0) {
             populateGroups(groupsCollection);
             System.out.println("Group data initialized successfully!");
         }
 
-        MongoCollection<Document> postsCollection = 
-            ConnectionHandler.getDatabase().getCollection("posts");
-        if(postsCollection.countDocuments() == 0) {
+        MongoCollection<Document> postsCollection =
+                ConnectionHandler.getDatabase().getCollection("posts");
+        if (postsCollection.countDocuments() == 0) {
             populatePosts(postsCollection);
             System.out.println("Post data initialized successfully!");
         }
@@ -86,10 +93,10 @@ public class MongoDataInitializer implements CommandLineRunner {
         collection.insertMany(docs);
     }
 
-    private Document userDoc(ObjectId id, String username, String password, Role role) {
+    private Document userDoc(ObjectId id, String username, String rawPassword, Role role) {
         return new Document("_id", id)
                 .append("username", username)
-                .append("password", password)
+                .append("password", passwordEncoder.encode(rawPassword)) // ✅ FIX
                 .append("role", role.name())
                 .append("profilePic", "backend_profile_pictures/default_pfp.jpg")
                 .append("friends", List.of())
@@ -406,12 +413,23 @@ public class MongoDataInitializer implements CommandLineRunner {
 
         long baseTime = System.currentTimeMillis() - 2_000_000_000L;
 
+        double[][] locations = {
+                {32.7767, -96.7970},   // Dallas, TX
+                {29.3013, -94.7977},   // Galveston, TX
+                {26.1118, -97.1681},   // South Padre Island, TX
+                {30.2672, -97.7431},   // Austin, TX
+                {27.8006, -97.3964}    // Corpus Christi, TX
+        };
+
+
         for (int i = 0; i < 100; i++) {
             ObjectId postId = new ObjectId();
             posts.add(postId);
 
             ObjectId authorId = basicUsers.get(rand.nextInt(basicUsers.size()));
             ObjectId bird = birds.get(rand.nextInt(birds.size()));
+
+            double[] loc = locations[rand.nextInt(locations.length)];
 
             docs.add(new Document("_id", postId)
                     .append("user", postUser(authorId))
@@ -424,6 +442,10 @@ public class MongoDataInitializer implements CommandLineRunner {
                     .append("image", "TODO")
                     .append("textBody", "Automated test post content " + i)
                     .append("timestamp", new Date(baseTime + (i * 10_000)))
+                    .append("tags", new Document("location",
+                            new Document("latitude", loc[0])
+                                    .append("longitude", loc[1])
+                    ))
                     .append("comments", generateComments(rand))
             );
         }
@@ -454,7 +476,7 @@ public class MongoDataInitializer implements CommandLineRunner {
     // =====================================================
 
     private Document postUser(ObjectId id) {
-        return new Document("id", id)
+        return new Document("userId", id)
                 .append("username", userNames.get(id));
     }
 }
