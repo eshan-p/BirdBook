@@ -41,7 +41,7 @@ export const reverseCoordsToCityState = async (coords: Coordinates): Promise<str
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
         const data = await response.json();
         console.log(data)
-        const city = data.address.city || data.address.town || data.address.village;
+        const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || data.address.county;;
         const state = data.address.state;
         if(city && state){
             return `${city}, ${state}`;

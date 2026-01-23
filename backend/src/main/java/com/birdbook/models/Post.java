@@ -22,11 +22,10 @@ import java.util.Map;
 public class Post {
 
     @Id
-    private ObjectId id;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @JsonSerialize(using = ObjectIdSerializer.class)
     @JsonDeserialize(using = ObjectIdDeserializer.class)
+    private ObjectId id;
+
     private PostUser user;
 
     @NotBlank(message = "Header cannot be blank")
@@ -85,9 +84,10 @@ public class Post {
         return user;
     }
 
+    /*
     public ObjectId getUserId(){
         return user.getUserId();
-    }
+    }*/
     
     public void setUser(PostUser user) {
         this.user = user;

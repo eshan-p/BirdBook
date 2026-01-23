@@ -4,7 +4,7 @@ import {Post} from "../types/Post";
 const BASE_URL = "http://localhost:8080";
 
 export async function getSightingById(postId:string): Promise<Post>{
-  const response = await fetch(`${BASE_URL}/sightings/${postId}`);
+  const response = await fetch(`${BASE_URL}/sightings/${postId}`,{credentials: 'include'});
 
   if (!response.ok){
     if (response.status == 404){
@@ -17,7 +17,7 @@ export async function getSightingById(postId:string): Promise<Post>{
 }//get sighting by Id
 
 export async function getSightings(): Promise<Post[]>{
-  const response = await fetch(`${BASE_URL}/sightings`);
+  const response = await fetch(`${BASE_URL}/sightings`,{credentials: 'include'});
 
     if (!response.ok){
     if (response.status == 404){
