@@ -9,6 +9,9 @@ import java.util.UUID;
 
 import com.birdbook.models.Bird;
 import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,9 +20,22 @@ import com.birdbook.repository.BirdDAO;
 @Service
 public class BirdService {
     private final BirdDAO birdDAO;
+    private final MongoTemplate mongoTemplate;
 
-    public BirdService(BirdDAO birdDAO) {
+    public BirdService(BirdDAO birdDAO, MongoTemplate mongoTemplate) {
         this.birdDAO = birdDAO;
+        this.mongoTemplate = mongoTemplate;
+    }
+
+    public List<Bird> searchBirds(String query) {
+        Query mongoQuery = new Query();
+        Criteria criteria = new Criteria().orOperator(
+            Criteria.where("commonName").regex(query, "i"),
+            Criteria.where("scientificName").regex(query, "i")
+        );
+        mongoQuery.addCriteria(criteria);
+        mongoQuery.limit(20);
+        return mongoTemplate.find(mongoQuery, Bird.class);
     }
 
     // Just for testing Spring Boot, can be removed later

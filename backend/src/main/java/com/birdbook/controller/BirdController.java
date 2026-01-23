@@ -21,7 +21,6 @@ import jakarta.validation.Validator;
 
 @RestController
 @RequestMapping("/birds")
-@CrossOrigin(origins = "http://localhost:5173")
 public class BirdController {
     private final BirdService birdService;
     private final ObjectMapper objectMapper;
@@ -31,6 +30,16 @@ public class BirdController {
         this.birdService = birdService;
         this.objectMapper = objectMapper;
         this.validator = validator;
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Bird>> searchBirds(@RequestParam String query) {
+        System.out.println("!=========HIT!=========");
+        if(query == null || query.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<Bird> results = birdService.searchBirds(query.trim());
+        return ResponseEntity.ok(results);
     }
 
     @GetMapping

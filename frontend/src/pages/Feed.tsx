@@ -16,77 +16,10 @@ import SearchBar from '../components/common/SearchBar';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { getUserById } from '../api/Users';
+import CreatePost from '../components/features/CreatePost';
 
 //page logic
 const PAGE_SIZE = 5; // easy to tweak later
-
-
-// TODO: Delete when have real data
-const mockPost = {
-  description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec hendrerit massa eu orci aliquet, sed tincidunt diam sodales. Etiam lobortis felis eu egestas varius. Nulla eleifend vestibulum lorem vel ultrices. Nunc ut lectus vel massa mollis consectetur non nec magna. Vivamus congue sollicitudin est nec pulvinar...",
-  author: "Sarah Mitchell",
-  dateTime: new Date('2024-01-18'),
-  location: {
-    type: 'Point' as const,
-    coordinates: [-96.8158, 33.2148] // Plano, TX
-  },
-  likes: 24,
-  comments: 5
-};
-
-const mockGroups: Group[] = [
-  {
-    id: "1",
-    name: "Carolina Warblers United",
-    ownerId: "1",
-    members: [],
-    requests: [],
-    groupPhoto: "src/assets/profilephoto.jpg",
-    location: [35.5955, -82.5519],
-    followers: 814
-  },
-  {
-    id: "2",
-    name: "Coastal California Seabirds",
-    ownerId: "1",
-    members: [],
-    requests: [],
-    groupPhoto: "src/assets/profilephoto.jpg",
-    location: [32.7153, -117.1573],
-    followers: 3195
-  },
-  {
-    id: "3",
-    name: "Texas Hill Country Birding",
-    ownerId: "1",
-    members: [],
-    requests: [],
-    groupPhoto: "src/assets/profilephoto.jpg",
-    location: [30.2672, -97.7431],
-    followers: 720
-  }
-]
-
-const mockFriends: Friend[] = [
-  {
-    id: "1",
-    name: "Marcus Thompson",
-    profilePhoto: "src/assets/profilephoto.jpg",
-    location: [35.5955, -82.5519],
-  },
-  {
-    id: "2",
-    name: "Elena Rodriguez",
-    profilePhoto: "src/assets/profilephoto.jpg",
-    location: [32.7153, -117.1573],
-  },
-  {
-    id: "3",
-    name: "James Mitchell",
-    profilePhoto: "src/assets/profilephoto.jpg",
-    location: [30.2672, -97.7431],
-  }
-]
 
 const mockBirds: Bird[] = [
   {
@@ -209,27 +142,28 @@ useEffect(() => {
 
         {/* Main Feed */}
         <div className='basis-1/2 m-6'>
-          {pagedPosts.map(post => (
-            <div>
-              <PostCard
-                key={post.id?.toString()}
-                description={post.header}
-                author={post.user.username}
-                dateTime={parseDate(post.timestamp)}
-                location={post.tags?.location}
-                likes={post.likes.length}
-                comments={post.comments.length}
-              />
-              
-              <button
-                  onClick={() => navigate(`/sightings/${post.id.toString()}`)}
-                  className="mt-2"
-                >
-                    Click
-              </button>
-        </div>
-          ))}
-          
+          <div className='flex flex-col'>
+            <CreatePost/>
+            {pagedPosts.map(post => (
+              <div>
+                <PostCard
+                  key={post.id?.toString()}
+                  description={post.header}
+                  author={post.user.username}
+                  dateTime={parseDate(post.timestamp)}
+                  location={post.tags?.location}
+                  likes={post.likes.length}
+                  comments={post.comments.length}
+                />
+                <button
+                    onClick={() => navigate(`/sightings/${post.id.toString()}`)}
+                    className="mt-2"
+                  >
+                      Click
+                </button>
+              </div>
+            ))}
+          </div> 
         </div>
 
         {/* Right Sidebar */}
