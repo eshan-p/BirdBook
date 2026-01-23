@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import java.time.*;
 
 import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,6 +62,24 @@ public class UserService {
         return groupDAO.findAllById(List.of(groupIds));
     } 
     
+    public List<Post> getPostsList(ObjectId userId) {
+        User user = userDAO.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        ObjectId[] postIds = user.getPosts();
+        return postDAO.findAllById(List.of(postIds));
+    }
+
+    public List<Map<String, ? extends Object>> getTopBirdsThisMonth(ObjectId userId) {
+        List<Post> userPosts = postDAO.findByUserId(userId);
+        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        return userPosts.stream()
+            .filter(post -> post.getTimestamp() != null && post.getTimestamp().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime().isAfter(startOfMonth))
+            .collect(Collectors.groupingBy(Post::getBird, Collectors.counting()))
+            .entrySet().stream()
+            .sorted((a,b) -> b.getValue().compareTo(a.getValue()))
+            .limit(5)
+            .map(entry -> Map.of("bird", entry.getKey(), "count", entry.getValue()))
+            .collect(Collectors.toList());
+    }
 
     public User registerUser(String username, String password){
 

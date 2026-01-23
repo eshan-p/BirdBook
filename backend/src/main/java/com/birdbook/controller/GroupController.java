@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 )
 @RestController
 @RequestMapping("/groups")
-@CrossOrigin(origins = "http://localhost:5173")
 public class GroupController {
     private final GroupService groupService;
     private final PostUserService puService;

@@ -14,5 +14,6 @@ public interface PostDAO extends MongoRepository<Post, ObjectId> {
     @Query("{ 'tags.?0': { $exists: true } }")
     List<Post> findByTagKey(List<String> tags);
 
+    @Query("{ 'user.id': ?0 }")
     List<Post> findByUserId(ObjectId userId);
 }

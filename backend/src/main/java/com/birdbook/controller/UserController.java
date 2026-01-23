@@ -10,17 +10,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.birdbook.models.Bird;
 import com.birdbook.models.Group;
+import com.birdbook.models.Post;
 import com.birdbook.models.User;
 import com.birdbook.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.Valid;
 
-
+@CrossOrigin(
+    origins = "http://localhost:5173",
+    allowCredentials = "true"
+)
 @RestController
 @RequestMapping("/users")
-@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
     private final UserService userService;
     private final ObjectMapper objectMapper;
@@ -54,6 +58,18 @@ public class UserController {
 
         ObjectId userId = new ObjectId(id);
         return userService.getGroupsList(userId);
+    }
+
+    @GetMapping("/{id}/posts")
+    public List<Post> getPosts(@PathVariable String id) {
+        ObjectId userId = new ObjectId(id);
+        return userService.getPostsList(userId);
+    }
+
+    @GetMapping("/{id}/top-birds")
+    public List<Map<String, ? extends Object>> getTopBirdsSighted(@PathVariable String id) {
+        ObjectId userId = new ObjectId(id);
+        return userService.getTopBirdsThisMonth(userId);
     }
 
     @GetMapping("/{id}/stats")

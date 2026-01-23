@@ -45,8 +45,6 @@ public class AuthController {
         String username = body.get("username");
         String password = body.get("password");
 
-        System.out.println("Login attempt - username: " + username + ", password: " + password);
-
         if (username == null || password == null) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -75,7 +73,6 @@ public class AuthController {
         cookie.setMaxAge(864000);
         cookie.setDomain("localhost");
         response.addCookie(cookie);
-        System.out.println("Cookies set: " + response.toString());
         return ResponseEntity.ok(
                 Map.of(
                         "token", token,
