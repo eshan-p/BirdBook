@@ -56,3 +56,93 @@ export async function getSightingsByGroup(groupId: string): Promise<Post[]> {
 
   return response.json();
 }
+
+// Like a post
+export async function likePost(postId: string, userId: string): Promise<Post> {
+  const response = await fetch(`${BASE_URL}/sightings/${postId}/like/${userId}`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to like post");
+  }
+
+  return response.json();
+}
+
+// Unlike a post
+export async function unlikePost(postId: string, userId: string): Promise<Post> {
+  const response = await fetch(`${BASE_URL}/sightings/${postId}/unlike/${userId}`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to unlike post");
+  }
+
+  return response.json();
+}
+
+// Add a comment
+export async function addComment(postId: string, userId: string, commentText: string): Promise<Post> {
+  const response = await fetch(`${BASE_URL}/sightings/${postId}/comments?userId=${userId}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      textBody: commentText
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to add comment");
+  }
+
+  return response.json();
+}
+
+// Update a comment
+export async function updateComment(postId: string, updatedComment: Comment): Promise<Post> {
+  const response = await fetch(`${BASE_URL}/sightings/${postId}/comments`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updatedComment)
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update comment");
+  }
+
+  return response.json();
+}
+
+// Delete a comment
+export async function deleteComment(postId: string, comment: Comment): Promise<Post> {
+  const response = await fetch(`${BASE_URL}/sightings/${postId}/comments`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(comment)
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete comment");
+  }
+
+  return response.json();
+}

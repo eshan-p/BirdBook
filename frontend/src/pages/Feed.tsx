@@ -38,7 +38,7 @@ const mockGroups: Group[] = [
   {
     id: "1",
     name: "Carolina Warblers United",
-    ownerId: "1",
+    owner: { userId: "1", username: "Owner Name" },
     members: [],
     requests: [],
     groupPhoto: "src/assets/profilephoto.jpg",
@@ -48,7 +48,7 @@ const mockGroups: Group[] = [
   {
     id: "2",
     name: "Coastal California Seabirds",
-    ownerId: "1",
+    owner: { userId: "1", username: "Owner Name" },
     members: [],
     requests: [],
     groupPhoto: "src/assets/profilephoto.jpg",
@@ -58,7 +58,7 @@ const mockGroups: Group[] = [
   {
     id: "3",
     name: "Texas Hill Country Birding",
-    ownerId: "1",
+    owner: { userId: "1", username: "Owner Name" },
     members: [],
     requests: [],
     groupPhoto: "src/assets/profilephoto.jpg",
@@ -192,14 +192,14 @@ useEffect(() => {
           <div className='h-fit w-full mt-6 bg-white p-4 drop-shadow'>
             <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
               <img src="src/assets/groups.svg" alt="groups"/>
-              <p className='text-lg ml-3'>Groups</p>
+              <p className='text-lg ml-3 font-bold'>Groups</p>
             </div>
             {groups.map((group) => (
               <GroupCard key={group.id.toString()} group={group}/>
             ))}
             <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
-              <img src="src/assets/person.svg" alt="groups"/>
-              <p className='text-lg ml-3'>Friends</p>
+              <img src="src/assets/person.svg" alt="friends"/>
+              <p className='text-lg ml-3 font-bold'>Friends</p>
             </div>
             {friends.map((friend) => (
               <FriendCard key={friend.id} friend={friend}/>
@@ -209,33 +209,68 @@ useEffect(() => {
 
         {/* Main Feed */}
         <div className='basis-1/2 m-6'>
-          {pagedPosts.map(post => (
-            <div>
-              <PostCard
-                key={post.id?.toString()}
-                description={post.header}
-                author={post.user.username}
-                dateTime={parseDate(post.timestamp)}
-                location={post.tags?.location}
-                likes={post.likes.length}
-                comments={post.comments.length}
-              />
-              
-              <button
-                  onClick={() => navigate(`/sightings/${post.id.toString()}`)}
-                  className="mt-2"
-                >
-                    Click
-              </button>
-        </div>
-          ))}
+          {error && (
+            <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+              Error: {error}
+            </div>
+          )}
           
+          {posts.length === 0 ? (
+            <div className='bg-white p-6 text-center text-gray-500'>
+              No posts yet
+            </div>
+          ) : (
+            <>
+              {pagedPosts.map(post => (
+                <div key={post.id?.toString()}>
+                  <PostCard
+                    description={post.header}
+                    author={post.user.username}
+                    dateTime={parseDate(post.timestamp)}
+                    location={post.tags?.location}
+                    likes={post.likes.length}
+                    comments={post.comments.length}
+                  />
+                  
+                  <button
+                    onClick={() => navigate(`/sightings/${post.id.toString()}`)}
+                    className="mt-2 mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    View Details
+                  </button>
+                </div>
+              ))}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4 mt-6">
+                  <button
+                    disabled={page === 0}
+                    onClick={() => setPage(p => p - 1)}
+                    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-gray-700">
+                    Page {page + 1} of {totalPages}
+                  </span>
+                  <button
+                    disabled={page + 1 >= totalPages}
+                    onClick={() => setPage(p => p + 1)}
+                    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Right Sidebar */}
         <div className='basis-1/4 m-6 ml-0 h-fit w-full bg-white p-4 drop-shadow'>
           <div className='flex flex-row w-full border-b border-gray-300 mb-3 items-center'>
-            <img src="src/assets/bird.svg" alt="groups"className='w-5 h-5'/>
+            <img src="src/assets/bird.svg" alt="birds" className='w-5 h-5'/>
             <div className='text-lg ml-3'>Birds</div>
           </div>
           <div className='mb-3'>
@@ -245,26 +280,6 @@ useEffect(() => {
             <BirdCard key={bird.id} bird={bird}/>
           ))}
         </div>
-            {/* Pagination controls */}
-      <div className="pagination">
-        <button
-          disabled={page === 0}
-          onClick={() => setPage(p => p - 1)}
-        >
-          Previous
-        </button>
-
-        <span>
-          Page {page + 1} of {totalPages}
-        </span>
-
-        <button
-          disabled={page + 1 >= totalPages}
-          onClick={() => setPage(p => p + 1)}
-        >
-          Next
-        </button>
-      </div>
     </div>
   )
 }
