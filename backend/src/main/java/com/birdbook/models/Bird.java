@@ -6,6 +6,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.List;
+
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Document(collection = "birds")
 public class Bird {
@@ -17,10 +21,13 @@ public class Bird {
     @Size(min = 2, max = 100, message = "Bird name must be between 2 and 100 characters")
     private String commonName;
 
+    private String scientificName;
+
     private String imageURL;
 
-    public Bird() {
-    }
+    private List<Double> location;
+
+    public Bird() {}
 
     public Bird(ObjectId id, String commonName, String imageURL) {
         this.id = id;
@@ -28,46 +35,65 @@ public class Bird {
         this.imageURL = imageURL;
     }
 
-    /**
-     * @return ObjectId return the id
-     */
+    public Bird(
+            ObjectId id,
+            String commonName,
+            String scientificName,
+            String imageURL,
+            List<Double> location
+    ) {
+        this.id = id;
+        this.commonName = commonName;
+        this.scientificName = scientificName;
+        this.imageURL = imageURL;
+        this.location = location;
+    }
+
+    // GETTERS
     public ObjectId getId() {
         return id;
     }
 
-    /**
-     * @param id the id to set
-     */
-    public void setId(ObjectId id) {
-        this.id = id;
-    }
-
-    /**
-     * @return String return the commonName
-     */
     public String getCommonName() {
         return commonName;
     }
 
-    /**
-     * @param commonName the commonName to set
-     */
-    public void setCommonName(String commonName) {
-        this.commonName = commonName;
+    public String getScientificName() {
+        return scientificName;
     }
 
-    /**
-     * @return String return the imageURL
-     */
     public String getImageURL() {
         return imageURL;
     }
 
-    /**
-     * @param imageURL the imageURL to set
-     */
+    public List<Double> getLocation() {
+        return location;
+    }
+
+    // ADD THIS METHOD (string id for frontend routing)
+    @JsonProperty("id")
+    public String getIdAsString() {
+        return id != null ? id.toHexString() : null;
+    }
+
+    // SETTERS
+    public void setId(ObjectId id) {
+        this.id = id;
+    }
+
+    public void setCommonName(String commonName) {
+        this.commonName = commonName;
+    }
+
+    public void setScientificName(String scientificName) {
+        this.scientificName = scientificName;
+    }
+
     public void setImageURL(String imageURL) {
         this.imageURL = imageURL;
     }
 
+    public void setLocation(List<Double> location) {
+        this.location = location;
+    }
 }
