@@ -1,23 +1,27 @@
-import React from 'react'
-import { Bird } from '../../types/Bird'
+import { Bird } from "../../types/Bird";
+import { Link } from "react-router-dom";
 
 function BirdCard({ bird }: { bird: Bird }) {
+  const birdId = bird.id || bird._id;
+
+  if (!birdId) {
+    console.error("Bird missing ID:", bird);
+    return null;
+  }
+
   return (
-    <a
-      onClick={() => {}}
+    <Link
+      to={`/birds/${birdId}`}
       className="flex items-center gap-3 p-2 rounded hover:bg-gray-100 cursor-pointer"
     >
-      {/* Bird Image */}
       <img
-        src={bird.image}
+        src={bird.image || "/placeholder-bird.png"}
         alt={bird.commonName}
         className="w-12 h-12 rounded object-cover"
       />
-
-      {/* Bird Name */}
       <p className="opacity-75 text-base">{bird.commonName}</p>
-    </a>
-  )
+    </Link>
+  );
 }
 
-export default BirdCard
+export default BirdCard;
