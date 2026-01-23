@@ -10,6 +10,8 @@ import Sighting from "./pages/Sighting";
 import Profile from "./pages/Profile";
 import Birds from "./pages/Birds"; 
 import { AuthProvider  } from "./context/AuthContext";
+import Groups from "./pages/Groups";
+import Friends from "./pages/Friends";
 
 export default function App() {
   return (
@@ -24,6 +26,8 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/birds" element={<Birds />} /> 
           <Route path="/sightings/:postId" element={<Sighting />} />
+          <Route path="/groups" element={<Groups />} />
+          <Route path="/friends" element={<Friends />} />
         </Routes>
       </Router>
     </AuthProvider>
