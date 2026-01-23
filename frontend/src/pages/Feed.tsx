@@ -125,14 +125,14 @@ useEffect(() => {
           <div className='h-fit w-full mt-6 bg-white p-4 drop-shadow'>
             <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
               <img src="src/assets/groups.svg" alt="groups"/>
-              <p className='text-lg ml-3'>Groups</p>
+              <p className='text-lg ml-3 font-bold'>Groups</p>
             </div>
             {groups.map((group) => (
               <GroupCard key={group.id.toString()} group={group}/>
             ))}
             <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
-              <img src="src/assets/person.svg" alt="groups"/>
-              <p className='text-lg ml-3'>Friends</p>
+              <img src="src/assets/person.svg" alt="friends"/>
+              <p className='text-lg ml-3 font-bold'>Friends</p>
             </div>
             {friends.map((friend) => (
               <FriendCard key={friend.id} friend={friend}/>
@@ -169,7 +169,7 @@ useEffect(() => {
         {/* Right Sidebar */}
         <div className='basis-1/4 m-6 ml-0 h-fit w-full bg-white p-4 drop-shadow'>
           <div className='flex flex-row w-full border-b border-gray-300 mb-3 items-center'>
-            <img src="src/assets/bird.svg" alt="groups"className='w-5 h-5'/>
+            <img src="src/assets/bird.svg" alt="birds" className='w-5 h-5'/>
             <div className='text-lg ml-3'>Birds</div>
           </div>
           <div className='mb-3'>
@@ -179,26 +179,6 @@ useEffect(() => {
             <BirdCard key={bird.id} bird={bird}/>
           ))}
         </div>
-            {/* Pagination controls */}
-      <div className="pagination">
-        <button
-          disabled={page === 0}
-          onClick={() => setPage(p => p - 1)}
-        >
-          Previous
-        </button>
-
-        <span>
-          Page {page + 1} of {totalPages}
-        </span>
-
-        <button
-          disabled={page + 1 >= totalPages}
-          onClick={() => setPage(p => p + 1)}
-        >
-          Next
-        </button>
-      </div>
     </div>
   )
 }
