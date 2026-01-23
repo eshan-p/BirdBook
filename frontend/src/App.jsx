@@ -13,6 +13,8 @@ import Groups from "./pages/Groups";
 import Friends from "./pages/Friends";
 import GroupFeed from "./pages/GroupFeed";
 import { AuthProvider  } from "./context/AuthContext";
+import Groups from "./pages/Groups";
+import Friends from "./pages/Friends";
 
 export default function App() {
   return (
@@ -30,6 +32,8 @@ export default function App() {
           <Route path="/groups/:groupId/feed" element={<GroupFeed />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/sightings/:postId" element={<Sighting />} />
+          <Route path="/groups" element={<Groups />} />
+          <Route path="/friends" element={<Friends />} />
         </Routes>
       </Router>
     </AuthProvider>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./auth.css";
 import { useAuth } from "../context/AuthContext";
@@ -14,7 +14,7 @@ export default function Login() {
     if(user) navigate("/feed");
   }, [user])
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     try {
@@ -29,7 +29,11 @@ export default function Login() {
       setUser(data);
       navigate("/profile");
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Something went wrong");
+        }
     }
   }
 

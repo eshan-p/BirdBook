@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./auth.css";
 import { useAuth } from "../context/AuthContext";
@@ -10,7 +10,7 @@ export default function Signup() {
   const { setUser } = useAuth();
   const navigate = useNavigate();
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
@@ -18,10 +18,10 @@ export default function Signup() {
       const res = await fetch("http://localhost:8080/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           username,
-          password,
-          role: "BASIC"
+          password
         })
       });
 
@@ -29,9 +29,13 @@ export default function Signup() {
       const data = await res.json();
       setUser(data);
       navigate("/profile");
-    } catch (err) {
-      setError(err.message);
-    }
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Something went wrong");
+        }
+      }
   }
 
   return (
