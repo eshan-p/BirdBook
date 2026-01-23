@@ -14,6 +14,8 @@ import { Bird } from '../types/Bird';
 import BirdCard from '../components/features/BirdCard';
 import SearchBar from '../components/common/SearchBar';
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../context/AuthContext';
+import { getUserById } from '../api/Users';
 
 //page logic
 const PAGE_SIZE = 5; // easy to tweak later
@@ -127,8 +129,11 @@ const mockBirds: Bird[] = [
 function Feed() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingPage, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const BASE_URL = "http://localhost:8080";
+  const { user, loading } = useAuth();
+  const [friends, setFriends] = useState<Friend[]>([]);
 
   const [page, setPage] = useState(0); // zero-based index
 
@@ -147,12 +152,23 @@ useEffect(() => {
       setLoading(false);
       console.log(posts);
     });
-}, []);
+}, []); //get sightings
 
   useEffect(() => {
-    //TODO: Replace with fetch
-    setGroups(mockGroups);
-  }, [])
+        fetch(`${BASE_URL}/groups`, {credentials: 'include'})
+            .then(r => r.json())
+            .then(setGroups)
+            .catch(err => console.error("Failed to fetch posts:", err))
+  },[]); // get groups
+
+  useEffect(() => {
+      if(user?.id) {
+          fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
+            .then(r => r.json())
+            .then(setFriends)
+            .catch(err => console.error("Failed to fetch user: " + err));
+      }
+    }, [user?.id])
 
   const totalPages = Math.ceil(posts.length / PAGE_SIZE);
 
@@ -161,7 +177,7 @@ useEffect(() => {
     (page + 1) * PAGE_SIZE
   );
 
-  if (loading) return <p>Loading...</p>;
+  if (loadingPage) return <p>Loading...</p>;
 
   //console.log("posts:", posts);
   //console.log("pagedPosts:", pagedPosts);
@@ -178,16 +194,16 @@ useEffect(() => {
               <img src="src/assets/groups.svg" alt="groups"/>
               <p className='text-lg ml-3'>Groups</p>
             </div>
-            {mockGroups.map((group) => (
-              <GroupCard key={group.id} group={group}/>
+            {groups.map((group) => (
+              <GroupCard key={group.id.toString()} group={group}/>
             ))}
             <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
               <img src="src/assets/person.svg" alt="groups"/>
               <p className='text-lg ml-3'>Friends</p>
             </div>
-            {/*mockFriends.map((friend) => (
+            {friends.map((friend) => (
               <FriendCard key={friend.id} friend={friend}/>
-            ))*/}
+            ))}
           </div>
         </div>
 
@@ -196,7 +212,7 @@ useEffect(() => {
           {pagedPosts.map(post => (
             <div>
               <PostCard
-                key={`${post.id?.toString() ?? post.timestamp}`}
+                key={post.id?.toString()}
                 description={post.header}
                 author={post.user.username}
                 dateTime={parseDate(post.timestamp)}

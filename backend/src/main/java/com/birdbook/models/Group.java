@@ -1,5 +1,9 @@
 package com.birdbook.models;
 
+import com.birdbook.serializers.ObjectIdDeserializer;
+import com.birdbook.serializers.ObjectIdSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,6 +18,8 @@ import java.util.List;
 public class Group {
 
     @Id
+    @JsonSerialize(using = ObjectIdSerializer.class)
+    @JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId id;
 
     @NotBlank(message = "Group Name cannot be blank")
