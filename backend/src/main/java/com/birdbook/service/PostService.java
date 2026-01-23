@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -38,6 +39,10 @@ public class PostService {
 
     public List<Post> getAllPosts() {
         return sDAO.findAll();
+    }
+
+    public List<Post> getAllPostsByGroup(ObjectId groupId) {
+        return sDAO.findByGroup(groupId);
     }
 
     public void deletePostById(ObjectId id){
@@ -216,37 +221,81 @@ public class PostService {
         return sDAO.save(post);
     }
 
-    /* public Post createPost(Post newPost) {
-        return sDAO.save(newPost);
-    } */
+    public Post likePost(ObjectId postId, ObjectId userId) {
+        Post post = sDAO.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        // Check if user already liked
+        if (!post.getLikes().contains(userId)) {
+            post.getLikes().add(userId);
+        }
+        
+        return sDAO.save(post);
+    }
 
-    /*public Post updatePost(ObjectId id, Post update){
-        Post existingPost = sDAO.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+    public Post unlikePost(ObjectId postId, ObjectId userId) {
 
-        // Update only fields that are not null
-        if (update.getHeader() != null) {
-            existingPost.setHeader(update.getHeader());
-        }
-        if (update.getTextBody() != null) {
-            existingPost.setTextBody(update.getTextBody());
-        }
-        if (update.getComments() != null && !update.getComments().isEmpty()) {
-            existingPost.setComments(update.getComments());
-        }
-        if (update.getLikes() != null) {
-            existingPost.setLikes(update.getLikes());
-        }
-        if (update.getTags() != null) {
-            existingPost.setTags(update.getTags());
-        }
-        if (update.getFlagged() != null) {
-            existingPost.setFlagged(update.getFlagged());
-        }
-        if (update.getHelp() != null) {
-            existingPost.setHelp(update.getHelp());
-        }
+        Post post = sDAO.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        post.getLikes().remove(userId);
+        return sDAO.save(post);
+    }
 
-        return sDAO.save(existingPost);
-    }*/
+    public Post flagPost(ObjectId postId) {
+
+        Post post = sDAO.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        post.setFlagged(true);
+        return sDAO.save(post);
+    }
+
+    public Post unflagPost(ObjectId postId) {
+
+        Post post = sDAO.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        post.setFlagged(false);
+        return sDAO.save(post);
+    }
+
+    public Post markNeedsHelp(ObjectId postId) {
+
+        Post post = sDAO.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        post.setHelp(true);
+        return sDAO.save(post);
+    }
+
+    public Post removeHelpFlag(ObjectId postId) {
+
+        Post post = sDAO.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        post.setHelp(false);
+        return sDAO.save(post);
+    }
+
+    public List<Map<String, String>> getUsersWhoLiked(ObjectId postId) {
+        
+        Post post = sDAO.findById(postId)
+            .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        List<ObjectId> likerIds = post.getLikes();
+        
+        if (likerIds == null || likerIds.isEmpty()) {
+            return List.of();
+        }
+        
+        List<User> likers = userDAO.findAllById(likerIds);
+        
+        return likers.stream()
+            .map(user -> Map.of(
+                "id", user.getId().toString(),
+                "username", user.getUsername()
+            ))
+            .collect(Collectors.toList());
+    }
 }

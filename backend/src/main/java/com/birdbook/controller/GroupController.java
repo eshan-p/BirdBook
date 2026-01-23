@@ -15,13 +15,6 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @CrossOrigin(
     origins = "http://localhost:5173",
@@ -113,5 +106,14 @@ public class GroupController {
         groupService.deleteGroup(groupObjId);
 
         return new ResponseEntity<String>("Group deleted successfully", HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{groupId}/members/{userId}")
+    public ResponseEntity<String> leaveGroup(@PathVariable String groupId, @PathVariable String userId) {
+        
+        ObjectId groupObjId = new ObjectId(groupId);
+        ObjectId userObjId = new ObjectId(userId);
+        groupService.removeGroupMember(userObjId, groupObjId);
+        return ResponseEntity.ok("Left group successfully");
     }
 }

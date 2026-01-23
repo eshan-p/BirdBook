@@ -9,6 +9,9 @@ import Header from "./components/layout/Header";
 import Sighting from "./pages/Sighting";
 import Profile from "./pages/Profile";
 import Birds from "./pages/Birds"; 
+import Groups from "./pages/Groups";
+import Friends from "./pages/Friends";
+import GroupFeed from "./pages/GroupFeed";
 import { AuthProvider  } from "./context/AuthContext";
 
 export default function App() {
@@ -23,6 +26,9 @@ export default function App() {
           <Route path="/feed" element={<Feed />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/birds" element={<Birds />} /> 
+          <Route path="/groups" element={<Groups />} />
+          <Route path="/groups/:groupId/feed" element={<GroupFeed />} />
+          <Route path="/friends" element={<Friends />} />
           <Route path="/sightings/:postId" element={<Sighting />} />
         </Routes>
       </Router>

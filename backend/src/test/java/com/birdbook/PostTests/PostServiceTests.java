@@ -1,6 +1,7 @@
 package com.birdbook.PostTests;
 import com.birdbook.models.Comment;
 import com.birdbook.models.Post;
+import com.birdbook.models.PostUser;
 import com.birdbook.models.User;
 import com.birdbook.repository.PostDAO;
 import com.birdbook.repository.UserDAO;
@@ -18,6 +19,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,8 +48,6 @@ public class PostServiceTests {
 
     @BeforeEach
     void setup(){
-        //MockitoAnnotations.openMocks(this);
-
         postId = new ObjectId();
         birdId = new ObjectId();
         groupId = new ObjectId();
@@ -56,9 +58,12 @@ public class PostServiceTests {
         testUser.setPosts(testPostArray);
         testUser.setId(userId);
 
-        //setup test pokemon model
+        PostUser postUser = new PostUser(userId, "testUser");
+
+        //setup test post model
         testPost = new Post();
         testPost.setId(postId);
+        testPost.setUser(postUser);
         testPost.setHeader("Staraptor");
         testPost.setTextBody("HE MEGA EVOLVED IN FRONT OF ME");
 
@@ -77,8 +82,6 @@ public class PostServiceTests {
         //might add better data here later
         testPost.setLikes(new ArrayList<>());
         testPost.setComments(new ArrayList<>());
-
-        //testPost.setTimestamp("NULL");
     }
 
     //get by id
@@ -106,8 +109,8 @@ public class PostServiceTests {
     //update posts
     @Test
     void updatePost_HeaderOnly_DoesNotDeleteComments() {
-        Comment comment = new Comment(new ObjectId(), "Nice bird!");
-        testPost.setComments(List.of(comment));
+        Comment comment = new Comment(new PostUser(new ObjectId(), "commenter"), "Nice bird!");
+        testPost.setComments(new ArrayList<>(List.of(comment)));
 
         Post update = new Post();
         update.setHeader("Updated Header");
@@ -178,7 +181,6 @@ public class PostServiceTests {
         testUser.setFriends(new ObjectId[]{ friendId });
 
         testUser.setFriends(friendList.toArray(new ObjectId[0]));
-        //testUser.setPosts(new ObjectId[]{ postId });
 
         User testFriend = new User();
         testFriend.setId(friendId);
@@ -205,7 +207,6 @@ public class PostServiceTests {
         testUser.setFriends(new ObjectId[]{ friendId });
 
         testUser.setFriends(friendList.toArray(new ObjectId[0]));
-        //testUser.setPosts(new ObjectId[]{ postId });
 
         User testFriend = new User();
         testFriend.setId(friendId);
@@ -255,9 +256,11 @@ public class PostServiceTests {
     //create post and return postid
     @Test
     void createPost_Success_ReturnsSavedPost() {
+        testUser.setPosts(new ObjectId[]{});
 
-        when(postDAO.save(testPost))
-                .thenReturn(testPost);
+        when(postDAO.save(testPost)).thenReturn(testPost);
+        when(userDAO.findById(userId)).thenReturn(Optional.of(testUser));
+        when(userDAO.save(any(User.class))).thenReturn(testUser);
 
         Post result = postService.createPost(testPost, null);
 

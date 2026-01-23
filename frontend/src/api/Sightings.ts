@@ -28,3 +28,31 @@ export async function getSightings(): Promise<Post[]>{
 
   return response.json();
 }
+
+export async function getSightingsByGroup(groupId: string): Promise<Post[]> {
+  console.log('Calling API:', `${BASE_URL}/sightings/group/${groupId}`);
+  console.log('Document cookies:', document.cookie);
+  
+  const response = await fetch(`${BASE_URL}/sightings/group/${groupId}`, {
+    method: 'GET',
+    credentials: 'include',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  });
+
+  console.log('Response status:', response.status);
+  console.log('Response headers:', response.headers);
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return [];
+    }
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    throw new Error(`Failed to fetch group posts: ${response.status} - ${errorText}`);
+  }
+
+  return response.json();
+}

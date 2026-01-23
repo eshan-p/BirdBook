@@ -199,7 +199,7 @@ public class MongoDataInitializer implements CommandLineRunner {
     // =====================================================
 
     private Document postUser(ObjectId id) {
-        return new Document("id", id)
+        return new Document("userId", id)
                 .append("username", userNames.get(id));
     }
 }

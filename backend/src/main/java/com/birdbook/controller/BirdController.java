@@ -19,9 +19,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 
+@CrossOrigin(
+    origins = "http://localhost:5173",
+    allowCredentials = "true"
+)
 @RestController
 @RequestMapping("/birds")
-@CrossOrigin(origins = "http://localhost:5173")
 public class BirdController {
     private final BirdService birdService;
     private final ObjectMapper objectMapper;

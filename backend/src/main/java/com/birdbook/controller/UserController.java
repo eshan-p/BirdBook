@@ -46,6 +46,11 @@ public class UserController {
         return userService.getUserById(userId);
     }
 
+    @GetMapping("/search")
+    public List<User> searchUsers(@RequestParam String query) {
+        return userService.searchUsersByUsername(query);
+    }
+
     @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable String id) {
 
@@ -101,6 +106,14 @@ public class UserController {
         userService.addFriend(userId, friendIdObj);
 
         return new ResponseEntity<String>("Friend added successfully", HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<String> removeFriend(@PathVariable String id, @PathVariable String friendId) {
+        ObjectId userId = new ObjectId(id);
+        ObjectId friendIdObj = new ObjectId(friendId);
+        userService.removeFriend(userId, friendIdObj);
+        return ResponseEntity.ok("Friend removed successfully");
     }
 
     /*@PutMapping("/update/{id}")

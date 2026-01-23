@@ -24,9 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@CrossOrigin(
+    origins = "http://localhost:5173",
+    allowCredentials = "true"
+)
 @RestController
 @RequestMapping("/sightings")
-@CrossOrigin(origins = "http://localhost:5173")
 public class PostController {
 
     private final PostService sService;
@@ -61,6 +64,11 @@ public class PostController {
         return sService.getPostById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/group/{groupId}")
+    public List<Post> getAllPostsByGroup(@PathVariable ObjectId groupId) {
+        return sService.getAllPostsByGroup(groupId);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -152,5 +160,56 @@ public class PostController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PutMapping("/{postId}/like/{userId}")
+    public ResponseEntity<Post> likePost(@PathVariable String postId, @PathVariable String userId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        ObjectId userObjId = new ObjectId(userId);
+        return ResponseEntity.ok(sService.likePost(postObjId, userObjId));
+    }
+
+    @PutMapping("/{postId}/unlike/{userId}")
+    public ResponseEntity<Post> unlikePost(@PathVariable String postId, @PathVariable String userId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        ObjectId userObjId = new ObjectId(userId);
+        return ResponseEntity.ok(sService.unlikePost(postObjId, userObjId));
+    }
+
+    @PutMapping("/{postId}/flag")
+    public ResponseEntity<Post> flagPost(@PathVariable String postId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        return ResponseEntity.ok(sService.flagPost(postObjId));
+    }
+
+    @PutMapping("/{postId}/unflag")
+    public ResponseEntity<Post> unflagPost(@PathVariable String postId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        return ResponseEntity.ok(sService.unflagPost(postObjId));
+    }
+
+    @PutMapping("/{postId}/help")
+    public ResponseEntity<Post> markNeedsHelp(@PathVariable String postId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        return ResponseEntity.ok(sService.markNeedsHelp(postObjId));
+    }
+
+    @PutMapping("/{postId}/help/remove")
+    public ResponseEntity<Post> removeHelpFlag(@PathVariable String postId) {
+
+        ObjectId postObjId = new ObjectId(postId);
+        return ResponseEntity.ok(sService.removeHelpFlag(postObjId));
+    }
+
+    @GetMapping("/{postId}/likes")
+    public ResponseEntity<List<Map<String, String>>> getUsersWhoLiked(@PathVariable String postId) {
+        
+        ObjectId postObjId = new ObjectId(postId);
+        return ResponseEntity.ok(sService.getUsersWhoLiked(postObjId));
     }
 }

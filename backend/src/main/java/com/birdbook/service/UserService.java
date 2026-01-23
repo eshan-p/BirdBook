@@ -55,6 +55,14 @@ public class UserService {
         return userDAO.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
+    public List<User> searchUsersByUsername(String query) {
+        List<User> allUsers = userDAO.findAll();
+        
+        return allUsers.stream()
+            .filter(user -> user.getUsername().toLowerCase().contains(query.toLowerCase()))
+            .collect(Collectors.toList());
+    }
+
     public List<Group> getGroupsList(ObjectId userId) {
         User user = userDAO.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found."));
         ObjectId[] groupIds = user.getGroups();
@@ -141,6 +149,20 @@ public class UserService {
         System.arraycopy(currentFriends, 0, updatedFriends, 0, currentFriends.length);
         updatedFriends[currentFriends.length] = friendId;
 
+        user.setFriends(updatedFriends);
+        userDAO.save(user);
+    }
+
+    public void removeFriend(ObjectId userId, ObjectId friendId) {
+        User user = userDAO.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+        ObjectId[] currentFriends = user.getFriends();
+        
+        ObjectId[] updatedFriends = java.util.Arrays.stream(currentFriends)
+            .filter(id -> !id.equals(friendId))
+            .toArray(ObjectId[]::new);
+        
         user.setFriends(updatedFriends);
         userDAO.save(user);
     }

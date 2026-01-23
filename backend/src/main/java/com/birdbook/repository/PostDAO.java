@@ -16,4 +16,16 @@ public interface PostDAO extends MongoRepository<Post, ObjectId> {
 
     @Query("{ 'user.id': ?0 }")
     List<Post> findByUserId(ObjectId userId);
+
+    @Query("{ 'flagged': true }")
+    List<Post> findFlaggedPosts();
+
+    @Query("{ 'help': true }")
+    List<Post> findPostsNeedingHelp();
+
+    @Query("{ 'likes': ?0 }")
+    List<Post> findPostsLikedByUser(ObjectId userId);
+    
+    @Query("{ 'group': ?0 }")
+    List<Post> findByGroup(ObjectId groupId);
 }

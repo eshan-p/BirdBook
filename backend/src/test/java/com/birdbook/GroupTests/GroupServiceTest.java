@@ -8,9 +8,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,8 +20,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.birdbook.models.Group;
+import com.birdbook.models.PostUser;
 import com.birdbook.repository.GroupDAO;
-import com.birdbook.repository.UserDAO;
 import com.birdbook.service.GroupService;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,122 +30,171 @@ public class GroupServiceTest {
     @Mock
     private GroupDAO groupDAO;
 
-    @Mock
-    private UserDAO userDAO;
-
     @InjectMocks
     private GroupService groupService;
 
+    private Group testGroup;
+    private PostUser testOwner;
+    private PostUser testMember;
+    private ObjectId groupId;
+
+    @BeforeEach
+    void setup(){
+        groupId = new ObjectId();
+        testOwner = new PostUser(new ObjectId(), "owner");
+        testMember = new PostUser(new ObjectId(), "member");
+        
+        testGroup = new Group("Test Group", testOwner);
+        testGroup.setId(groupId);
+    }
+
     @Test
     public void getAllGroups_Success(){
-        groupService.getAllGroups();
+        when(groupDAO.findAll()).thenReturn(List.of(testGroup));
+
+        List<Group> result = groupService.getAllGroups();
+
+        assertEquals(1, result.size());
         verify(groupDAO, times(1)).findAll();
     }
 
     @Test
+    public void getGroupById_Success(){
+        when(groupDAO.findById(groupId)).thenReturn(Optional.of(testGroup));
+
+        Group result = groupService.getGroupById(groupId);
+
+        assertEquals("Test Group", result.getName());
+        verify(groupDAO, times(1)).findById(groupId);
+    }
+
+    @Test
+    public void getGroupById_NotFound(){
+        when(groupDAO.findById(groupId)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> groupService.getGroupById(groupId));
+    }
+
+    @Test
     public void createGroup_Success(){
-        groupService.createGroup("Test Group", null);
+        groupService.createGroup("Test Group", testOwner);
         verify(groupDAO, times(1)).insert(any(Group.class));
     }
 
     @Test
     public void updateGroup_Success(){
+        Group updatedGroup = new Group("Updated Name", testOwner);
 
-        ObjectId id = new ObjectId();
+        when(groupDAO.findById(groupId)).thenReturn(Optional.of(testGroup));
+        when(groupDAO.save(any(Group.class))).thenReturn(testGroup);
 
-        Group existingGroup = new Group("Old Group Name", null);
-        Group updatedGroup = new Group("Test Group Name", null);
+        Group result = groupService.updateGroup(groupId, updatedGroup);
 
-        when(groupDAO.findById(id)).thenReturn(Optional.of(existingGroup));
-        when(groupDAO.save(any(Group.class))).thenReturn(existingGroup);
-
-        Group result = groupService.updateGroup(id, updatedGroup);
-
-        verify(groupDAO, times(1)).save(existingGroup);
-        assertEquals("Test Group Name", result.getName());
+        verify(groupDAO, times(1)).save(testGroup);
+        assertEquals("Updated Name", result.getName());
     }
 
     @Test
     public void deleteGroup_Success(){
+        when(groupDAO.existsById(groupId)).thenReturn(true);
 
-        ObjectId id = new ObjectId();
+        groupService.deleteGroup(groupId);
 
-        when(groupDAO.existsById(id)).thenReturn(true);
+        verify(groupDAO, times(1)).deleteById(groupId);
+    }
 
-        groupService.deleteGroup(id);
+    @Test
+    public void deleteGroup_NotFound(){
+        when(groupDAO.existsById(groupId)).thenReturn(false);
 
-        verify(groupDAO, times(1)).deleteById(id);
+        assertThrows(IllegalArgumentException.class, () -> groupService.deleteGroup(groupId));
+        verify(groupDAO, times(0)).deleteById(groupId);
     }
 
     @Test
     public void userRequestToJoin_Success(){
+        when(groupDAO.findById(groupId)).thenReturn(Optional.of(testGroup));
+        when(groupDAO.save(any(Group.class))).thenReturn(testGroup);
 
-        ObjectId groupId = new ObjectId();
-        ObjectId userId = new ObjectId();
+        groupService.userRequestToJoin(testMember, groupId);
 
-        Group existingGroup = new Group("Test Group", null);
-        existingGroup.setRequests(new ObjectId[] {});
-
-        when(groupDAO.findById(groupId)).thenReturn(Optional.of(existingGroup));
-        when(groupDAO.save(any(Group.class))).thenReturn(existingGroup);
-
-        groupService.userRequestToJoin(userId, groupId);
-
-        verify(groupDAO, times(1)).save(existingGroup);
-        assertEquals(1, existingGroup.getRequests().length);
-        assertEquals(userId, existingGroup.getRequests()[0]);
+        verify(groupDAO, times(1)).save(testGroup);
+        assertEquals(1, testGroup.getRequests().size());
     }
 
     @Test
     public void userRequestToJoin_AlreadyRequested(){
+        testGroup.getRequests().add(testMember);
 
-        ObjectId groupId = new ObjectId();
-        ObjectId userId = new ObjectId();
-
-        Group existingGroup = new Group("Test Group", null);
-        existingGroup.setRequests(new ObjectId[] {userId});
-
-        when(groupDAO.findById(groupId)).thenReturn(Optional.of(existingGroup));
+        when(groupDAO.findById(groupId)).thenReturn(Optional.of(testGroup));
     
-        assertThrows(IllegalArgumentException.class, () -> groupService.userRequestToJoin(userId, groupId));
+        assertThrows(IllegalArgumentException.class, () -> groupService.userRequestToJoin(testMember, groupId));
+
+        verify(groupDAO, never()).save(any(Group.class));
+    }
+
+    @Test
+    public void userRequestToJoin_AlreadyMember(){
+        testGroup.getMembers().add(testMember);
+
+        when(groupDAO.findById(groupId)).thenReturn(Optional.of(testGroup));
+    
+        assertThrows(IllegalArgumentException.class, () -> groupService.userRequestToJoin(testMember, groupId));
 
         verify(groupDAO, never()).save(any(Group.class));
     }
 
     @Test
     public void approveJoinRequest_Success(){
+        testGroup.getRequests().add(testMember);
 
-        ObjectId userId = new ObjectId();
-        ObjectId groupId = new ObjectId();
+        when(groupDAO.findById(groupId)).thenReturn(Optional.of(testGroup));
+        when(groupDAO.save(any(Group.class))).thenReturn(testGroup);
 
-        Group existingGroup = new Group("Test Group", null);
-        existingGroup.setRequests(new ObjectId[] {userId});
-        existingGroup.setMembers(new ObjectId[] {});
+        groupService.approveJoinRequest(testMember, groupId);
 
-        when(groupDAO.findById(groupId)).thenReturn(Optional.of(existingGroup));
-        when(groupDAO.save(any(Group.class))).thenReturn(existingGroup);
+        verify(groupDAO, times(1)).save(testGroup);
+        assertEquals(0, testGroup.getRequests().size());
+        assertEquals(1, testGroup.getMembers().size());
+    }
 
-        groupService.approveJoinRequest(userId, groupId);
-        verify(groupDAO, times(1)).save(existingGroup);
-        assertEquals(0, existingGroup.getRequests().length);
-        assertEquals(1, existingGroup.getMembers().length);
-        assertEquals(userId, existingGroup.getMembers()[0]);
+    @Test
+    public void approveJoinRequest_NoRequest(){
+        when(groupDAO.findById(groupId)).thenReturn(Optional.of(testGroup));
+
+        assertThrows(IllegalArgumentException.class, () -> groupService.approveJoinRequest(testMember, groupId));
     }
 
     @Test
     public void denyJoinRequest_Success(){
+        testGroup.getRequests().add(testMember);
 
-        ObjectId userId = new ObjectId();
-        ObjectId groupId = new ObjectId();
+        when(groupDAO.findById(groupId)).thenReturn(Optional.of(testGroup));
+        when(groupDAO.save(any(Group.class))).thenReturn(testGroup);
 
-        Group existingGroup = new Group("Test Group", null);
-        existingGroup.setRequests(new ObjectId[] {userId});
+        groupService.denyJoinRequest(testMember, groupId);
 
-        when(groupDAO.findById(groupId)).thenReturn(Optional.of(existingGroup));
-        when(groupDAO.save(any(Group.class))).thenReturn(existingGroup);
+        verify(groupDAO, times(1)).save(testGroup);
+        assertEquals(0, testGroup.getRequests().size());
+    }
 
-        groupService.denyJoinRequest(userId, groupId);
-        verify(groupDAO, times(1)).save(existingGroup);
-        assertEquals(0, existingGroup.getRequests().length);
+    @Test
+    public void removeGroupMember_Success(){
+        testGroup.getMembers().add(testMember);
+
+        when(groupDAO.findById(groupId)).thenReturn(Optional.of(testGroup));
+        when(groupDAO.save(any(Group.class))).thenReturn(testGroup);
+
+        groupService.removeGroupMember(testMember.getUserId(), groupId);
+
+        verify(groupDAO, times(1)).save(testGroup);
+        assertEquals(0, testGroup.getMembers().size());
+    }
+
+    @Test
+    public void removeGroupMember_NotMember(){
+        when(groupDAO.findById(groupId)).thenReturn(Optional.of(testGroup));
+
+        assertThrows(IllegalArgumentException.class, () -> groupService.removeGroupMember(testMember.getUserId(), groupId));
     }
 }
