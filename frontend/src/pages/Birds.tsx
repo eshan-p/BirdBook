@@ -13,7 +13,7 @@ const mockGroups: Group[] = [
   {
     id: "1",
     name: "Carolina Warblers United",
-    ownerId: "1",
+    owner: {userId:"1",username:"TestUser"},
     members: [],
     requests: [],
     groupPhoto: "src/assets/profilephoto.jpg",
@@ -53,7 +53,7 @@ const mockBirds: Bird[] = [
     image: "src/assets/stellars-jay.jpg",
     location: [-120.5, 45.5],
   },
-];
+]; 
 
 export default function Birds() {
   const [search, setSearch] = useState("");
