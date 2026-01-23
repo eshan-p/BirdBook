@@ -126,11 +126,7 @@ public class AuthController {
                     break;
                 }
             }
-        }else{
-            System.out.println("Not grabbing cookies");
-
         }
-
 
         if(token == null || token.isEmpty()){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error","No JWT token found"));
