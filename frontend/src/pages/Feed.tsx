@@ -139,7 +139,10 @@ useEffect(() => {
   getSightings()
     .then(setPosts)
     .catch(err => setError(err.message))
-    .finally(() => setLoading(false));
+    .finally(() => {
+      setLoading(false);
+      console.log(posts);
+    });
 }, []);
 
   useEffect(() => {
@@ -149,7 +152,6 @@ useEffect(() => {
 
   const totalPages = Math.ceil(posts.length / PAGE_SIZE);
 
-  
   const pagedPosts = posts.slice(
     page * PAGE_SIZE,
     (page + 1) * PAGE_SIZE
