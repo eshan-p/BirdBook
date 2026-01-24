@@ -14,10 +14,7 @@ const mockGroups: Group[] = [
   {
     id: "1",
     name: "Carolina Warblers United",
-    owner: {
-      _id: "1",
-      username: "Peyton",
-    },
+    ownerId: "1",
     members: [],
     requests: [],
     groupPhoto: "src/assets/profilephoto.jpg",
@@ -33,6 +30,30 @@ const mockFriends: Friend[] = [
     name: "Marcus Thompson",
     profilePhoto: "src/assets/profilephoto.jpg",
     location: [35.5955, -82.5519],
+  },
+];
+
+const mockBirds: Bird[] = [
+  {
+    id: "1",
+    commonName: "Crested Kingfisher",
+    scientificName: "Megaceryle lugubris",
+    image: "src/assets/crested-kingfisher.jpg",
+    location: [-82.5519, 35.5955],
+  },
+  {
+    id: "2",
+    commonName: "American Bittern",
+    scientificName: "Botaurus lentiginosus",
+    image: "src/assets/american-bittern.jpg",
+    location: [-95.7129, 37.2688],
+  },
+  {
+    id: "3",
+    commonName: "Stellar's Jay",
+    scientificName: "Cyanocitta stelleri",
+    image: "src/assets/stellars-jay.jpg",
+    location: [-120.5, 45.5],
   },
 ];
 

@@ -4,6 +4,7 @@ import org.bson.types.ObjectId;
 
 import com.birdbook.serializers.ObjectIdSerializer;
 import com.birdbook.serializers.ObjectIdDeserializer;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -38,4 +39,3 @@ public class PostUser {
         this.username = username;
     }
 }
-

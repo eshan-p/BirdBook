@@ -39,6 +39,16 @@ public class BirdController {
         this.validator = validator;
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Bird>> searchBirds(@RequestParam String query) {
+        System.out.println("!=========HIT!=========");
+        if(query == null || query.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<Bird> results = birdService.searchBirds(query.trim());
+        return ResponseEntity.ok(results);
+    }
+
     // GET ALL BIRDS
     @GetMapping
     public ResponseEntity<List<Bird>> getAllBirds() {

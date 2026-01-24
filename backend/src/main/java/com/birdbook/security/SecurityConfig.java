@@ -37,30 +37,40 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+            // JWT = STATELESS
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            .authorizeHttpRequests(auth -> auth
 
-                // PUBLIC BIRDS
-                .requestMatchers(HttpMethod.GET, "/api/birds/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
+
+                        // Preflight
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
                 // AUTH / PUBLIC
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/groups/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/users/**").permitAll()
+
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/users/**").permitAll()
                 .requestMatchers("/sightings/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
 
-                // ROLE-BASED
-                .requestMatchers("/posts/**")
-                .hasAnyRole("ADMIN_USER", "SUPER_USER")
+                        // ROLE BASED
+                        .requestMatchers("/posts/**")
+                        .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
 
-                .anyRequest().authenticated()
-            )
+                        .requestMatchers("/admin/**")
+                        .hasAnyRole("ADMIN_USER", "SUPER_USER")
+
+                        // EVERYTHING ELSE
+                        .anyRequest().authenticated()
+                )
+
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
@@ -83,6 +93,7 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
