@@ -12,6 +12,7 @@ import {
 import SearchBar from "../components/common/SearchBar";
 import GroupCard from "../components/features/GroupCard";
 import { useAuth } from "../context/AuthContext";
+import CreateGroup from "../components/features/CreateGroup";
 
 export default function Groups() {
   const [allGroups, setAllGroups] = useState<Group[]>([]);
@@ -117,7 +118,10 @@ export default function Groups() {
   return (
     <main className="max-w-3xl mx-auto m-6 p-6 bg-white rounded-lg shadow-sm">
       <div className="flex items-center justify-between mb-6 gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 shrink-0">Groups</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 shrink-0">Groups</h2>
+          <CreateGroup/>
+        </div>
         <div className="w-64">
           <SearchBar />
         </div>
