@@ -2,7 +2,6 @@ package com.birdbook.service;
 
 import com.birdbook.models.PostUser;
 import org.bson.types.ObjectId;
-import com.birdbook.service.UserService;
 import org.springframework.stereotype.Service;
 
 @Service

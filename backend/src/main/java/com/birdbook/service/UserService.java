@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import java.time.*;
 
 import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
