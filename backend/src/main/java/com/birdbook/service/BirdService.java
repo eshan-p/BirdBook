@@ -3,6 +3,9 @@ package com.birdbook.service;
 import com.birdbook.models.Bird;
 import com.birdbook.repository.BirdDAO;
 import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,13 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
-
-import com.birdbook.models.Bird;
-import org.bson.types.ObjectId;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.birdbook.repository.BirdDAO;
 
 @Service
 public class BirdService {
@@ -31,11 +27,12 @@ public class BirdService {
         this.mongoTemplate = mongoTemplate;
     }
 
+    // SEARCH (optional, does not break anything)
     public List<Bird> searchBirds(String query) {
         Query mongoQuery = new Query();
         Criteria criteria = new Criteria().orOperator(
-            Criteria.where("commonName").regex(query, "i"),
-            Criteria.where("scientificName").regex(query, "i")
+                Criteria.where("commonName").regex(query, "i"),
+                Criteria.where("scientificName").regex(query, "i")
         );
         mongoQuery.addCriteria(criteria);
         mongoQuery.limit(20);
@@ -47,10 +44,10 @@ public class BirdService {
         return birdDAO.findAll();
     }
 
-    // GET BY ID (needed for BirdDetail page)
+    // GET BY ID
     public Bird getBirdById(String id) {
-    return birdDAO.findById(new ObjectId(id))
-            .orElseThrow(() -> new IllegalArgumentException("Bird not found"));
+        return birdDAO.findById(new ObjectId(id))
+                .orElseThrow(() -> new IllegalArgumentException("Bird not found"));
     }
 
     // GET BY COMMON NAME

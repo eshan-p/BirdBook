@@ -8,13 +8,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Document(collection = "birds")
 public class Bird {
 
     @Id
+    @JsonProperty("_id")
     private ObjectId id;
 
     @NotBlank(message = "Name cannot be blank")
@@ -29,44 +29,38 @@ public class Bird {
 
     public Bird() {}
 
-    public Bird(ObjectId id, String commonName, String scientificName, String imageURL) {
+    public Bird(ObjectId id, String commonName, String scientificName, String imageURL, List<Double> location) {
         this.id = id;
         this.commonName = commonName;
         this.scientificName = scientificName;
         this.imageURL = imageURL;
+        this.location = location;
     }
 
-    /**
-     * @return ObjectId return the id
-     */
     public ObjectId getId() {
         return id;
     }
 
-    /**
-     * @param id the id to set
-     */
     public void setId(ObjectId id) {
         this.id = id;
     }
 
-    /**
-     * @return String return the commonName
-     */
     public String getCommonName() {
         return commonName;
     }
 
-    /**
-     * @param commonName the commonName to set
-     */
     public void setCommonName(String commonName) {
         this.commonName = commonName;
     }
 
-    /**
-     * @return String return the imageURL
-     */
+    public String getScientificName() {
+        return scientificName;
+    }
+
+    public void setScientificName(String scientificName) {
+        this.scientificName = scientificName;
+    }
+
     public String getImageURL() {
         return imageURL;
     }
@@ -75,4 +69,11 @@ public class Bird {
         this.imageURL = imageURL;
     }
 
+    public List<Double> getLocation() {
+        return location;
+    }
+
+    public void setLocation(List<Double> location) {
+        this.location = location;
+    }
 }
