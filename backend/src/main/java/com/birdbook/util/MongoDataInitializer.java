@@ -96,9 +96,9 @@ public class MongoDataInitializer implements CommandLineRunner {
     private Document userDoc(ObjectId id, String username, String rawPassword, Role role) {
         return new Document("_id", id)
                 .append("username", username)
-                .append("password", passwordEncoder.encode(rawPassword)) // ✅ FIX
+                .append("password", passwordEncoder.encode(rawPassword))
                 .append("role", role.name())
-                .append("profilePic", "backend_profile_pictures/default_pfp.jpg")
+                .append("profilePic", "/profile_pictures/default_pfp.jpg")
                 .append("friends", List.of())
                 .append("posts", List.of())
                 .append("groups", List.of());

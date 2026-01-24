@@ -8,6 +8,9 @@ import { Group } from "../types/Group";
 import { Friend } from "../types/Friend";
 import { Bird } from "../types/Bird";
 import { getAllBirds } from "../api/Birds";
+import { useAuth } from '../context/AuthContext';
+import { getUserById } from '../api/Users';
+import { User } from '../types/User';
 
 // ---- MOCK DATA ----
 const mockGroups: Group[] = [
@@ -33,10 +36,42 @@ const mockFriends: Friend[] = [
 ];
 
 export default function Birds() {
+  const { user } = useAuth();
+  const [userData, setUserData] = useState<User | null>(null);
   const [search, setSearch] = useState("");
   const [birds, setBirds] = useState<Bird[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const BASE_URL = "http://localhost:8080";
+
+  // Fetch full user data
+  useEffect(() => {
+    if (user?.id) {
+      getUserById(user.id)
+        .then(setUserData)
+        .catch(console.error);
+    }
+  }, [user?.id]);
+
+  // Fetch groups from backend
+  useEffect(() => {
+    fetch(`${BASE_URL}/groups`, {credentials: 'include'})
+      .then(r => r.json())
+      .then(setGroups)
+      .catch(err => console.error("Failed to fetch groups:", err));
+  }, []);
+
+  // Fetch friends from backend
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`${BASE_URL}/users/${user.id}/friends`, {credentials: 'include'})
+        .then(r => r.json())
+        .then(setFriends)
+        .catch(err => console.error("Failed to fetch friends:", err));
+    }
+  }, [user?.id]);
 
   // Fetch birds from backend on component mount
   useEffect(() => {
@@ -64,22 +99,28 @@ export default function Birds() {
   return (
     <div className="flex flex-row h-full bg-[#F7F7F7] px-16">
       {/* LEFT SIDEBAR */}
-      <div className="basis-1/4 m-6 mr-0">
-        <ProfileCard />
-        <div className="mt-6 bg-white p-4 drop-shadow">
-          <p className="font-semibold mb-2">Groups</p>
-          {mockGroups.map(group => (
-            <GroupCard key={group.id} group={group} />
+      <div className="flex flex-col basis-1/4 m-6 mr-0">
+        <ProfileCard user={userData || undefined} />
+        <div className="h-fit w-full mt-6 bg-white p-4 drop-shadow">
+          <div className="flex flex-row w-full border-b border-gray-300 mb-3">
+            <img src="src/assets/groups.svg" alt="groups"/>
+            <p className="text-lg ml-3 font-bold">Groups</p>
+          </div>
+          {groups.map(group => (
+            <GroupCard key={group.id.toString()} group={group} />
           ))}
-          <p className="font-semibold mt-4 mb-2">Friends</p>
-          {mockFriends.map(friend => (
+          <div className="flex flex-row w-full border-b border-gray-300 mb-3">
+            <img src="src/assets/person.svg" alt="friends"/>
+            <p className="text-lg ml-3 font-bold">Friends</p>
+          </div>
+          {friends.map(friend => (
             <FriendCard key={friend.id} friend={friend} />
           ))}
         </div>
       </div>
 
       {/* CENTER CONTENT */}
-      <div className="basis-1/2 m-6">
+      <div className="basis-3/4 m-6">
         <div className="bg-white p-4 drop-shadow mb-4">
           <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
         </div>
@@ -94,20 +135,6 @@ export default function Birds() {
             <BirdCard key={bird.id} bird={bird} />
           ))}
         </div>
-      </div>
-
-      {/* RIGHT SIDEBAR */}
-      <div className="basis-1/4 m-6 ml-0 h-fit bg-white p-4 drop-shadow">
-        <p className="font-semibold mb-3">All Birds</p>
-        {loading ? (
-          <p className="text-sm">Loading...</p>
-        ) : (
-          birds.slice(0, 20).map(bird => (
-            <p key={bird.id} className="text-sm mb-1">
-              {bird.commonName}
-            </p>
-          ))
-        )}
       </div>
     </div>
   );

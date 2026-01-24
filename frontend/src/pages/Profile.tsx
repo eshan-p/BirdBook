@@ -76,7 +76,7 @@ function Profile() {
       <div className='basis-2/3 m-6'>
         <div className='bg-white h-fit w-full p-4 drop-shadow flex flex-col'>
             <div className='flex flex-row py-8 border-b border-gray-300 mb-3 px-3'>
-                <ProfileIcon size="lg"/>
+                <ProfileIcon size="lg" src={userInfo?.profilePic ? `http://localhost:8080${userInfo.profilePic}` : undefined}/>
                 <div>
                     <h2 className='text-xl mt-1 ml-4'>{userInfo.username}</h2>
                     <div className='flex flex-row ml-4 mb-2'>
