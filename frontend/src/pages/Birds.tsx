@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProfileCard from "../components/features/ProfileCard";
 import GroupCard from "../components/features/GroupCard";
 import FriendCard from "../components/features/FriendCard";
@@ -7,40 +7,89 @@ import SearchBar from "../components/common/SearchBar";
 import { Group } from "../types/Group";
 import { Friend } from "../types/Friend";
 import { Bird } from "../types/Bird";
-import { fetchAllBirds } from "../services/birdService";
-import { useAuth } from "../context/AuthContext";
+import { getAllBirds } from "../api/Birds";
+import { useAuth } from '../context/AuthContext';
+import { getUserById } from '../api/Users';
+import { User } from '../types/User';
+
+// ---- MOCK DATA ----
+const mockGroups: Group[] = [
+  {
+    id: "1",
+    name: "Carolina Warblers United",
+    owner: {userId:"1",username:"TestUser"},
+    members: [],
+    requests: [],
+    groupPhoto: "src/assets/profilephoto.jpg",
+    location: [35.5955, -82.5519],
+    followers: 814,
+  },
+];
+
+const mockFriends: Friend[] = [
+  {
+    id: "1",
+    name: "Marcus Thompson",
+    profilePhoto: "src/assets/profilephoto.jpg",
+    location: [35.5955, -82.5519],
+  },
+];
 
 export default function Birds() {
+  const { user } = useAuth();
+  const [userData, setUserData] = useState<User | null>(null);
   const [search, setSearch] = useState("");
   const [birds, setBirds] = useState<Bird[]>([]);
-  const [loadingPage, setLoading] = useState(true);
   const [groups, setGroups] = useState<Group[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
-  const { user, loading } = useAuth();
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const BASE_URL = "http://localhost:8080";
 
+  // Fetch full user data
   useEffect(() => {
-        fetch(`${BASE_URL}/groups`, {credentials: 'include'})
-            .then(r => r.json())
-            .then(setGroups)
-            .catch(err => console.error("Failed to fetch posts:", err))
-  },[]); // get groups
+    if (user?.id) {
+      getUserById(user.id)
+        .then(setUserData)
+        .catch(console.error);
+    }
+  }, [user?.id]);
 
+  // Fetch groups from backend
   useEffect(() => {
-        if(user?.id) {
-            fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
-              .then(r => r.json())
-              .then(setFriends)
-              .catch(err => console.error("Failed to fetch user: " + err));
-        }
-      }, [user?.id])
+    fetch(`${BASE_URL}/groups`, {credentials: 'include'})
+      .then(r => r.json())
+      .then(setGroups)
+      .catch(err => console.error("Failed to fetch groups:", err));
+  }, []);
 
+  // Fetch friends from backend
   useEffect(() => {
-    fetchAllBirds()
-      .then(setBirds)
-      .catch(() => setBirds([]))
-      .finally(() => setLoading(false));
+    if (user?.id) {
+      fetch(`${BASE_URL}/users/${user.id}/friends`, {credentials: 'include'})
+        .then(r => r.json())
+        .then(setFriends)
+        .catch(err => console.error("Failed to fetch friends:", err));
+    }
+  }, [user?.id]);
+
+  // Fetch birds from backend on component mount
+  useEffect(() => {
+    const fetchBirds = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllBirds();
+        setBirds(data);
+        setError(null);
+      } catch (err) {
+        setError("Failed to load birds. Please try again later.");
+        console.error("Error fetching birds:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBirds();
   }, []);
 
   const filteredBirds = birds.filter(b =>
@@ -54,14 +103,20 @@ export default function Birds() {
   return (
     <div className="flex flex-row min-h-screen bg-[#F7F7F7] px-16">
       {/* LEFT SIDEBAR */}
-      <div className="basis-1/4 m-6 mr-0">
-        <ProfileCard />
-        <div className="mt-6 bg-white p-4 drop-shadow">
-          <p className="font-semibold mb-2">Groups</p>
+      <div className="flex flex-col basis-1/4 m-6 mr-0">
+        <ProfileCard user={userData || undefined} />
+        <div className="h-fit w-full mt-6 bg-white p-4 drop-shadow">
+          <div className="flex flex-row w-full border-b border-gray-300 mb-3">
+            <img src="src/assets/groups.svg" alt="groups"/>
+            <p className="text-lg ml-3 font-bold">Groups</p>
+          </div>
           {groups.map(group => (
-            <GroupCard key={group.id} group={group} />
+            <GroupCard key={group.id.toString()} group={group} />
           ))}
-          <p className="font-semibold mt-4 mb-2">Friends</p>
+          <div className="flex flex-row w-full border-b border-gray-300 mb-3">
+            <img src="src/assets/person.svg" alt="friends"/>
+            <p className="text-lg ml-3 font-bold">Friends</p>
+          </div>
           {friends.map(friend => (
             <FriendCard key={friend.id} friend={friend} />
           ))}
@@ -69,26 +124,21 @@ export default function Birds() {
       </div>
 
       {/* CENTER CONTENT */}
-      <div className="basis-1/2 m-6">
+      <div className="basis-3/4 m-6">
         <div className="bg-white p-4 drop-shadow mb-4">
           <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
         </div>
 
-        <div className="bg-white p-4 drop-shadow grid grid-cols-1 gap-2 max-h-[70vh] overflow-y-auto">
-          {filteredBirds.map(bird => (
-            <BirdCard key={bird._id} bird={bird} />
+        <div className="bg-white p-4 drop-shadow grid grid-cols-1 gap-2">
+          {loading && <p className="text-center py-4">Loading birds...</p>}
+          {error && <p className="text-center py-4 text-red-600">{error}</p>}
+          {!loading && !error && filteredBirds.length === 0 && (
+            <p className="text-center py-4 text-gray-500">No birds found</p>
+          )}
+          {!loading && !error && filteredBirds.map(bird => (
+            <BirdCard key={bird.id} bird={bird} />
           ))}
         </div>
-      </div>
-
-      {/* RIGHT SIDEBAR */}
-      <div className="basis-1/4 m-6 ml-0 bg-white p-4 drop-shadow max-h-[70vh] overflow-y-auto">
-        <p className="font-semibold mb-3">All Birds</p>
-        {birds.map(bird => (
-          <p key={bird._id} className="text-sm mb-1">
-            {bird.commonName}
-          </p>
-        ))}
       </div>
     </div>
   );

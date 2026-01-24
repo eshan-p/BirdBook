@@ -12,12 +12,15 @@ import { reverseCoordsToCityState } from '../utils/geolocation';
 import ProfileCard from '../components/features/ProfileCard';
 import ProfileIcon from '../components/common/ProfileIcon';
 import { useAuth } from '../context/AuthContext';
+import { getUserById } from '../api/Users';
+import { User } from '../types/User';
 
 function Sighting() {
   //grabs params from the current url
   const {postId} = useParams<{postId:string}>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [userData, setUserData] = useState<User | null>(null);
 
   //these return value and functions to update the values
   const [post, setPost] = useState<Post | null>(null);
@@ -42,6 +45,15 @@ function Sighting() {
       .finally(() => setLoading(false));
 
   }, [postId]);
+
+  // Fetch full user data
+  useEffect(() => {
+    if (user?.id) {
+      getUserById(user.id)
+        .then(setUserData)
+        .catch(console.error);
+    }
+  }, [user?.id]);
 
   // Check if current user has liked the post
   useEffect(() => {
@@ -144,7 +156,7 @@ function Sighting() {
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
       {/* Left Sidebar */}
       <div className='flex flex-col basis-1/4 m-6 mr-0'>
-        <ProfileCard/>
+        <ProfileCard user={userData || undefined}/>
         
         {/* Post Info Card */}
         <div className='h-fit w-full mt-6 bg-white p-4 drop-shadow'>
@@ -167,7 +179,7 @@ function Sighting() {
         <div className='w-full bg-white p-6 drop-shadow mb-6'>
           {/* User Info */}
           <div className='flex flex-row mb-4'>
-            <ProfileIcon size="md"/>
+            <ProfileIcon size="md" src={post.user?.profilePic ? `http://localhost:8080${post.user.profilePic}` : undefined}/>
             <div className='h-14 w-full ml-3'>
               <h3 className='font-bold text-base'>{post.user ? post.user.username : "Unknown user"}</h3>
               {locationLabel && <p className='text-sm/3 opacity-85'>{locationLabel}</p>}
@@ -221,7 +233,7 @@ function Sighting() {
             <h3 className='text-lg font-bold mb-3'>Add a Comment</h3>
             <form onSubmit={handleCommentSubmit}>
               <div className='flex items-start gap-3'>
-                <ProfileIcon size="sm"/>
+                <ProfileIcon size="sm" src={user?.profilePic ? `http://localhost:8080${user.profilePic}` : undefined}/>
                 <div className='flex-1'>
                   <textarea
                     value={newComment}
@@ -305,7 +317,7 @@ function CommentItem({ comment }: { comment: Comment }) {
   return (
     <div className='border-l-2 border-gray-200 pl-4 py-2'>
       <div className='flex items-start mb-2'>
-        <ProfileIcon size="sm"/>
+        <ProfileIcon size="sm" src={comment.user?.profilePic ? `http://localhost:8080${comment.user.profilePic}` : undefined}/>
         <div className='ml-3 flex-1'>
           <div className='flex items-baseline gap-2'>
             <span className='font-semibold text-sm'>

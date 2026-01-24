@@ -1,5 +1,6 @@
-import { Bird } from "../../types/Bird";
-import { Link } from "react-router-dom";
+import React from 'react'
+import { Bird } from '../../types/Bird'
+import { getBirdImageUrl } from '../../utils/imageUtils'
 
 function BirdCard({ bird }: { bird: Bird }) {
   const birdId = bird.id || bird._id;
@@ -15,7 +16,7 @@ function BirdCard({ bird }: { bird: Bird }) {
       className="flex items-center gap-3 p-2 rounded hover:bg-gray-100 cursor-pointer"
     >
       <img
-        src={bird.image || "/placeholder-bird.png"}
+        src={getBirdImageUrl(bird.imageURL)}
         alt={bird.commonName}
         className="w-12 h-12 rounded object-cover"
       />

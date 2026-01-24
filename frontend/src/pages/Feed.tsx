@@ -13,51 +13,15 @@ import { parseDate } from '../utils/dateTime';
 import { Bird } from '../types/Bird';
 import BirdCard from '../components/features/BirdCard';
 import SearchBar from '../components/common/SearchBar';
+import { getAllBirds } from '../api/Birds';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { getUserById } from '../api/Users';
+import { User } from '../types/User';
 import CreatePost from '../components/features/CreatePost';
 
 //page logic
 const PAGE_SIZE = 5; // easy to tweak later
-
-const mockBirds: Bird[] = [
-  {
-    id: "1",
-    commonName: "Crested Kingfisher",
-    scientificName: "Megaceryle lugubris",
-    image: "src/assets/crested-kingfisher.jpg",
-    location: [-82.5519, 35.5955]
-  },
-  {
-    id: "2",
-    commonName: "American Bittern",
-    scientificName: "Botaurus lentiginosus",
-    image: "src/assets/american-bittern.jpg",
-    location: [-95.7129, 37.2688]
-  },
-  {
-    id: "3",
-    commonName: "Northern Bobwhite",
-    scientificName: "Colinus virginianus",
-    image: "src/assets/northern-bobwhite.jpg",
-    location: [-78.6382, 35.4676]
-  },
-  {
-    id: "4",
-    commonName: "Stellar's Jay",
-    scientificName: "Cyanocitta stelleri",
-    image: "src/assets/stellars-jay.jpg",
-    location: [-120.5, 45.5]
-  },
-  {
-    id: "5",
-    commonName: "Mourning Dove",
-    scientificName: "Zenaida macroura",
-    image: "src/assets/mourning-dove.jpg",
-    location: [-96.8158, 33.2148]
-  }
-];
 
 function Feed() {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -66,7 +30,9 @@ function Feed() {
   const [error, setError] = useState<string | null>(null);
   const BASE_URL = "http://localhost:8080";
   const { user, loading } = useAuth();
+  const [userData, setUserData] = useState<User | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [birds, setBirds] = useState<Bird[]>([]);
 
   const [page, setPage] = useState(0); // zero-based index
 
@@ -95,7 +61,17 @@ useEffect(() => {
   },[]); // get groups
 
   useEffect(() => {
+    getAllBirds()
+      .then(setBirds)
+      .catch(err => console.error("Failed to fetch birds:", err));
+  }, []); // get birds
+
+  useEffect(() => {
       if(user?.id) {
+          getUserById(user.id)
+            .then(setUserData)
+            .catch(console.error);
+          
           fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
             .then(r => r.json())
             .then(setFriends)
@@ -121,7 +97,7 @@ useEffect(() => {
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
         {/* Left Sidebar */}
         <div className='flex flex-col basis-1/4 m-6 mr-0'>
-          <ProfileCard/>
+          <ProfileCard user={userData || undefined}/>
           <div className='h-fit w-full mt-6 bg-white p-4 drop-shadow'>
             <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
               <img src="src/assets/groups.svg" alt="groups"/>
@@ -170,14 +146,26 @@ useEffect(() => {
         <div className='basis-1/4 m-6 ml-0 h-fit w-full bg-white p-4 drop-shadow'>
           <div className='flex flex-row w-full border-b border-gray-300 mb-3 items-center'>
             <img src="src/assets/bird.svg" alt="birds" className='w-5 h-5'/>
-            <div className='text-lg ml-3'>Birds</div>
+            <div className='text-lg ml-3 font-bold'>All Birds</div>
           </div>
-          <div className='mb-3'>
-            <SearchBar/>
-          </div>
-          {mockBirds.map((bird) => (
-            <BirdCard key={bird.id} bird={bird}/>
-          ))}
+          {birds.length === 0 ? (
+            <p className='text-sm'>Loading...</p>
+          ) : (
+            birds.slice(0, 20).map(bird => (
+              <div key={bird.id} className='flex items-center gap-2 mb-2'>
+                {bird.imageURL && (
+                  <img 
+                    src={bird.imageURL} 
+                    alt={bird.commonName}
+                    className='w-8 h-8 rounded-full object-cover'
+                  />
+                )}
+                <p className='text-sm'>
+                  {bird.commonName}
+                </p>
+              </div>
+            ))
+          )}
         </div>
     </div>
   )

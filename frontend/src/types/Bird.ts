@@ -3,6 +3,6 @@ export interface Bird {
   _id?: never;         // prevent accidental usage
   commonName: string;
   scientificName?: string;
-  image?: string;
+  imageURL?: string; // Can be external URL (Wikipedia) or backend path
   location?: [number, number];
 }

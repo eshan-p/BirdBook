@@ -96,9 +96,9 @@ public class MongoDataInitializer implements CommandLineRunner {
     private Document userDoc(ObjectId id, String username, String rawPassword, Role role) {
         return new Document("_id", id)
                 .append("username", username)
-                .append("password", passwordEncoder.encode(rawPassword)) // ✅ FIX
+                .append("password", passwordEncoder.encode(rawPassword))
                 .append("role", role.name())
-                .append("profilePic", "backend_profile_pictures/default_pfp.jpg")
+                .append("profilePic", "/profile_pictures/default_pfp.jpg")
                 .append("friends", List.of())
                 .append("posts", List.of())
                 .append("groups", List.of());
@@ -385,19 +385,31 @@ public class MongoDataInitializer implements CommandLineRunner {
         };
 
         List<Document> docs = new ArrayList<>();
-        
-        for (int i = 0; i < birdData.length; i++) {
+
+        for (String[] bird : birdData) {
             ObjectId birdId = new ObjectId();
             this.birds.add(birdId);
-            
-            String commonName = birdData[i][0];
-            String scientificName = birdData[i][1];
-            
+
+            String commonName = bird[0];
+            String scientificName = bird[1];
+
+            // Convert to Wikimedia filename format
+            String fileName = commonName
+                    .replace("’", "")
+                    .replace("'", "")
+                    .replace("-", "_")
+                    .replace(" ", "_")
+                    + ".jpg";
+
+            String imageUrl =
+                    "https://commons.wikimedia.org/wiki/Special:FilePath/"
+                    + fileName
+                    + "?width=600";
+
             docs.add(new Document("_id", birdId)
                     .append("commonName", commonName)
                     .append("scientificName", scientificName)
-                    .append("imageURL", "https://example.com/birds/" + 
-                        commonName.toLowerCase().replace(" ", "-").replace("'", "") + ".jpg"));
+                    .append("imageURL", imageUrl));
         }
 
         collection.insertMany(docs);
