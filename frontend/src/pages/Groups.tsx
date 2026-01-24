@@ -30,6 +30,7 @@ export default function Groups() {
   const [userData, setUserData] = useState<User | null>(null);
   const [friends, setFriends] = useState<User[]>([]);
   const [birds, setBirds] = useState<Bird[]>([]);
+  const [search, setSearch] = useState("");
   const BASE_URL = "http://localhost:8080";
 
   const currentUserId = localStorage.getItem("userId") || "";
@@ -143,6 +144,14 @@ export default function Groups() {
 
   if (pageLoading) return <p>Loading...</p>;
 
+  const filteredAllGroups = allGroups.filter(group =>
+    group.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredUserGroups = userGroups.filter(group =>
+    group.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
       {/* Left Sidebar */}
@@ -150,6 +159,13 @@ export default function Groups() {
         <ProfileCard user={userData || undefined}/>
         <div className='h-fit w-full mt-6 bg-white p-4 drop-shadow'>
           <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
+            <img src="src/assets/groups.svg" alt="groups"/>
+            <p className='text-lg ml-3 font-bold'>Groups</p>
+          </div>
+          {userGroups.map((group) => (
+            <GroupCard key={group.id.toString()} group={group}/>
+          ))}
+          <div className='flex flex-row w-full border-b border-gray-300 mb-3 mt-3'>
             <img src="src/assets/person.svg" alt="friends"/>
             <p className='text-lg ml-3 font-bold'>Friends</p>
           </div>
@@ -165,7 +181,7 @@ export default function Groups() {
           <div className="flex items-center justify-between mb-6 gap-4">
             <h2 className="text-2xl font-bold text-gray-800 shrink-0">Groups</h2>
             <div className="w-64">
-              <SearchBar />
+              <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
             </div>
           </div>
 
@@ -190,11 +206,11 @@ export default function Groups() {
             <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">Error: {error}</div>
           )}
 
-          {currentUserId && userGroups.length > 0 && (
+          {currentUserId && filteredUserGroups.length > 0 && (
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">My Groups</h3>
               <ul className="divide-y">
-                {userGroups.map((group) => (
+                {filteredUserGroups.map((group) => (
                   <li key={group.id}>
                     <GroupCard
                       group={group}
@@ -210,7 +226,7 @@ export default function Groups() {
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Groups</h3>
             <ul className="divide-y">
-              {allGroups.map((group) => (
+              {filteredAllGroups.map((group) => (
                 <li key={group.id}>
                   <GroupCard
                     group={group}
@@ -220,7 +236,7 @@ export default function Groups() {
                 </li>
               ))}
             </ul>
-            {allGroups.length === 0 && (
+            {filteredAllGroups.length === 0 && (
               <p className="text-gray-500 py-4">No available groups</p>
             )}
           </div>

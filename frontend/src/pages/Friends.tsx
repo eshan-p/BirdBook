@@ -22,6 +22,7 @@ export default function Friends() {
     const [userData, setUserData] = useState<User | null>(null);
     const [groups, setGroups] = useState<Group[]>([]);
     const [birds, setBirds] = useState<Bird[]>([]);
+    const [search, setSearch] = useState("");
     const BASE_URL = "http://localhost:8080";
 
     useEffect(() => {
@@ -69,6 +70,10 @@ export default function Friends() {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
 
+    const filteredFriends = friends.filter(friend =>
+        friend.username.toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
         <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
             {/* Left Sidebar */}
@@ -94,12 +99,12 @@ export default function Friends() {
                         </h2>
 
                         <div className="w-64">
-                            <SearchBar />
+                            <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
                         </div>
                     </div>
 
                     <ul className="divide-y">
-                        {friends.map(friend => (
+                        {filteredFriends.map(friend => (
                         <div key={friend.id}>
                             <li className="py-5">
                                 <FriendCard user={friend} />
