@@ -1,10 +1,23 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import SearchBar from '../common/SearchBar'
 import ProfileIcon from '../common/ProfileIcon'
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../../context/AuthContext';
+import { getUserById } from '../../api/Users';
+import { User } from '../../types/User';
 
 function Header() {
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
+  const [userData, setUserData] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (authUser?.id) {
+      getUserById(authUser.id)
+        .then(setUserData)
+        .catch(console.error);
+    }
+  }, [authUser?.id]);
   return (
     <div className='bg-white flex flex-row justify-between items-center h-12 px-24 drop-shadow sticky top-0 z-50'>
       <div className='basis-1/3 flex flex-row justify-start min-w-0'>
@@ -33,7 +46,7 @@ function Header() {
             </button>
       <div className='basis-1/3 flex flex-row justify-center shrink-0'></div>
       <div className='basis-1/3 flex flex-row justify-end shrink-0'>
-        <ProfileIcon size='sm'/>
+        <ProfileIcon size='sm' src={userData?.profilePic ? `http://localhost:8080${userData.profilePic}` : undefined}/>
       </div>
     </div>
   )

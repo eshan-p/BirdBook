@@ -8,6 +8,8 @@ import { parseDate } from '../utils/dateTime'
 import { getSightingsByGroup } from '../api/Sightings'
 import { getAllGroups } from '../api/Groups'
 import { useAuth } from '../context/AuthContext'
+import { getUserById } from '../api/Users'
+import { User } from '../types/User'
 import SearchBar from '../components/common/SearchBar'
 import BirdCard from '../components/features/BirdCard'
 import { Bird } from '../types/Bird'
@@ -28,13 +30,23 @@ const mockBirds: Bird[] = [
 
 function GroupFeed() {
   const { groupId } = useParams<{ groupId: string }>();
+  const { user, loading } = useAuth();
+  const [userData, setUserData] = useState<User | null>(null);
   const [group, setGroup] = useState<Group | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPage, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const { user, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Fetch full user data
+  useEffect(() => {
+    if (user?.id) {
+      getUserById(user.id)
+        .then(setUserData)
+        .catch(console.error);
+    }
+  }, [user?.id]);
 
   // Fetch group details
   useEffect(() => {
@@ -90,7 +102,7 @@ function GroupFeed() {
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
       {/* Left Sidebar */}
       <div className='flex flex-col basis-1/4 m-6 mr-0'>
-        <ProfileCard/>
+        <ProfileCard user={userData || undefined}/>
         
         {/* Group Info */}
         {group && (

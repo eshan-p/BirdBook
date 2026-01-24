@@ -44,7 +44,7 @@ public class User {
         this.username = username;
         this.password = password;
         this.role = (role == null) ? Role.BASIC_USER : role;
-        this.profilePic = "backend_profile_pictures/default_pfp.jpg";
+        this.profilePic = "/profile_pictures/default_pfp.jpg";
         this.friends = new ObjectId[0];
         this.posts = new ObjectId[0];
         this.groups = new ObjectId[0];

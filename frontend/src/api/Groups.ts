@@ -1,4 +1,5 @@
 import {Group} from "../types/Group";
+import { PostUser } from "../types/Group";
 const BASE_URL = "http://localhost:8080";
 
 export async function getAllGroups(): Promise<Group[]>{
@@ -70,7 +71,11 @@ export async function createGroup(name: string, ownerId: string): Promise<Group>
   if (!response.ok) {
     throw new Error("Failed to create group");
   }
-  return response.text().then(() => ({ id: "", name, ownerId, members: [], requests: [] })); // placeholder until backend returns body
+  const owner:PostUser = {
+  userId : ownerId,
+  username : ""
+  };
+  return response.text().then(() => ({ id: "", name, owner, members: [], requests: [] })); // placeholder until backend returns body
 }
 
 export async function deleteGroup(groupId: string): Promise<void> {

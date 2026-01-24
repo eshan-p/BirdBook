@@ -32,6 +32,7 @@ export interface Post {
   comments:Comment[];
 
   user:{
+    profilePic: any;
     id: string,
     username: string
   };

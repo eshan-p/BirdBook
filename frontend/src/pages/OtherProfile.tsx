@@ -5,29 +5,33 @@ import MapView from '../components/features/MapView';
 import { Bird } from '../types/Bird';
 import { Post } from '../types/Post';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { User } from '../types/User';
 import { getUserById } from '../api/Users';
 import { arrayToCoords, reverseCoordsToCityState } from '../utils/geolocation';
+import { addFriend } from '../api/Users';
 
-function Profile() {
+function OtherProfile() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const { user, loading } = useAuth();
+  const [profileUser, setUser] = useState<Post[]>([]);
+  const {userId} = useParams<{userId:string}>();
   const [pageLoading, setPageLoading] = useState<boolean>(true);
   const [locationName, setLocationName] = useState<string>("");
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [topBirds, setTopBirds] = useState<any[]>([]); //TODO: make typing more specific
   const navigate = useNavigate();
   const BASE_URL = "http://localhost:8080";
+  const { user, loading } = useAuth();
+  //console.log(userId);
 
   useEffect(() => {
-    if(user?.id){
-      fetch(`${BASE_URL}/users/${user.id}/top-birds`, {credentials: 'include'})
+    if(userId){
+      fetch(`${BASE_URL}/users/${userId}/top-birds`, {credentials: 'include'})
         .then(r => r.json())
         .then(setTopBirds)
         .catch(err => console.error("Failed to fetch birds: ", err))
     }
-  }, [user?.id])
+  }, [userId])
 
   const topBirdsMapped: Bird[] = topBirds.map((b, i) => ({
     id: String(i),
@@ -38,29 +42,29 @@ function Profile() {
   }))
 
   useEffect(() => {
-    if(user?.id){
-        fetch(`${BASE_URL}/users/${user.id}/posts`, {credentials: 'include'})
+    if(userId){
+        fetch(`${BASE_URL}/users/${userId}/posts`, {credentials: 'include'})
             .then(r => r.json())
             .then(setPosts)
             .catch(err => console.error("Failed to fetch posts:", err))
             .finally(() => setPageLoading(false));
     }
-  }, [user?.id]);
+  }, [userId]);
 
   useEffect(() => {
-    if(!user && !loading){
+    if(!userId && !pageLoading){
       navigate('/login')
       console.error("Not signed in!")
     }
-  }, [user, loading, navigate]);
+  }, [userId, pageLoading, navigate]);
 
   useEffect(() => {
-    if(user?.id) {
-        getUserById(user.id)
+    if(userId) {
+        getUserById(userId)
             .then(setUserInfo)
             .catch(err => console.error("Failed to fetch user: " + err));
     }
-  }, [user?.id])
+  }, [userId])
 
   useEffect(() => {
     if(userInfo?.location){
@@ -68,7 +72,7 @@ function Profile() {
     }
   }, [userInfo?.location])
 
-  if (loading) return <div>loading auth</div>
+  if (pageLoading) return <div>loading page</div>
   if (!userInfo) return <div>loading user data</div>
 
   return (
@@ -76,7 +80,7 @@ function Profile() {
       <div className='basis-2/3 m-6'>
         <div className='bg-white h-fit w-full p-4 drop-shadow flex flex-col'>
             <div className='flex flex-row py-8 border-b border-gray-300 mb-3 px-3'>
-                <ProfileIcon size="lg" src={userInfo?.profilePic ? `http://localhost:8080${userInfo.profilePic}` : undefined}/>
+                <ProfileIcon size="lg"/>
                 <div>
                     <h2 className='text-xl mt-1 ml-4'>{userInfo.username}</h2>
                     <div className='flex flex-row ml-4 mb-2'>
@@ -120,10 +124,27 @@ function Profile() {
                 <img src="src/assets/badge.svg" alt="posts"/>
                 <h3 className='ml-3 text-lg'>Badges</h3>
             </div>
+            <button
+                onClick={() => {
+                    if (!user || !userId) return;
+
+                    addFriend(user.id, userId)
+                    .then(() => {
+                        console.log("Friend added");
+                    })
+                    .catch(err => {
+                        console.error("Failed to add friend:", err);
+                    });
+                }}
+                className="mt-2"
+                >
+            Add Friend
+            </button>
+
         </div>
       </div>
     </div>
   )
 }
 
-export default Profile
+export default OtherProfile;

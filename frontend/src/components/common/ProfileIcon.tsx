@@ -7,7 +7,7 @@ interface ProfileIconProps {
     src?: string;
 }
 
-function ProfileIcon({size, src = "/src/assets/profilephoto.jpg"}: ProfileIconProps) {
+function ProfileIcon({size, src = "http://localhost:8080/profile_pictures/default_pfp.jpg"}: ProfileIconProps) {
     const sizeClasses = {
         sm: 'w-10 h-10',
         md: 'w-14 h-14',

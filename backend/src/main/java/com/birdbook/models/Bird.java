@@ -6,11 +6,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Document(collection = "birds")
 public class Bird {
 
     @Id
+    @JsonProperty("_id")
     private ObjectId id;
 
     @NotBlank(message = "Name cannot be blank")
@@ -21,14 +25,16 @@ public class Bird {
 
     private String imageURL;
 
-    public Bird() {
-    }
+    private List<Double> location;
 
-    public Bird(ObjectId id, String commonName, String scientificName, String imageURL) {
+    public Bird() {}
+
+    public Bird(ObjectId id, String commonName, String scientificName, String imageURL, List<Double> location) {
         this.id = id;
         this.commonName = commonName;
         this.scientificName = scientificName;
         this.imageURL = imageURL;
+        this.location = location;
     }
 
     public ObjectId getId() {
@@ -61,5 +67,13 @@ public class Bird {
 
     public void setImageURL(String imageURL) {
         this.imageURL = imageURL;
+    }
+
+    public List<Double> getLocation() {
+        return location;
+    }
+
+    public void setLocation(List<Double> location) {
+        this.location = location;
     }
 }
