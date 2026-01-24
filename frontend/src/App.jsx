@@ -15,6 +15,7 @@ import GroupFeed from "./pages/GroupFeed";
 import SearchResults from "./pages/SearchResults";
 import { AuthProvider  } from "./context/AuthContext";
 import OtherProfile from "./pages/OtherProfile";
+import BirdDetail from "./pages/BirdDetail";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/group/:groupId" element={<GroupFeed />} />
           <Route path="/user/:userId" element={<OtherProfile />} />
           <Route path="/birds" element={<Birds />} /> 
+          <Route path="/birds/:birdId" element={<BirdDetail />} />
           <Route path="/sightings/:postId" element={<Sighting />} />
           <Route path="/search" element={<SearchResults />} />
         </Routes>
