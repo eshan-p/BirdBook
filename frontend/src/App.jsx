@@ -26,6 +26,9 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/groups" element={<Groups />} />
+          <Route path="/friends" element={<Friends />} />
+          <Route path="/group/:groupId" element={<GroupFeed />} />
           <Route path="/user/:userId" element={<OtherProfile />} />
           <Route path="/birds" element={<Birds />} /> 
           <Route path="/sightings/:postId" element={<Sighting />} />
