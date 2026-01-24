@@ -3,6 +3,7 @@ package com.birdbook.controller;
 import java.util.List;
 import java.util.Map;
 
+import com.birdbook.models.*;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,10 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.birdbook.models.Bird;
-import com.birdbook.models.Group;
-import com.birdbook.models.Post;
-import com.birdbook.models.User;
 import com.birdbook.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,9 +32,17 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserSummaryDTO> getAllUsers() {
+        return userService.getAllUsers().stream()
+                .map(user -> new UserSummaryDTO(
+                        user.getId().toHexString(),
+                        user.getUsername(),
+                        user.getRole().name(),
+                        user.getProfilePic()
+                ))
+                .toList();
     }
+
 
     @GetMapping("/{id}")
     public User getUser(@PathVariable String id) {
@@ -52,10 +57,15 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getFriends(@PathVariable String id) {
-
-        ObjectId userId = new ObjectId(id);
-        return userService.getFriendsList(userId);
+    public List<UserSummaryDTO> getFriends(@PathVariable String id) {
+        return userService.getFriendsList(new ObjectId(id)).stream()
+                .map(user -> new UserSummaryDTO(
+                        user.getId().toHexString(),
+                        user.getUsername(),
+                        user.getRole().toString(),
+                        user.getProfilePic()
+                ))
+                .toList();
     }
 
     @GetMapping("/{id}/groups")

@@ -33,3 +33,12 @@ export async function getFriends(userId: string): Promise<User[]> {
 
   return response.json();
 }
+
+export async function addFriend(userId:string,friendId:string): Promise<User> {
+  const response = await fetch(`${BASE_URL}/users/${userId}/friends/${friendId}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch friends");
+  }
+  return response.json();
+}
