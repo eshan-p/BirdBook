@@ -1,5 +1,6 @@
 import React from 'react'
 import { Bird } from '../../types/Bird'
+import { getBirdImageUrl } from '../../utils/imageUtils'
 
 function BirdCard({ bird }: { bird: Bird }) {
   return (
@@ -9,7 +10,7 @@ function BirdCard({ bird }: { bird: Bird }) {
     >
       {/* Bird Image */}
       <img
-        src={bird.image}
+        src={getBirdImageUrl(bird.imageURL)}
         alt={bird.commonName}
         className="w-12 h-12 rounded object-cover"
       />

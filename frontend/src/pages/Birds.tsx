@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProfileCard from "../components/features/ProfileCard";
 import GroupCard from "../components/features/GroupCard";
 import FriendCard from "../components/features/FriendCard";
@@ -7,6 +7,7 @@ import SearchBar from "../components/common/SearchBar";
 import { Group } from "../types/Group";
 import { Friend } from "../types/Friend";
 import { Bird } from "../types/Bird";
+import { getAllBirds } from "../api/Birds";
 
 // ---- MOCK DATA ----
 const mockGroups: Group[] = [
@@ -31,34 +32,32 @@ const mockFriends: Friend[] = [
   },
 ];
 
-const mockBirds: Bird[] = [
-  {
-    id: "1",
-    commonName: "Crested Kingfisher",
-    scientificName: "Megaceryle lugubris",
-    image: "src/assets/crested-kingfisher.jpg",
-    location: [-82.5519, 35.5955],
-  },
-  {
-    id: "2",
-    commonName: "American Bittern",
-    scientificName: "Botaurus lentiginosus",
-    image: "src/assets/american-bittern.jpg",
-    location: [-95.7129, 37.2688],
-  },
-  {
-    id: "3",
-    commonName: "Stellar's Jay",
-    scientificName: "Cyanocitta stelleri",
-    image: "src/assets/stellars-jay.jpg",
-    location: [-120.5, 45.5],
-  },
-]; 
-
 export default function Birds() {
   const [search, setSearch] = useState("");
+  const [birds, setBirds] = useState<Bird[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredBirds = mockBirds.filter(b =>
+  // Fetch birds from backend on component mount
+  useEffect(() => {
+    const fetchBirds = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllBirds();
+        setBirds(data);
+        setError(null);
+      } catch (err) {
+        setError("Failed to load birds. Please try again later.");
+        console.error("Error fetching birds:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBirds();
+  }, []);
+
+  const filteredBirds = birds.filter(b =>
     b.commonName.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -86,7 +85,12 @@ export default function Birds() {
         </div>
 
         <div className="bg-white p-4 drop-shadow grid grid-cols-1 gap-2">
-          {filteredBirds.map(bird => (
+          {loading && <p className="text-center py-4">Loading birds...</p>}
+          {error && <p className="text-center py-4 text-red-600">{error}</p>}
+          {!loading && !error && filteredBirds.length === 0 && (
+            <p className="text-center py-4 text-gray-500">No birds found</p>
+          )}
+          {!loading && !error && filteredBirds.map(bird => (
             <BirdCard key={bird.id} bird={bird} />
           ))}
         </div>
@@ -95,11 +99,15 @@ export default function Birds() {
       {/* RIGHT SIDEBAR */}
       <div className="basis-1/4 m-6 ml-0 h-fit bg-white p-4 drop-shadow">
         <p className="font-semibold mb-3">All Birds</p>
-        {mockBirds.map(bird => (
-          <p key={bird.id} className="text-sm mb-1">
-            {bird.commonName}
-          </p>
-        ))}
+        {loading ? (
+          <p className="text-sm">Loading...</p>
+        ) : (
+          birds.slice(0, 20).map(bird => (
+            <p key={bird.id} className="text-sm mb-1">
+              {bird.commonName}
+            </p>
+          ))
+        )}
       </div>
     </div>
   );

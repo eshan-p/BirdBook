@@ -385,19 +385,31 @@ public class MongoDataInitializer implements CommandLineRunner {
         };
 
         List<Document> docs = new ArrayList<>();
-        
-        for (int i = 0; i < birdData.length; i++) {
+
+        for (String[] bird : birdData) {
             ObjectId birdId = new ObjectId();
             this.birds.add(birdId);
-            
-            String commonName = birdData[i][0];
-            String scientificName = birdData[i][1];
-            
+
+            String commonName = bird[0];
+            String scientificName = bird[1];
+
+            // Convert to Wikimedia filename format
+            String fileName = commonName
+                    .replace("’", "")
+                    .replace("'", "")
+                    .replace("-", "_")
+                    .replace(" ", "_")
+                    + ".jpg";
+
+            String imageUrl =
+                    "https://commons.wikimedia.org/wiki/Special:FilePath/"
+                    + fileName
+                    + "?width=600";
+
             docs.add(new Document("_id", birdId)
                     .append("commonName", commonName)
                     .append("scientificName", scientificName)
-                    .append("imageURL", "https://example.com/birds/" + 
-                        commonName.toLowerCase().replace(" ", "-").replace("'", "") + ".jpg"));
+                    .append("imageURL", imageUrl));
         }
 
         collection.insertMany(docs);
