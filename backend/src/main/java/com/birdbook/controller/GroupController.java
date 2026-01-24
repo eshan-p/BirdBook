@@ -15,6 +15,7 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @CrossOrigin(
     origins = "http://localhost:5173",
@@ -54,6 +55,7 @@ public class GroupController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
     public ResponseEntity<String> createGroup(@RequestParam String name, @RequestParam String ownerId) {
         PostUser owner = puService.buildPostUser(new ObjectId(ownerId));
         groupService.createGroup(name, owner);
@@ -61,6 +63,7 @@ public class GroupController {
     }
 
     @PostMapping("/{groupId}/join-requests")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
     public ResponseEntity<String> requestToJoin(
             @PathVariable String groupId,
             @RequestParam String userId
@@ -71,6 +74,7 @@ public class GroupController {
     }
 
     @PutMapping("/{groupId}/join-requests/{userId}/approve")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
     public ResponseEntity<String> approveJoin(
             @PathVariable String groupId,
             @PathVariable String userId
@@ -81,6 +85,7 @@ public class GroupController {
     }
 
     @PutMapping("/{groupId}/join-requests/{userId}/deny")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
     public ResponseEntity<String> denyJoinRequest(@PathVariable String groupId, @PathVariable String userId) {
 
         ObjectId groupObjId = new ObjectId(groupId);
@@ -91,6 +96,7 @@ public class GroupController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
     public ResponseEntity<Group> updateGroup(@PathVariable String id, @RequestBody Group groupRequest) {
 
         ObjectId groupObjId = new ObjectId(id);
@@ -100,6 +106,7 @@ public class GroupController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
     public ResponseEntity<String> deleteGroup(@PathVariable String id) {
 
         ObjectId groupObjId = new ObjectId(id);
@@ -109,6 +116,7 @@ public class GroupController {
     }
 
     @DeleteMapping("/{groupId}/members/{userId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> leaveGroup(@PathVariable String groupId, @PathVariable String userId) {
         
         ObjectId groupObjId = new ObjectId(groupId);

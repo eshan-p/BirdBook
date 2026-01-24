@@ -22,7 +22,7 @@ function GroupCard({ group, onJoin, onLeave, onDelete }: GroupCardProps) {
         </div>
         <div className='ml-3'>
           <button 
-            onClick={() => navigate(`/groups/${group.id}/feed`)}
+            onClick={() => navigate(`/groups/${group.id}`)}
             className="mt-2 text-blue-600 hover:underline">
             {group.name}
           </button>

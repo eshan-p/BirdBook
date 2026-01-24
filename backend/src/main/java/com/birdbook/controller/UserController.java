@@ -8,6 +8,7 @@ import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -109,6 +110,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> addFriend(@PathVariable String id, @PathVariable String friendId) {
 
         ObjectId userId = new ObjectId(id);
@@ -119,6 +121,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> removeFriend(@PathVariable String id, @PathVariable String friendId) {
         ObjectId userId = new ObjectId(id);
         ObjectId friendIdObj = new ObjectId(friendId);
@@ -136,6 +139,7 @@ public class UserController {
     }*/
     
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("@userService.isOwner(#id, authentication.principal.userId)")
     public User updateUserMultipart(
         @PathVariable("id") ObjectId id,
         @RequestPart("user") String userJson,
@@ -150,6 +154,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@userService.isOwner(#id, authentication.principal.userId)")
     public ResponseEntity<String> deleteUser(@PathVariable String id){
 
         ObjectId userId = new ObjectId(id);

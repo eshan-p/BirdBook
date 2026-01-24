@@ -15,6 +15,7 @@ public class PostUserService {
         PostUser temp = new PostUser();
         temp.setUserId(userId);
         temp.setUsername(uService.getUserById(userId).getUsername());
+        temp.setProfilePic(uService.getUserById(userId).getProfilePic());
         return temp;
     }
 }

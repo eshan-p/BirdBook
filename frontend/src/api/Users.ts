@@ -2,7 +2,7 @@ import { User } from "../types/User";
 const BASE_URL = "http://localhost:8080";
 
 export async function getAllUsers(): Promise<User[]> {
-  const response = await fetch(`${BASE_URL}/users`);
+  const response = await fetch(`${BASE_URL}/users`, {credentials: 'include'});
 
   if (!response.ok) {
     throw new Error("Failed to fetch users");
@@ -12,7 +12,7 @@ export async function getAllUsers(): Promise<User[]> {
 }
 
 export async function getUserById(userId: string): Promise<User> {
-  const response = await fetch(`${BASE_URL}/users/${userId}`);
+  const response = await fetch(`${BASE_URL}/users/${userId}`, {credentials: 'include'});
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -25,7 +25,7 @@ export async function getUserById(userId: string): Promise<User> {
 }
 
 export async function getFriends(userId: string): Promise<User[]> {
-  const response = await fetch(`${BASE_URL}/users/${userId}/friends`);
+  const response = await fetch(`${BASE_URL}/users/${userId}/friends `, {credentials: 'include'});
 
   if (!response.ok) {
     throw new Error("Failed to fetch friends");
@@ -35,7 +35,7 @@ export async function getFriends(userId: string): Promise<User[]> {
 }
 
 export async function addFriend(userId:string,friendId:string): Promise<User> {
-  const response = await fetch(`${BASE_URL}/users/${userId}/friends/${friendId}`);
+  const response = await fetch(`${BASE_URL}/users/${userId}/friends/${friendId}`, {credentials: 'include'});
 
   if (!response.ok) {
     throw new Error("Failed to fetch friends");

@@ -2,31 +2,25 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import PostCard from '../components/features/PostCard'
 import ProfileCard from '../components/features/ProfileCard'
+import ProfileIcon from '../components/common/ProfileIcon'
 import { Post } from '../types/Post'
 import { Group } from '../types/Group'
 import { parseDate } from '../utils/dateTime'
 import { getSightingsByGroup } from '../api/Sightings'
-import { getAllGroups } from '../api/Groups'
+import { getAllGroups, getUserGroups } from '../api/Groups'
 import { useAuth } from '../context/AuthContext'
 import { getUserById } from '../api/Users'
 import { User } from '../types/User'
 import SearchBar from '../components/common/SearchBar'
 import BirdCard from '../components/features/BirdCard'
 import { Bird } from '../types/Bird'
+import CreatePost from '../components/features/CreatePost'
+import { getAllBirds } from '../api/Birds'
+import FriendCard from '../components/features/FriendCard'
+import { Friend } from '../types/Friend'
+import GroupCard from '../components/features/GroupCard'
 
 const PAGE_SIZE = 5;
-
-// Reuse mock birds from Feed if needed
-const mockBirds: Bird[] = [
-  {
-    id: "1",
-    commonName: "Crested Kingfisher",
-    scientificName: "Megaceryle lugubris",
-    image: "src/assets/crested-kingfisher.jpg",
-    location: [-82.5519, 35.5955]
-  },
-  // ... add more as needed
-];
 
 function GroupFeed() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -37,6 +31,10 @@ function GroupFeed() {
   const [loadingPage, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  const [birds, setBirds] = useState<Bird[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const BASE_URL = "http://localhost:8080";
   const navigate = useNavigate();
 
   // Fetch full user data
@@ -45,8 +43,27 @@ function GroupFeed() {
       getUserById(user.id)
         .then(setUserData)
         .catch(console.error);
+      
+      fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
+        .then(r => r.json())
+        .then(setFriends)
+        .catch(err => console.error("Failed to fetch user: " + err));
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if(user?.id) {
+        getUserGroups(user.id)
+            .then(setGroups)
+            .catch(err => console.error("Failed to fetch groups:", err));
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    getAllBirds()
+      .then(setBirds)
+      .catch(err => console.error("Failed to fetch birds:", err));
+  }, []);
 
   // Fetch group details
   useEffect(() => {
@@ -108,8 +125,7 @@ function GroupFeed() {
         {group && (
           <div className='h-fit w-full mt-6 bg-white p-4 drop-shadow'>
             <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
-              <img src="src/assets/groups.svg" alt="group"/>
-              <p className='text-lg ml-3 font-bold'>{group.name}</p>
+              <p className='text-lg font-bold'>{group.name}</p>
             </div>
             <p className='text-sm text-gray-600 mb-2'>
               {group.members?.length || 0} members
@@ -124,14 +140,15 @@ function GroupFeed() {
             {group.members && group.members.length > 0 && (
               <div className='mt-3 border-t border-gray-300 pt-3'>
                 <p className='text-sm font-semibold mb-2'>Members:</p>
-                <ul className='text-sm text-gray-700 space-y-1'>
+                <ul className='text-sm text-gray-700 space-y-2'>
                   {group.members.map((member, index) => (
                     <li 
                       key={member.userId || `member-${index}`} 
-                      className='truncate hover:bg-gray-50 p-1 rounded cursor-pointer'
+                      className='flex items-center gap-2 hover:bg-gray-50 p-1 rounded cursor-pointer'
                       onClick={() => member.userId && navigate(`/profile/${member.userId}`)}
                     >
-                      {member.username || 'Unknown User'}
+                      <ProfileIcon size="sm" src={member.profilePic} />
+                      <span className='truncate'>{member.username || 'Unknown User'}</span>
                     </li>
                   ))}
                 </ul>
@@ -143,19 +160,20 @@ function GroupFeed() {
 
       {/* Main Feed */}
       <div className='basis-1/2 m-6'>
-        {error && (
-          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
-            Error: {error}
-          </div>
-        )}
-        
-        {posts.length === 0 ? (
-          <div className='bg-white p-6 text-center text-gray-500'>
-            No posts yet in this group
-          </div>
-        ) : (
-          <>
-            {pagedPosts.map(post => (
+        <div className='flex flex-col'>
+          <CreatePost/>
+          {error && (
+            <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+              Error: {error}
+            </div>
+          )}
+          
+          {posts.length === 0 ? (
+            <div className='bg-white p-6 text-center text-gray-500'>
+              No posts yet in this group
+            </div>
+          ) : (
+            pagedPosts.map(post => (
               <div key={post.id?.toString()}>
                 <PostCard
                   description={post.header}
@@ -167,51 +185,40 @@ function GroupFeed() {
                 />
                 <button
                   onClick={() => navigate(`/sightings/${post.id.toString()}`)}
-                  className="mt-2 mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="mt-2"
                 >
-                  View Details
+                  Click
                 </button>
               </div>
-            ))}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-6">
-                <button
-                  disabled={page === 0}
-                  onClick={() => setPage(p => p - 1)}
-                  className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                <span className="text-gray-700">
-                  Page {page + 1} of {totalPages}
-                </span>
-                <button
-                  disabled={page + 1 >= totalPages}
-                  onClick={() => setPage(p => p + 1)}
-                  className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </>
-        )}
+            ))
+          )}
+        </div>
       </div>
 
       {/* Right Sidebar */}
       <div className='basis-1/4 m-6 ml-0 h-fit w-full bg-white p-4 drop-shadow'>
         <div className='flex flex-row w-full border-b border-gray-300 mb-3 items-center'>
           <img src="src/assets/bird.svg" alt="birds" className='w-5 h-5'/>
-          <div className='text-lg ml-3'>Birds</div>
+          <div className='text-lg ml-3 font-bold'>All Birds</div>
         </div>
-        <div className='mb-3'>
-          <SearchBar/>
-        </div>
-        {mockBirds.map((bird) => (
-          <BirdCard key={bird.id} bird={bird}/>
-        ))}
+        {birds.length === 0 ? (
+          <p className='text-sm'>Loading...</p>
+        ) : (
+          birds.slice(0, 20).map(bird => (
+            <div key={bird.id} className='flex items-center gap-2 mb-2'>
+              {bird.imageURL && (
+                <img 
+                  src={bird.imageURL} 
+                  alt={bird.commonName}
+                  className='w-8 h-8 rounded-full object-cover'
+                />
+              )}
+              <p className='text-sm'>
+                {bird.commonName}
+              </p>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )
