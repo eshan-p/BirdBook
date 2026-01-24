@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/birds")
+@RequestMapping("/birds")
 @CrossOrigin(
     origins = "http://localhost:5173",
     allowCredentials = "true"

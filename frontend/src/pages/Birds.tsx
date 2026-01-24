@@ -96,10 +96,6 @@ export default function Birds() {
     b.commonName.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loadingPage) {
-    return <p className="p-6">Loading birds...</p>;
-  }
-
   return (
     <div className="flex flex-row min-h-screen bg-[#F7F7F7] px-16">
       {/* LEFT SIDEBAR */}
