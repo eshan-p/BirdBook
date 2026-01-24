@@ -50,6 +50,7 @@ public class SecurityConfig {
 
                 // AUTH / PUBLIC
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/profile_pictures/**").permitAll()
                 .requestMatchers("/groups/**").permitAll()
                 .requestMatchers("/birds/**").permitAll()
                 .requestMatchers("/search/**").permitAll()

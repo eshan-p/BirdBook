@@ -32,7 +32,7 @@ function Feed() {
   const BASE_URL = "http://localhost:8080";
   const { user, loading } = useAuth();
   const [userData, setUserData] = useState<User | null>(null);
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friends, setFriends] = useState<User[]>([]);
   const [birds, setBirds] = useState<Bird[]>([]);
 
   const [page, setPage] = useState(0); // zero-based index
@@ -74,10 +74,15 @@ useEffect(() => {
             .then(setUserData)
             .catch(console.error);
           
-          fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
-            .then(r => r.json())
-            .then(setFriends)
-            .catch(err => console.error("Failed to fetch user: " + err));
+          fetch(`${BASE_URL}/users/${user.id}/friends`, {credentials: 'include'})
+            .then(async (r) => {
+      if (!r.ok) {
+        throw new Error(`Failed to fetch friends (${r.status})`);
+      }
+      return r.json();
+    })
+    .then(setFriends)
+    .catch(err => console.error("Failed to fetch friends:", err));
       }
     }, [user?.id])
 
@@ -92,6 +97,7 @@ useEffect(() => {
 
   //console.log("posts:", posts);
   //console.log("pagedPosts:", pagedPosts);
+  console.log(friends);
 
   
 
@@ -113,7 +119,7 @@ useEffect(() => {
               <p className='text-lg ml-3 font-bold'>Friends</p>
             </div>
             {friends.map((friend) => (
-              <FriendCard key={friend.id} friend={friend}/>
+              <FriendCard key={friend.id} user={friend}/>
             ))}
           </div>
         </div>
