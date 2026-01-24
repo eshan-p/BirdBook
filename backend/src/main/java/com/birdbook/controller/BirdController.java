@@ -9,6 +9,7 @@ import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -68,6 +69,7 @@ public class BirdController {
 
     // ADD BIRD (MULTIPART)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('SUPER_USER')")
     public ResponseEntity<?> addBirdMultipart(
             @RequestPart("bird") String birdJson,
             @RequestPart(value = "image", required = false) MultipartFile image
@@ -96,6 +98,7 @@ public class BirdController {
 
     // UPDATE BIRD
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('SUPER_USER')")
     public ResponseEntity<Bird> updateBirdMultipart(
             @PathVariable String id,
             @RequestPart("bird") String birdJson,
@@ -116,6 +119,7 @@ public class BirdController {
 
     // DELETE BIRD
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_USER')")
     public ResponseEntity<String> deleteBird(@PathVariable String id) {
         birdService.deleteBird(new ObjectId(id));
         return ResponseEntity.ok("Bird deleted successfully");

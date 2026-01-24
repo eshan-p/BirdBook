@@ -16,11 +16,19 @@ public class PostUser {
 
     private String username;
 
+    private String profilePic; 
+
     public PostUser() {}
 
     public PostUser(ObjectId userId, String username) {
         this.userId = userId;
         this.username = username;
+    }
+
+    public PostUser(ObjectId userId, String username, String profilePic) {
+        this.userId = userId;
+        this.username = username;
+        this.profilePic = profilePic;
     }
 
     public ObjectId getUserId() {
@@ -37,5 +45,13 @@ public class PostUser {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getProfilePic() {
+        return profilePic;
+    }
+
+    public void setProfilePic(String profilePic) {
+        this.profilePic = profilePic;
     }
 }
