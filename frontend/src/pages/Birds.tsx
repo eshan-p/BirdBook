@@ -8,59 +8,33 @@ import { Group } from "../types/Group";
 import { Friend } from "../types/Friend";
 import { Bird } from "../types/Bird";
 import { fetchAllBirds } from "../services/birdService";
-
-// ---- MOCK DATA (SIDEBARS ONLY) ----
-const mockGroups: Group[] = [
-  {
-    id: "1",
-    name: "Carolina Warblers United",
-    ownerId: "1",
-    members: [],
-    requests: [],
-    groupPhoto: "src/assets/profilephoto.jpg",
-    location: [35.5955, -82.5519],
-    followers: 814,
-  },
-];
-
-
-const mockFriends: Friend[] = [
-  {
-    id: "1",
-    name: "Marcus Thompson",
-    profilePhoto: "src/assets/profilephoto.jpg",
-    location: [35.5955, -82.5519],
-  },
-];
-
-const mockBirds: Bird[] = [
-  {
-    id: "1",
-    commonName: "Crested Kingfisher",
-    scientificName: "Megaceryle lugubris",
-    image: "src/assets/crested-kingfisher.jpg",
-    location: [-82.5519, 35.5955],
-  },
-  {
-    id: "2",
-    commonName: "American Bittern",
-    scientificName: "Botaurus lentiginosus",
-    image: "src/assets/american-bittern.jpg",
-    location: [-95.7129, 37.2688],
-  },
-  {
-    id: "3",
-    commonName: "Stellar's Jay",
-    scientificName: "Cyanocitta stelleri",
-    image: "src/assets/stellars-jay.jpg",
-    location: [-120.5, 45.5],
-  },
-];
+import { useAuth } from "../context/AuthContext";
 
 export default function Birds() {
   const [search, setSearch] = useState("");
   const [birds, setBirds] = useState<Bird[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingPage, setLoading] = useState(true);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const { user, loading } = useAuth();
+
+  const BASE_URL = "http://localhost:8080";
+
+  useEffect(() => {
+        fetch(`${BASE_URL}/groups`, {credentials: 'include'})
+            .then(r => r.json())
+            .then(setGroups)
+            .catch(err => console.error("Failed to fetch posts:", err))
+  },[]); // get groups
+
+  useEffect(() => {
+        if(user?.id) {
+            fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
+              .then(r => r.json())
+              .then(setFriends)
+              .catch(err => console.error("Failed to fetch user: " + err));
+        }
+      }, [user?.id])
 
   useEffect(() => {
     fetchAllBirds()
@@ -73,7 +47,7 @@ export default function Birds() {
     b.commonName.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) {
+  if (loadingPage) {
     return <p className="p-6">Loading birds...</p>;
   }
 
@@ -84,11 +58,11 @@ export default function Birds() {
         <ProfileCard />
         <div className="mt-6 bg-white p-4 drop-shadow">
           <p className="font-semibold mb-2">Groups</p>
-          {mockGroups.map(group => (
+          {groups.map(group => (
             <GroupCard key={group.id} group={group} />
           ))}
           <p className="font-semibold mt-4 mb-2">Friends</p>
-          {mockFriends.map(friend => (
+          {friends.map(friend => (
             <FriendCard key={friend.id} friend={friend} />
           ))}
         </div>
