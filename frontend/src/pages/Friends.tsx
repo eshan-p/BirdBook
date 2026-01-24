@@ -3,12 +3,14 @@ import { User } from "../types/User";
 import { getAllUsers } from "../api/Users";
 import SearchBar from "../components/common/SearchBar";
 import FriendCard from "../components/features/FriendCard";
+import { useNavigate } from 'react-router-dom';
 
 
 export default function Friends() {
     const [friends, setFriends] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function fetchFriends() {
@@ -42,12 +44,20 @@ export default function Friends() {
 
             <ul className="divide-y">
                 {friends.map(friend => (
+                <div>
                     <li
                         key={friend.id}
                         className="py-5"
                     >
                         <FriendCard user={friend} />
                     </li>
+                    <button
+                        onClick={() => navigate(`/user/${friend.id}`)}
+                        className="mt-2"
+                    >
+                        Click
+                    </button>
+                </div>
                 ))}
             </ul>
         </main>
