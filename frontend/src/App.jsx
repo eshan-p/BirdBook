@@ -13,6 +13,7 @@ import Groups from "./pages/Groups";
 import Friends from "./pages/Friends";
 import GroupFeed from "./pages/GroupFeed";
 import { AuthProvider  } from "./context/AuthContext";
+import OtherProfile from "./pages/OtherProfile";
 
 export default function App() {
   return (
