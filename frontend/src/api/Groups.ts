@@ -1,14 +1,6 @@
 import {Group} from "../types/Group";
 const BASE_URL = "http://localhost:8080";
 
-// function getHeaders() {
-//     const token = localStorage.getItem("token");
-//     return {
-//         "Content-Type": "application/json",
-//         ...(token && { "Authorization": `Bearer ${token}` })
-//     };
-// }
-
 export async function getAllGroups(): Promise<Group[]>{
     try {
         const response = await fetch(`${BASE_URL}/groups`, {

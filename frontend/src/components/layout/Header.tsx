@@ -9,7 +9,7 @@ function Header() {
     <div className='bg-white flex flex-row justify-between items-center h-12 px-24 drop-shadow sticky top-0 z-50'>
       <div className='basis-1/3 flex flex-row justify-start min-w-0'>
         <div className='w-8 h-8 flex flex-row justify-center items-center border-2 border-gray-500 text-gray-500 text-center font-bold mr-4'>BB</div>
-        <SearchBar/>
+        <SearchBar searchType='all' placeholder='Search birds, users, groups...'/>
       </div>
             <button onClick={() => navigate(`/feed`)}
                   className="mt-2">
