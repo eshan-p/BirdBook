@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { getUserById } from '../api/Users';
 import { User } from '../types/User';
 import CreatePost from '../components/features/CreatePost';
+import { getUserGroups } from '../api/Groups';
 
 //page logic
 const PAGE_SIZE = 5; // easy to tweak later
@@ -54,11 +55,12 @@ useEffect(() => {
 }, []); //get sightings
 
   useEffect(() => {
-        fetch(`${BASE_URL}/groups`, {credentials: 'include'})
-            .then(r => r.json())
+    if(user?.id) {
+        getUserGroups(user.id)
             .then(setGroups)
-            .catch(err => console.error("Failed to fetch posts:", err))
-  },[]); // get groups
+            .catch(err => console.error("Failed to fetch groups:", err));
+    }
+  }, [user?.id]); // get user's groups only
 
   useEffect(() => {
     getAllBirds()

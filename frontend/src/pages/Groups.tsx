@@ -12,6 +12,12 @@ import {
 import SearchBar from "../components/common/SearchBar";
 import GroupCard from "../components/features/GroupCard";
 import { useAuth } from "../context/AuthContext";
+import ProfileCard from "../components/features/ProfileCard";
+import FriendCard from "../components/features/FriendCard";
+import { User } from "../types/User";
+import { Bird } from "../types/Bird";
+import { getAllBirds } from "../api/Birds";
+import { getUserById } from "../api/Users";
 
 export default function Groups() {
   const [allGroups, setAllGroups] = useState<Group[]>([]);
@@ -21,6 +27,10 @@ export default function Groups() {
   const [newGroupName, setNewGroupName] = useState("");
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [userData, setUserData] = useState<User | null>(null);
+  const [friends, setFriends] = useState<User[]>([]);
+  const [birds, setBirds] = useState<Bird[]>([]);
+  const BASE_URL = "http://localhost:8080";
 
   const currentUserId = localStorage.getItem("userId") || "";
   const role = user?.role;
@@ -50,6 +60,25 @@ export default function Groups() {
       navigate("/login");
     }
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if(user?.id) {
+        getUserById(user.id)
+          .then(setUserData)
+          .catch(console.error);
+        
+        fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
+          .then(r => r.json())
+          .then(setFriends)
+          .catch(err => console.error("Failed to fetch friends:", err));
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    getAllBirds()
+        .then(setBirds)
+        .catch(err => console.error("Failed to fetch birds:", err));
+  }, []); // get birds
 
   const refreshLists = async () => {
     const data = await getAllGroups();
@@ -115,69 +144,114 @@ export default function Groups() {
   if (pageLoading) return <p>Loading...</p>;
 
   return (
-    <main className="max-w-3xl mx-auto m-6 p-6 bg-white rounded-lg shadow-sm">
-      <div className="flex items-center justify-between mb-6 gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 shrink-0">Groups</h2>
-        <div className="w-64">
-          <SearchBar />
+    <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
+      {/* Left Sidebar */}
+      <div className='flex flex-col basis-1/4 m-6 mr-0'>
+        <ProfileCard user={userData || undefined}/>
+        <div className='h-fit w-full mt-6 bg-white p-4 drop-shadow'>
+          <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
+            <img src="src/assets/person.svg" alt="friends"/>
+            <p className='text-lg ml-3 font-bold'>Friends</p>
+          </div>
+          {friends.map((friend) => (
+            <FriendCard key={friend.id} user={friend}/>
+          ))}
         </div>
       </div>
 
-      {canManage && (
-        <div className="mb-6 flex gap-2">
-          <input
-            className="border rounded px-3 py-2 flex-1"
-            placeholder="New group name"
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-          />
-          <button
-            onClick={handleCreate}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Create
-          </button>
-        </div>
-      )}
+      {/* Main Content */}
+      <div className='basis-1/2 m-6'>
+        <div className='bg-white p-6 rounded-lg shadow-sm'>
+          <div className="flex items-center justify-between mb-6 gap-4">
+            <h2 className="text-2xl font-bold text-gray-800 shrink-0">Groups</h2>
+            <div className="w-64">
+              <SearchBar />
+            </div>
+          </div>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">Error: {error}</div>
-      )}
-
-      {currentUserId && userGroups.length > 0 && (
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">My Groups</h3>
-          <ul className="divide-y">
-            {userGroups.map((group) => (
-              <li key={group.id}>
-                <GroupCard
-                  group={group}
-                  onLeave={() => handleLeave(group.id)}
-                  onDelete={canManage ? () => handleDelete(group.id) : undefined}
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Groups</h3>
-        <ul className="divide-y">
-          {allGroups.map((group) => (
-            <li key={group.id}>
-              <GroupCard
-                group={group}
-                onJoin={() => handleJoin(group.id)}
-                onDelete={canManage ? () => handleDelete(group.id) : undefined}
+          {canManage && (
+            <div className="mb-6 flex gap-2">
+              <input
+                className="border rounded px-3 py-2 flex-1"
+                placeholder="New group name"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
               />
-            </li>
-          ))}
-        </ul>
-        {allGroups.length === 0 && (
-          <p className="text-gray-500 py-4">No available groups</p>
+              <button
+                onClick={handleCreate}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              >
+                Create
+              </button>
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">Error: {error}</div>
+          )}
+
+          {currentUserId && userGroups.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">My Groups</h3>
+              <ul className="divide-y">
+                {userGroups.map((group) => (
+                  <li key={group.id}>
+                    <GroupCard
+                      group={group}
+                      onLeave={() => handleLeave(group.id)}
+                      onDelete={canManage ? () => handleDelete(group.id) : undefined}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Groups</h3>
+            <ul className="divide-y">
+              {allGroups.map((group) => (
+                <li key={group.id}>
+                  <GroupCard
+                    group={group}
+                    onJoin={() => handleJoin(group.id)}
+                    onDelete={canManage ? () => handleDelete(group.id) : undefined}
+                  />
+                </li>
+              ))}
+            </ul>
+            {allGroups.length === 0 && (
+              <p className="text-gray-500 py-4">No available groups</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <div className='basis-1/4 m-6 ml-0 h-fit w-full bg-white p-4 drop-shadow'>
+        <div className='flex flex-row w-full border-b border-gray-300 mb-3 items-center'>
+          <img src="src/assets/bird.svg" alt="birds" className='w-5 h-5'/>
+          <div className='text-lg ml-3 font-bold'>All Birds</div>
+        </div>
+        {birds.length === 0 ? (
+          <p className='text-sm'>Loading...</p>
+        ) : (
+          birds.slice(0, 20).map(bird => (
+            <div key={bird.id} className='flex items-center gap-2 mb-2'>
+              {bird.imageURL && (
+                <img 
+                  src={bird.imageURL} 
+                  alt={bird.commonName}
+                  className='w-8 h-8 rounded-full object-cover'
+                />
+              )}
+              <p className='text-sm'>
+                {bird.commonName}
+              </p>
+            </div>
+          ))
         )}
       </div>
-    </main>
+    </div>
   );
 }
