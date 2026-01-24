@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { Bird } from '../../types/Bird'
 
 function BirdCard({ bird }: { bird: Bird }) {
