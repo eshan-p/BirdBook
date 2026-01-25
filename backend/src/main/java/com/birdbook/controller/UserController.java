@@ -162,4 +162,28 @@ public class UserController {
 
         return new ResponseEntity<String>("User deleted successfully", HttpStatus.OK);
     }
+
+    @PatchMapping("/{id}/role")
+    @PreAuthorize("hasRole('SUPER_USER')")
+    public ResponseEntity<UserSummaryDTO> updateUserRole(@PathVariable String id, @RequestBody Map<String, String> roleUpdate) {
+        try {
+            ObjectId userId = new ObjectId(id);
+            String newRole = roleUpdate.get("role");
+            
+            User updatedUser = userService.updateUserRole(userId, newRole);
+            
+            UserSummaryDTO userDTO = new UserSummaryDTO(
+                updatedUser.getId().toHexString(),
+                updatedUser.getUsername(),
+                updatedUser.getRole().name(),
+                updatedUser.getProfilePic()
+            );
+            
+            return ResponseEntity.ok(userDTO);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

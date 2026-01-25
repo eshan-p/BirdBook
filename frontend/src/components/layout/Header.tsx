@@ -49,7 +49,8 @@ function Header() {
     { label: 'Groups', path: '/groups' },
     { label: 'Friends', path: '/friends' },
     { label: 'Birds', path: '/birds' },
-    { label: 'Profile', path: '/profile' }
+    { label: 'Profile', path: '/profile' },
+    { label: 'Users', path: '/users' }
   ];
 
   const navItems = authUser ? protectedNavItems : [];

@@ -49,3 +49,24 @@ export async function addFriend(userId: string, friendId: string): Promise<User>
 
   return response.json();
 }
+
+export async function updateUserRole(userId: string, role: string): Promise<User> {
+  const response = await fetch(
+    `${BASE_URL}/users/${userId}/role`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ role }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to update user role: ${response.status}`);
+  }
+
+  return response.json();
+}

@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import Birds from "./pages/Birds"; 
 import Groups from "./pages/Groups";
 import Friends from "./pages/Friends";
+import Users from "./pages/Users";
 import GroupFeed from "./pages/GroupFeed";
 import SearchResults from "./pages/SearchResults";
 import { AuthProvider } from "./context/AuthContext";
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/sightings/:postId" element={<Sighting />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+            <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
             <Route path="/groups" element={<ProtectedRoute><Groups /></ProtectedRoute>} />
             <Route path="/groups/:groupId" element={<ProtectedRoute><GroupFeed /></ProtectedRoute>} />
             <Route path="/user/:userId" element={<ProtectedRoute><OtherProfile /></ProtectedRoute>} />
