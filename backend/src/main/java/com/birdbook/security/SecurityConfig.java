@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,6 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -44,32 +46,35 @@ public class SecurityConfig {
             )
 
                 .authorizeHttpRequests(auth -> auth
+                    // Preflight
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Preflight
-                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                    // AUTH / PUBLIC - Login & Registration
+                    .requestMatchers("/auth/**").permitAll()
+                    
+                    // GUEST ACCESS - Main feed (sightings), birds list (read-only)
+                    .requestMatchers(HttpMethod.GET, "/sightings/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/birds/**").permitAll()
 
-                // AUTH / PUBLIC
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/groups/**").permitAll()
-                .requestMatchers("/birds/**").permitAll()
-                .requestMatchers("/search/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/users/**").permitAll()
+                    // AUTHENTICATED USERS ONLY - Everything else requires login
+                    // AUTHENTICATED USERS ONLY
+                    .requestMatchers("/groups/**").authenticated()
+                    .requestMatchers("/search/**").authenticated()  
+                    .requestMatchers("/users/**").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/sightings/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                    .requestMatchers(HttpMethod.PUT, "/sightings/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                    .requestMatchers(HttpMethod.PATCH, "/sightings/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                    .requestMatchers(HttpMethod.DELETE, "/sightings/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                    .requestMatchers(HttpMethod.POST, "/birds/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                    .requestMatchers(HttpMethod.PUT, "/birds/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                    .requestMatchers(HttpMethod.PATCH, "/birds/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                    .requestMatchers(HttpMethod.DELETE, "/birds/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                    
+                    // ADMIN ROUTES
+                    .requestMatchers("/admin/**").hasAnyRole("ADMIN_USER", "SUPER_USER")
 
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/users/**").permitAll()
-                .requestMatchers("/sightings/**").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
-
-                        // ROLE BASED
-                        .requestMatchers("/posts/**")
-                        .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
-
-                        .requestMatchers("/admin/**")
-                        .hasAnyRole("ADMIN_USER", "SUPER_USER")
-
-                        // EVERYTHING ELSE
-                        .anyRequest().authenticated()
+                    // EVERYTHING ELSE
+                    .anyRequest().authenticated()
                 )
 
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

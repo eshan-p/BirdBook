@@ -33,7 +33,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         return path.startsWith("/auth/")
             || (path.startsWith("/users") && method.equals("POST"))
-            || path.startsWith("/sightings");
+            || (path.startsWith("/sightings") && method.equals("GET")); // Only skip GET
     }
 
     @Override

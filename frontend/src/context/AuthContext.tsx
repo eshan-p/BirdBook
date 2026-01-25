@@ -31,10 +31,11 @@ export const AuthProvider = ({children} : {children: ReactNode}) => {
                     const data = await res.json();
                     setUser(data);
                 } else {
+                    console.log('Auth check failed:', res.status);
                     setUser(null);
                 }
             } catch(err) {
-                console.warn("Not authenticated");
+                console.error("Auth check error:", err);
                 setUser(null);
             } finally {
                 setLoading(false);

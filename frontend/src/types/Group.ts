@@ -1,6 +1,7 @@
 export interface PostUser {
     userId: string;
     username: string;
+    profilePic?: string;
 }
 
 export interface Group {

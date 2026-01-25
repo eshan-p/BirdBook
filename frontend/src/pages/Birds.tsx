@@ -11,6 +11,7 @@ import { getAllBirds } from "../api/Birds";
 import { useAuth } from '../context/AuthContext';
 import { getUserById } from '../api/Users';
 import { User } from '../types/User';
+import { getUserGroups } from '../api/Groups';
 
 // ---- MOCK DATA ----
 const mockGroups: Group[] = [
@@ -55,13 +56,14 @@ export default function Birds() {
     }
   }, [user?.id]);
 
-  // Fetch groups from backend
+  // Fetch user's groups only
   useEffect(() => {
-    fetch(`${BASE_URL}/groups`, {credentials: 'include'})
-      .then(r => r.json())
-      .then(setGroups)
-      .catch(err => console.error("Failed to fetch groups:", err));
-  }, []);
+    if (user?.id) {
+      getUserGroups(user.id)
+        .then(setGroups)
+        .catch(err => console.error("Failed to fetch groups:", err));
+    }
+  }, [user?.id]);
 
   // Fetch friends from backend
   useEffect(() => {

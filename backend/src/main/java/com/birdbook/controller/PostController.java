@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 
 import java.util.Date;
@@ -72,6 +73,7 @@ public class PostController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createPost(
             @RequestPart("post") String postJson,
             @RequestPart(value = "image", required = false) MultipartFile image,
@@ -97,6 +99,7 @@ public class PostController {
     }
 
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER') or @postService.isOwner(#id, authentication.principal.userId)")
     public ResponseEntity<?> updatePostMultipart(
             @PathVariable("id") ObjectId id,
             @RequestPart("post") String postJson,
@@ -111,6 +114,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER') or @postService.isOwner(#id, authentication.principal.userId)")
     public ResponseEntity<String> deletePost(@PathVariable String id){
         ObjectId pId = new ObjectId(id);
         sService.deletePostById(pId);
@@ -118,6 +122,7 @@ public class PostController {
     }
 
     @PostMapping("/{id}/comments")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> addComment(
             @PathVariable ObjectId id,
             @RequestBody Comment comment,
@@ -129,6 +134,7 @@ public class PostController {
     }
 
     @PatchMapping("/{id}/comments")
+    @PreAuthorize("@postService.isOwner(#id, authentication.principal.userId)")
     public ResponseEntity<?> updateComment(@PathVariable ObjectId id, @RequestBody Comment updatedComment) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -145,6 +151,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}/comments")
+    @PreAuthorize("@postService.isOwner(#id, authentication.principal.userId)")
     public ResponseEntity<?> deleteComment(@PathVariable ObjectId id, @RequestBody Comment comment) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -163,6 +170,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/like/{userId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Post> likePost(@PathVariable String postId, @PathVariable String userId) {
 
         ObjectId postObjId = new ObjectId(postId);
@@ -171,6 +179,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/unlike/{userId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Post> unlikePost(@PathVariable String postId, @PathVariable String userId) {
 
         ObjectId postObjId = new ObjectId(postId);
@@ -179,6 +188,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/flag")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
     public ResponseEntity<Post> flagPost(@PathVariable String postId) {
 
         ObjectId postObjId = new ObjectId(postId);
@@ -186,6 +196,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/unflag")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
     public ResponseEntity<Post> unflagPost(@PathVariable String postId) {
 
         ObjectId postObjId = new ObjectId(postId);
@@ -193,6 +204,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/help")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER') or @postService.isOwner(#id, authentication.principal.userId)")
     public ResponseEntity<Post> markNeedsHelp(@PathVariable String postId) {
 
         ObjectId postObjId = new ObjectId(postId);
@@ -200,6 +212,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/help/remove")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER') or @postService.isOwner(#id, authentication.principal.userId)")
     public ResponseEntity<Post> removeHelpFlag(@PathVariable String postId) {
 
         ObjectId postObjId = new ObjectId(postId);
