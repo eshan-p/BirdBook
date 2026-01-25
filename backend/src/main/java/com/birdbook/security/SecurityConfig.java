@@ -52,6 +52,11 @@ public class SecurityConfig {
                     // AUTH / PUBLIC - Login & Registration
                     .requestMatchers("/auth/**").permitAll()
                     
+                    // STATIC RESOURCES - Images and profile pictures
+                    .requestMatchers("/images/**").permitAll()
+                    .requestMatchers("/profile_pictures/**").permitAll()
+                    .requestMatchers("/backend_profile_pictures/**").permitAll()
+                    
                     // GUEST ACCESS - Main feed (sightings), birds list (read-only)
                     .requestMatchers(HttpMethod.GET, "/sightings/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/birds/**").permitAll()

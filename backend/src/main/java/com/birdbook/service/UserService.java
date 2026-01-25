@@ -1,6 +1,8 @@
 package com.birdbook.service;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +17,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.time.*;
 
+import javax.imageio.ImageIO;
+
 import org.bson.types.ObjectId;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.birdbook.models.Group;
 import com.birdbook.models.Post;
+import com.birdbook.models.Role;
 import com.birdbook.models.User;
 import com.birdbook.repository.GroupDAO;
 import com.birdbook.repository.PostDAO;
@@ -139,6 +144,22 @@ public class UserService {
         userDAO.deleteById(id);
     }
 
+    public User updateUserRole(ObjectId userId, String newRoleString) {
+        User user = userDAO.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found."));
+        
+        Role newRole;
+        
+        try {
+            newRole = Role.valueOf(newRoleString);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid role: " + newRoleString);
+        }
+        
+        user.setRole(newRole);
+        return userDAO.save(user);
+    }
+
     public void addFriend(ObjectId userId, ObjectId friendId) {
         User user = userDAO.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found."));
         User friend = userDAO.findById(friendId).orElseThrow(() -> new IllegalArgumentException("Friend not found."));
@@ -173,17 +194,31 @@ public class UserService {
         return userDAO.findAllById(List.of(friendIds));
     } 
     
-    // Helper method to save image file for adding/updating a post; returns the file path
+    // Helper method to save profile picture as JPG; returns the file path
     private String saveImage(MultipartFile imageFile){
         try {
-
-            String uploadDir = "images";
+            String uploadDir = "profile_pictures";
             Files.createDirectories(Paths.get(uploadDir));
 
-            String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+            String fileName = UUID.randomUUID() + ".jpg";
             Path filePath = Paths.get(uploadDir, fileName);
 
-            Files.copy(imageFile.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            BufferedImage image = ImageIO.read(imageFile.getInputStream());
+            
+            if (image == null) {
+                throw new IOException("Unable to read image file");
+            }
+
+            // Convert to RGB
+            BufferedImage rgbImage = new BufferedImage(
+                image.getWidth(),
+                image.getHeight(),
+                BufferedImage.TYPE_INT_RGB
+            );
+            rgbImage.createGraphics().drawImage(image, 0, 0, null);
+
+            // Save as JPG
+            ImageIO.write(rgbImage, "jpg", filePath.toFile());
 
             return "/" + uploadDir + "/" + fileName;
 

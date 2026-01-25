@@ -25,6 +25,7 @@ function Header() {
     { label: 'Friends', path: '/friends' },
     { label: 'Birds', path: '/birds' },
     { label: 'Profile', path: '/profile' }
+    { label: 'Users', path: '/users' }
   ];
 
   return (
