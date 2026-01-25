@@ -14,7 +14,7 @@ function ProfileIcon({size, src = "http://localhost:8080/profile_pictures/defaul
         lg: 'w-28 h-28'
     }
     return (
-        <div className={`${sizeClasses[size]} rounded-full bg-gray-500 border border-gray-500 overflow-hidden`}>
+        <div className={`${sizeClasses[size]} rounded-full bg-gray-500 border border-gray-300 overflow-hidden`}>
             <img src={src} alt="profile" className='w-full h-full object-cover'/>
         </div>
     )

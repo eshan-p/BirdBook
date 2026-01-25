@@ -65,9 +65,6 @@ useEffect(() => {
   const latitude = Number(raw.latitude);
   const longitude = Number(raw.longitude);
 
-  //console.log("latitude:", latitude, "type:", typeof latitude);
-  //console.log("longitude:", longitude, "type:", typeof longitude);
-
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
     console.error("Invalid coordinates AFTER parsing:", raw);
     return;
@@ -91,7 +88,7 @@ useEffect(() => {
 
   return (
     <div className='w-full bg-white p-4 drop-shadow'>
-      <div className='flex flex-row mb-3'>
+      <div className='flex flex-row mb-3 text-left'>
         <ProfileIcon size="md"/>
         <div className='h-14 w-full ml-3'>
           <h3 className='font-bold text-base'>{author ? author : "Unknown user"}</h3>
@@ -99,7 +96,7 @@ useEffect(() => {
           <p className='text-sm/6 opacity-85'>{timeSince}</p>
         </div>
       </div>
-      <p className='text-md/5'>{description}</p>
+      <p className='text-md/5 text-left'>{description}</p>
       <div className='flex flex-row mt-2'>
         <div className='flex flex-row items-center mr-3'>
           <img src="/src/assets/heart.png" alt="like" className='w-5 h-5 mr-1'/>

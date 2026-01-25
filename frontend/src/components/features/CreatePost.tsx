@@ -10,9 +10,9 @@ function CreatePost() {
 
   return (
     <div>
-        <button onClick={openForm}>
+        <button onClick={openForm} className='w-full mb-6'>
             <div className='flex w-full bg-white drop-shadow justify-center items-center'>
-                <div className='flex w-full m-4 border p-4 bg-[#F7F7F7] border-gray-400 border-dashed justify-center items-center opacity-60'>
+                <div className='flex w-full m-4 border p-4 bg-[#F7F7F7] border-gray-400 border-dashed justify-center items-center opacity-50 font-semibold'>
                     Log a new bird sighting
                 </div>
             </div>

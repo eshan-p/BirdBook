@@ -129,7 +129,10 @@ useEffect(() => {
           <div className='flex flex-col'>
             <CreatePost/>
             {pagedPosts.map(post => (
-              <div>
+              <button
+                onClick={() => navigate(`/sightings/${post.id.toString()}`)}
+                className="mb-6"
+              >
                 <PostCard
                   key={post.id?.toString()}
                   description={post.header}
@@ -139,13 +142,7 @@ useEffect(() => {
                   likes={post.likes.length}
                   comments={post.comments.length}
                 />
-                <button
-                    onClick={() => navigate(`/sightings/${post.id.toString()}`)}
-                    className="mt-2"
-                  >
-                      Click
-                </button>
-              </div>
+              </button>
             ))}
           </div> 
         </div>
