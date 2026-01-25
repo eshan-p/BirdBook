@@ -6,34 +6,35 @@ export interface Coordinates {
 }
 
 export interface Post {
-  //mongo userid must be treated as  a string in ts
   id: string;
-
-  header:string;
+  header: string;
   
   tags?: {
-    location?: Coordinates;
-    bird?: string;
+    latitude?: string;
+    longitude?: string;
   };
 
-  bird:string;
-  flagged:string;
+  bird: string | null;
+  flagged: boolean;
 
-  group?:string|null;
-  help:boolean;
+  group?: string | null;
+  help: boolean;
 
-  likes:string[];
+  likes: string[];
 
-  imageUrl?:string|null;
-  textBody:string;
+  image?: string | null;
+  textBody: string;
   
   timestamp: string;
+  comments: Comment[];
 
-  comments:Comment[];
-
-  user:{
-    profilePic: any;
-    id: string,
-    username: string
+  user: {
+    profilePic: string;
+    userId?: {
+      timestamp?: number;
+      date?: string;
+      $oid?: string;
+    };
+    username: string;
   };
 }

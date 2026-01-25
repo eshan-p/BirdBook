@@ -63,35 +63,25 @@ function Sighting() {
   }, [post, user]);
 
   //finally fetch location
-  useEffect(() => {
-    if (!post?.tags?.location) return;
+useEffect(() => {
+  if (!post?.tags?.latitude || !post?.tags?.longitude) return;
 
-    let raw = post.tags.location as any;
+  const latitude = parseFloat(post.tags.latitude);
+  const longitude = parseFloat(post.tags.longitude);
 
-    if (typeof raw === "string") {
-      try {
-        raw = JSON.parse(raw);
-      } catch {
-        console.error("Location is not valid JSON:", raw);
-        return;
-      }
-    }
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    console.error("Invalid coordinates:", { latitude, longitude });
+    setLocationLabel(null);
+    return;
+  }
 
-    const latitude = Number(raw.latitude);
-    const longitude = Number(raw.longitude);
-
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-      console.error("Invalid coordinates AFTER parsing:", raw);
-      return;
-    }
-
-    reverseCoordsToCityState({ latitude, longitude })
-      .then(setLocationLabel)
-      .catch((err) => {
-        console.error("Reverse geocode failed:", err);
-        setLocationLabel(null);
-      });
-  }, [post?.tags?.location]);
+  reverseCoordsToCityState({ latitude, longitude })
+    .then(setLocationLabel)
+    .catch((err) => {
+      console.error("Reverse geocode failed:", err);
+      setLocationLabel(null);
+    });
+}, [post?.tags?.latitude, post?.tags?.longitude]);
 
   // Update time since periodically
   useEffect(() => {
@@ -194,10 +184,10 @@ function Sighting() {
           <p className='text-base leading-relaxed mb-4 whitespace-pre-wrap'>{post.textBody}</p>
 
           {/* Post Image */}
-          {post.imageUrl && (
+          {post.image && (
             <div className='mb-4'>
               <img 
-                src={post.imageUrl} 
+                src={post.image} 
                 alt={post.header} 
                 className='w-full rounded-lg object-cover max-h-96'
               />

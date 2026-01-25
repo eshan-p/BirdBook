@@ -70,6 +70,9 @@ export default function Login() {
         <div className="auth-link">
           Don’t have an account? <Link to="/signup">Sign up</Link>
         </div>
+        <div className="auth-link mt-0">
+          Or <Link to="/feed">continue as guest</Link>
+        </div>
       </div>
     </div>
   );

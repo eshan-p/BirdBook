@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Bird } from '../../types/Bird'
-import { reverseCoordsToRegion } from '../../utils/geolocation'
+import { reverseCoordsToRegion, arrayToCoords } from '../../utils/geolocation'
 
 function TopBirds({birds} : {birds: Bird[]}) {
-  const [region, setRegion] = useState<string>("");
-//   useEffect(() => {
-
-//   }, bird)
   return (
     <div className='w-full'>
         <h2 className='text-xl opacity-70 mb-4'>Top birds spotted this month</h2>
@@ -17,10 +13,12 @@ function TopBirds({birds} : {birds: Bird[]}) {
                     <div className='px-3'>
                         <p className='mt-1 text-xs opacity-65'>{bird.commonName}</p>
                         <p className='text-[10px] opacity-65 italic mb-2'>{bird.scientificName}</p>
-                        {/* <div>  
-                            <img src="src/assets/pin.svg" alt="location"/>
-                            <p>{reverseCoordsToRegion(bird.location)}</p>
-                        </div> */}
+                        {bird.location != null && (
+                            <div>  
+                                <img src="src/assets/pin.svg" alt="location"/>
+                                <p>{reverseCoordsToRegion(arrayToCoords(bird.location))}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             ))}

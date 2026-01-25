@@ -4,5 +4,5 @@ export interface Bird {
   commonName: string;
   scientificName?: string;
   imageURL?: string; // Can be external URL (Wikipedia) or backend path
-  location?: [number, number];
+  location?: [number, number] | null;
 }

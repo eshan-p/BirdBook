@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/birds")
@@ -41,27 +42,33 @@ public class BirdController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Bird>> searchBirds(@RequestParam String query) {
-        System.out.println("!=========HIT!=========");
+    public ResponseEntity<List<Map<String, Object>>> searchBirds(@RequestParam String query) {
         if(query == null || query.trim().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
         List<Bird> results = birdService.searchBirds(query.trim());
-        return ResponseEntity.ok(results);
+        List<Map<String, Object>> formattedResults = results.stream()
+            .map(this::formatBirdResponse)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(formattedResults);
     }
 
     // GET ALL BIRDS
     @GetMapping
-    public ResponseEntity<List<Bird>> getAllBirds() {
-        return ResponseEntity.ok(birdService.getAllBirds());
+    public ResponseEntity<List<Map<String, Object>>> getAllBirds() {
+        List<Bird> birds = birdService.getAllBirds();
+        List<Map<String, Object>> formattedBirds = birds.stream()
+            .map(this::formatBirdResponse)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(formattedBirds);
     }
 
     // GET BIRD BY ID (USED BY BirdDetail PAGE)
     @GetMapping("/{id}")
-    public ResponseEntity<Bird> getBirdById(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> getBirdById(@PathVariable String id) {
         try {
             Bird bird = birdService.getBirdById(id);
-            return ResponseEntity.ok(bird);
+            return ResponseEntity.ok(formatBirdResponse(bird));
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
@@ -87,7 +94,7 @@ public class BirdController {
             }
 
             Bird savedBird = birdService.addBird(newBird, image);
-            return ResponseEntity.ok(savedBird);
+            return ResponseEntity.ok(formatBirdResponse(savedBird));
 
         } catch (Exception e) {
             return ResponseEntity
@@ -99,7 +106,7 @@ public class BirdController {
     // UPDATE BIRD
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('SUPER_USER')")
-    public ResponseEntity<Bird> updateBirdMultipart(
+    public ResponseEntity<Map<String, Object>> updateBirdMultipart(
             @PathVariable String id,
             @RequestPart("bird") String birdJson,
             @RequestPart(value = "image", required = false) MultipartFile image
@@ -111,7 +118,7 @@ public class BirdController {
                     birdRequest,
                     image
             );
-            return ResponseEntity.ok(updatedBird);
+            return ResponseEntity.ok(formatBirdResponse(updatedBird));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -124,20 +131,14 @@ public class BirdController {
         birdService.deleteBird(new ObjectId(id));
         return ResponseEntity.ok("Bird deleted successfully");
     }
+
+    private Map<String, Object> formatBirdResponse(Bird bird) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", bird.getId());
+        response.put("commonName", bird.getCommonName());
+        response.put("scientificName", bird.getScientificName());
+        response.put("imageURL", bird.getImageURL());
+        response.put("location", bird.getLocation());
+        return response;
+    }
 }
-
-
-    //addBird(Bird newBird)
-    /* @PostMapping("/new")
-    public Bird addBird(@RequestBody Bird newBird){
-        return birdService.addBird(newBird);
-    }*/
-
-    /* @PutMapping("/update/{id}")
-    public ResponseEntity<Bird> updateBird(@PathVariable String id, @RequestBody Bird birdRequest){
-
-        ObjectId userId = new ObjectId(id);
-        Bird updatedBird = birdService.updateBird(userId, birdRequest);
-
-        return ResponseEntity.ok(updatedBird);
-    } */

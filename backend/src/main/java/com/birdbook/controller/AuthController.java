@@ -195,4 +195,19 @@ public class AuthController {
                         .body(Map.of("error", "Invalid token"));
         }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("jwt", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setDomain("localhost");
+        cookie.setAttribute("SameSite", "Lax");
+
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
 }

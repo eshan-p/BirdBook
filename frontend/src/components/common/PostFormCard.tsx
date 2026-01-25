@@ -64,7 +64,6 @@ function PostFormCard({onClose} : {onClose: () => void}) {
                 {credentials: 'include'}
             );
             if(response.ok) {
-                console.error("Welp..: ");
                 const birds = await response.json();
                 setBirdSearchResults(birds);
             }

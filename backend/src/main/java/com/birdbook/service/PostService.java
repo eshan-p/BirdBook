@@ -9,6 +9,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,17 +33,44 @@ public class PostService {
         this.mongoTemplate = mongoTemplate;
     }
 
+    private List<Post> postsWithBirdLookup(List<Post> posts) {
+        if (posts == null || posts.isEmpty()) {
+            return posts;
+        }
+
+        List<AggregationOperation> pipeline = Arrays.asList(
+            Aggregation.match(Criteria.where("_id").in(
+                posts.stream().map(Post::getId).collect(Collectors.toList())
+            )),
+            Aggregation.lookup("birds", "bird", "_id", "birdDetails"),
+            Aggregation.unwind("$birdDetails", true) // preserveNullAndEmptyArrays = true
+        );
+
+        AggregationResults<Post> results = mongoTemplate.aggregate(
+            Aggregation.newAggregation(pipeline),
+            "posts",
+            Post.class
+        );
+
+        return results.getMappedResults();
+    }
+
     // Just for testing Spring Boot, can be removed later
     public Optional<Post> getPostById(ObjectId id) {
-        return sDAO.findById(id);
+        Optional<Post> post = sDAO.findById(id);
+        if (post.isPresent()) {
+            List<Post> enriched = postsWithBirdLookup(List.of(post.get()));
+            return enriched.isEmpty() ? post : Optional.of(enriched.get(0));
+        }
+        return post;
     }
 
     public List<Post> getAllPosts() {
-        return sDAO.findAll();
+        return postsWithBirdLookup(sDAO.findAll());
     }
 
     public List<Post> getAllPostsByGroup(ObjectId groupId) {
-        return sDAO.findByGroup(groupId);
+        return postsWithBirdLookup(sDAO.findByGroup(groupId));
     }
 
     public void deletePostById(ObjectId id){
@@ -82,7 +110,9 @@ public class PostService {
             existingPost.setImage(imagePath);
         }
 
-        return sDAO.save(existingPost);
+        Post saved = sDAO.save(existingPost);
+        List<Post> enriched = postsWithBirdLookup(List.of(saved));
+        return enriched.isEmpty() ? saved : enriched.get(0);
     }
 
     public Post createPost(Post newPost, MultipartFile imageFile) {
@@ -106,7 +136,8 @@ public class PostService {
 
         userDAO.save(user);
 
-        return savedPost;
+        List<Post> enriched = postsWithBirdLookup(List.of(savedPost));
+        return enriched.isEmpty() ? savedPost : enriched.get(0);
     }
 
     // Helper method to save image file for adding/updating a post; returns the file path
@@ -128,27 +159,20 @@ public class PostService {
     }
 
     public List<Post> getAllPostsByFriends(ObjectId userId) {
-        //use userids to get friends list
         User user = userDAO.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found."));
-
-        //System.out.println("FRIENDS: " + Arrays.toString(user.getFriends()));
 
         ObjectId[] friendIds = user.getFriends();
 
-        if (friendIds == null || friendIds.length ==0){
+        if (friendIds == null || friendIds.length == 0){
             return List.of();
         }
 
-        // fetch all friends
         List<User> friends = userDAO.findAllById(List.of(friendIds));
 
-        //System.out.println("FRIENDS FOUND: " + friends.size());
-
-        //collect all post ids from friends
         List<ObjectId> allPostIds = new ArrayList<>();
 
         for (User friend: friends){
-            if(friend.getPosts()!= null){
+            if(friend.getPosts() != null){
                 allPostIds.addAll(List.of(friend.getPosts()));
             }
         }
@@ -157,23 +181,19 @@ public class PostService {
             return List.of();
         }
 
-        //System.out.println("TOTAL POST IDS: " + allPostIds.size());
-
-        //finally setch posts by ids
-        return sDAO.findAllById(allPostIds);
+        return postsWithBirdLookup(sDAO.findAllById(allPostIds));
     }
 
     public List<Post> getAllPostsByTags(Map<String,String> tags) {
         Query query = new Query();
 
-        // Add a Criteria for each key-value pair (AND)
         for (Map.Entry<String, String> entry : tags.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
             query.addCriteria(Criteria.where("tags." + key).is(value));
         }
 
-        return mongoTemplate.find(query, Post.class);
+        return postsWithBirdLookup(mongoTemplate.find(query, Post.class));
     }
 
     public Post addComment(ObjectId postId, Comment comment) {
@@ -181,7 +201,9 @@ public class PostService {
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
         post.getComments().add(comment);
-        return sDAO.save(post);
+        Post saved = sDAO.save(post);
+        List<Post> enriched = postsWithBirdLookup(List.of(saved));
+        return enriched.isEmpty() ? saved : enriched.get(0);
     }
 
     public Post updateComment(ObjectId postId, ObjectId userId, Comment updatedComment) {
@@ -202,7 +224,9 @@ public class PostService {
             throw new IllegalArgumentException("Comment not found or unauthorized");
         }
 
-        return sDAO.save(post);
+        Post saved = sDAO.save(post);
+        List<Post> enriched = postsWithBirdLookup(List.of(saved));
+        return enriched.isEmpty() ? saved : enriched.get(0);
     }
 
     public Post deleteComment(ObjectId postId, ObjectId userId, Date timestamp) {
@@ -218,19 +242,22 @@ public class PostService {
             throw new IllegalArgumentException("Comment not found or unauthorized");
         }
 
-        return sDAO.save(post);
+        Post saved = sDAO.save(post);
+        List<Post> enriched = postsWithBirdLookup(List.of(saved));
+        return enriched.isEmpty() ? saved : enriched.get(0);
     }
 
     public Post likePost(ObjectId postId, ObjectId userId) {
         Post post = sDAO.findById(postId)
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         
-        // Check if user already liked
         if (!post.getLikes().contains(userId)) {
             post.getLikes().add(userId);
         }
         
-        return sDAO.save(post);
+        Post saved = sDAO.save(post);
+        List<Post> enriched = postsWithBirdLookup(List.of(saved));
+        return enriched.isEmpty() ? saved : enriched.get(0);
     }
 
     public Post unlikePost(ObjectId postId, ObjectId userId) {
@@ -239,7 +266,9 @@ public class PostService {
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         
         post.getLikes().remove(userId);
-        return sDAO.save(post);
+        Post saved = sDAO.save(post);
+        List<Post> enriched = postsWithBirdLookup(List.of(saved));
+        return enriched.isEmpty() ? saved : enriched.get(0);
     }
 
     public Post flagPost(ObjectId postId) {
@@ -248,7 +277,9 @@ public class PostService {
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         
         post.setFlagged(true);
-        return sDAO.save(post);
+        Post saved = sDAO.save(post);
+        List<Post> enriched = postsWithBirdLookup(List.of(saved));
+        return enriched.isEmpty() ? saved : enriched.get(0);
     }
 
     public Post unflagPost(ObjectId postId) {
@@ -257,7 +288,9 @@ public class PostService {
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         
         post.setFlagged(false);
-        return sDAO.save(post);
+        Post saved = sDAO.save(post);
+        List<Post> enriched = postsWithBirdLookup(List.of(saved));
+        return enriched.isEmpty() ? saved : enriched.get(0);
     }
 
     public Post markNeedsHelp(ObjectId postId) {
@@ -266,7 +299,9 @@ public class PostService {
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         
         post.setHelp(true);
-        return sDAO.save(post);
+        Post saved = sDAO.save(post);
+        List<Post> enriched = postsWithBirdLookup(List.of(saved));
+        return enriched.isEmpty() ? saved : enriched.get(0);
     }
 
     public Post removeHelpFlag(ObjectId postId) {
@@ -275,7 +310,9 @@ public class PostService {
             .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         
         post.setHelp(false);
-        return sDAO.save(post);
+        Post saved = sDAO.save(post);
+        List<Post> enriched = postsWithBirdLookup(List.of(saved));
+        return enriched.isEmpty() ? saved : enriched.get(0);
     }
 
     public List<Map<String, String>> getUsersWhoLiked(ObjectId postId) {
@@ -297,5 +334,10 @@ public class PostService {
                 "username", user.getUsername()
             ))
             .collect(Collectors.toList());
+    }
+
+    public boolean isOwner(ObjectId postId, String userId) {
+        Optional<Post> post = sDAO.findById(postId);
+        return post.isPresent() && post.get().getUser().getUserId().equals(new ObjectId(userId));
     }
 }

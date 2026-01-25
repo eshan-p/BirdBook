@@ -1,6 +1,7 @@
 import React from 'react'
 import ProfileIcon from '../common/ProfileIcon'
 import { User } from '../../types/User'
+import { Link } from 'react-router-dom';
 
 interface ProfileCardProps {
   user?: User;
@@ -8,7 +9,7 @@ interface ProfileCardProps {
 
 function ProfileCard({ user }: ProfileCardProps) {
   return (
-    <div className=' h-fit w-full bg-white px-4 py-6 drop-shadow flex flex-col items-center'>
+    <div className='h-fit w-full bg-white px-4 py-6 drop-shadow flex flex-col items-center'>
         <ProfileIcon size='lg' src={user?.profilePic ? `http://localhost:8080${user.profilePic}` : undefined}/>
         <h3 className='text-xl mt-1'>{user?.username || 'User'}</h3>
         <div className='flex flex-row items-center w-full justify-between px-3 mt-4'>

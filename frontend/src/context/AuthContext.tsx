@@ -44,8 +44,21 @@ export const AuthProvider = ({children} : {children: ReactNode}) => {
         checkAuth();
     }, [])
 
-    const logout = () => {
-        setUser(null);
+    const logout = async () => {
+        try {
+            const res = await fetch(BASE_URL + '/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                setUser(null);
+            } else {
+                console.error('Logout failed:', res.status);
+            }
+        } catch (err) {
+            console.error("Logout error:", err);
+        }
+        
     };
 
     return(

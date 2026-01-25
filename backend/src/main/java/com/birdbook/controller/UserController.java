@@ -83,7 +83,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/top-birds")
-    public List<Map<String, ? extends Object>> getTopBirdsSighted(@PathVariable String id) {
+    public List<Map<String, Object>> getTopBirdsSighted(@PathVariable String id) {
         ObjectId userId = new ObjectId(id);
         return userService.getTopBirdsThisMonth(userId);
     }

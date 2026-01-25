@@ -3,6 +3,7 @@ package com.birdbook.models;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -15,7 +16,7 @@ public class Bird {
 
     @Id
     @JsonProperty("_id")
-    private ObjectId id;
+    private ObjectId _id;
 
     @NotBlank(message = "Name cannot be blank")
     @Size(min = 2, max = 100, message = "Bird name must be between 2 and 100 characters")
@@ -29,20 +30,23 @@ public class Bird {
 
     public Bird() {}
 
-    public Bird(ObjectId id, String commonName, String scientificName, String imageURL, List<Double> location) {
-        this.id = id;
+    public Bird(String commonName, String scientificName, String imageURL, List<Double> location) {
         this.commonName = commonName;
         this.scientificName = scientificName;
         this.imageURL = imageURL;
         this.location = location;
     }
 
-    public ObjectId getId() {
-        return id;
+    public String getId() {
+        return _id != null ? _id.toHexString() : null;
     }
 
-    public void setId(ObjectId id) {
-        this.id = id;
+    public ObjectId getObjectId() {
+        return _id;
+    }
+
+    public void setObjectId(ObjectId _id) {
+        this._id = _id;
     }
 
     public String getCommonName() {

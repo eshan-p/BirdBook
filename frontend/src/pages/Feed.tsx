@@ -14,7 +14,7 @@ import { Bird } from '../types/Bird';
 import BirdCard from '../components/features/BirdCard';
 import SearchBar from '../components/common/SearchBar';
 import { getAllBirds } from '../api/Birds';
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { getUserById } from '../api/Users';
 import { User } from '../types/User';
@@ -104,28 +104,34 @@ useEffect(() => {
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
         {/* Left Sidebar */}
-        <div className='flex flex-col basis-1/4 m-6 mr-0'>
-          <ProfileCard user={userData || undefined}/>
-          <div className='h-fit w-full mt-6 bg-white p-4 drop-shadow'>
-            <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
-              <img src="src/assets/groups.svg" alt="groups"/>
-              <p className='text-lg ml-3 font-bold'>Groups</p>
+        {user ? (
+          <div className='flex flex-col basis-1/4 m-6 mr-0'>
+            <ProfileCard user={userData || undefined}/>
+            <div className='h-fit w-full mt-6 bg-white p-4 drop-shadow'>
+              <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
+                <img src="src/assets/groups.svg" alt="groups"/>
+                <p className='text-lg ml-3 font-bold'>Groups</p>
+              </div>
+              {groups.map((group) => (
+                <GroupCard key={group.id.toString()} group={group}/>
+              ))}
+              <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
+                <img src="src/assets/person.svg" alt="friends"/>
+                <p className='text-lg ml-3 font-bold'>Friends</p>
+              </div>
+              {friends.map((friend) => (
+                <FriendCard key={friend.id} user={friend}/>
+              ))}
             </div>
-            {groups.map((group) => (
-              <GroupCard key={group.id.toString()} group={group}/>
-            ))}
-            <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
-              <img src="src/assets/person.svg" alt="friends"/>
-              <p className='text-lg ml-3 font-bold'>Friends</p>
-            </div>
-            {friends.map((friend) => (
-              <FriendCard key={friend.id} user={friend}/>
-            ))}
           </div>
-        </div>
+        ): (
+          <div className='flex flex-col basis-1/4 m-6 mr-0 h-fit w-full mt-6 bg-white p-4 drop-shadow'>
+            <div className='text-lg text-center font-semibold'><Link to="/login" className='text-blue-500'>Login</Link> to view profile information, join groups, and add friends!</div>
+          </div>
+        )}
 
         {/* Main Feed */}
-        <div className='basis-1/2 m-6'>
+        <div className='basis-1/2 m-6 max-h-screen'>
           <div className='flex flex-col'>
             <CreatePost/>
             {pagedPosts.map(post => (
@@ -138,7 +144,13 @@ useEffect(() => {
                   description={post.header}
                   author={post.user.username}
                   dateTime={parseDate(post.timestamp)}
-                  location={post.tags?.location}
+                  location={post.tags?.latitude && post.tags?.longitude 
+                    ? {
+                        latitude: parseFloat(post.tags.latitude),
+                        longitude: parseFloat(post.tags.longitude)
+                      }
+                    : undefined
+                  }
                   likes={post.likes.length}
                   comments={post.comments.length}
                 />

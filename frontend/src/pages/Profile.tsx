@@ -31,10 +31,10 @@ function Profile() {
 
   const topBirdsMapped: Bird[] = topBirds.map((b, i) => ({
     id: String(i),
-    commonName: b.bird,
-    scientificName: "", //TODO: implement scientific name
+    commonName: b.commonName,
+    scientificName: b.scientificName,
     image: "src/assets/examplebird.png",
-    location: [0, 0]
+    location: b.location ? [b.location[0], b.location[1]] : null
   }))
 
   useEffect(() => {
@@ -110,10 +110,60 @@ function Profile() {
       </div>
       <div className='basis-1/3 m-6 ml-0'>
         <div className='bg-white h-fit w-full p-4 drop-shadow mb-6'>
-            <div className='flex flex-row w-full border-b border-gray-300 pb-2'>
-                <img src="src/assets/post.svg" alt="posts"/>
-                <h3 className='ml-3 text-lg'>Posts</h3>
+          <div className='flex flex-row w-full border-b border-gray-300 pb-2 mb-4'>
+            <img src="src/assets/post.svg" alt="posts"/>
+            <h3 className='ml-3 text-lg'>Posts</h3>
+          </div>
+          
+          {posts.length === 0 ? (
+            <p className='text-gray-500 text-sm text-center py-8'>No posts yet</p>
+          ) : (
+            <div className='grid grid-cols-4 gap-2'>
+              {posts.map((post) => (
+                <button
+                  key={post.id}
+                  onClick={() => navigate(`/sightings/${post.id}`)}
+                  className='aspect-square bg-gray-100 rounded-lg overflow-hidden hover:opacity-80 transition-opacity relative group'
+                >
+                  {post.image ? (
+                    <img 
+                      src={`http://localhost:8080${post.image}`}
+                      alt={post.header}
+                      className='w-full h-full object-cover'
+                    />
+                  ) : (
+                    <div className='w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200'>
+                      <div className='text-center'>
+                        {post.bird && typeof post.bird === 'object' && 'commonName' in post.bird ? (
+                          <p className='text-sm font-medium text-gray-700'>
+                            {(post.bird as any).commonName}
+                          </p>
+                        ) : (
+                          <p className='text-xs text-gray-600'>{post.header.substring(0, 20)}...</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Overlay on hover */}
+                  <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4'>
+                    <div className='flex flex-col items-center gap-1'>
+                      <svg className='w-5 h-5 text-white' fill='currentColor' viewBox='0 0 24 24'>
+                        <path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z' />
+                      </svg>
+                      <span className='text-white text-xs font-medium'>{post.likes.length}</span>
+                    </div>
+                    <div className='flex flex-col items-center gap-1'>
+                      <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z' />
+                      </svg>
+                      <span className='text-white text-xs font-medium'>{post.comments.length}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
+          )}
         </div>
         <div className='bg-white h-fit w-full p-4 drop-shadow mb-6'>
             <div className='flex flex-row w-full border-b border-gray-300 pb-2'>

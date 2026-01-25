@@ -20,12 +20,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.birdbook.models.Bird;
 import com.birdbook.models.Group;
 import com.birdbook.models.Post;
 import com.birdbook.models.User;
 import com.birdbook.repository.GroupDAO;
 import com.birdbook.repository.PostDAO;
 import com.birdbook.repository.UserDAO;
+import com.birdbook.repository.BirdDAO;
 
 @Service
 public class UserService {
@@ -33,13 +35,15 @@ public class UserService {
     private final GroupDAO groupDAO;
     private final UserDAO userDAO;
     private final PostDAO postDAO;
+    private final BirdDAO birdDAO;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserDAO userDAO, PostDAO postDAO, PasswordEncoder passwordEncoder, GroupDAO groupDAO){
+    public UserService(UserDAO userDAO, PostDAO postDAO, BirdDAO birdDAO, PasswordEncoder passwordEncoder, GroupDAO groupDAO){
+        this.groupDAO = groupDAO;
         this.userDAO = userDAO;
         this.postDAO = postDAO;
+        this.birdDAO = birdDAO;
         this.passwordEncoder = passwordEncoder;
-        this.groupDAO = groupDAO;
     }
 
     public List<User> getAllUsers() {
@@ -75,17 +79,54 @@ public class UserService {
         return postDAO.findAllById(List.of(postIds));
     }
 
-    public List<Map<String, ? extends Object>> getTopBirdsThisMonth(ObjectId userId) {
-        List<Post> userPosts = postDAO.findByUserId(userId);
-        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
-        return userPosts.stream()
-            .filter(post -> post.getTimestamp() != null && post.getTimestamp().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime().isAfter(startOfMonth))
-            .collect(Collectors.groupingBy(Post::getBird, Collectors.counting()))
-            .entrySet().stream()
-            .sorted((a,b) -> b.getValue().compareTo(a.getValue()))
-            .limit(5)
-            .map(entry -> Map.of("bird", entry.getKey(), "count", entry.getValue()))
-            .collect(Collectors.toList());
+public List<Map<String, Object>> getTopBirdsThisMonth(ObjectId userId) {
+    List<Post> userPosts = postDAO.findByUserId(userId);
+    LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+    
+    // Filter posts from this month that have a bird and a valid timestamp
+    Map<ObjectId, Long> birdCounts = userPosts.stream()
+        .filter(post -> 
+            post.getTimestamp() != null && 
+            post.getBird() != null && // Only posts with birds
+            post.getTimestamp().toInstant()
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDateTime()
+                .isAfter(startOfMonth)
+        )
+        .collect(Collectors.groupingBy(Post::getBird, Collectors.counting()));
+
+    System.out.println("Bird counts for user " + userId + ": " + birdCounts);
+
+    // If no birds found, return empty list
+    if (birdCounts.isEmpty()) {
+        return List.of();
+    }
+
+    // Look up bird details for the top 5 birds
+    List<Map<String, Object>> topBirds = birdCounts.entrySet().stream()
+        .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+        .limit(5)
+        .map(entry -> {
+            try {
+                Bird bird = birdDAO.findById(entry.getKey()).orElse(null);
+                if (bird != null) {
+                    Map<String, Object> birdMap = new HashMap<>();
+                    birdMap.put("id", bird.getId());
+                    birdMap.put("commonName", bird.getCommonName());
+                    birdMap.put("scientificName", bird.getScientificName() != null ? bird.getScientificName() : "");
+                    birdMap.put("imageURL", bird.getImageURL() != null ? bird.getImageURL() : "");
+                    birdMap.put("count", (Object) entry.getValue());
+                    return birdMap;
+                }
+            } catch (Exception e) {
+                System.err.println("Error fetching bird " + entry.getKey() + ": " + e.getMessage());
+            }
+            return null;
+        })
+        .filter(map -> map != null)
+        .collect(Collectors.toList());
+        System.out.println("Top birds (with details): " + topBirds);
+        return topBirds;
     }
 
     public User registerUser(String username, String password){
