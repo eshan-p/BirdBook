@@ -10,7 +10,7 @@ function PostFormCard({onClose} : {onClose: () => void}) {
   const [textBody, setTextBody] = useState('');
   const [selectedBird, setSelectedBird] = useState<Bird | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-  const [location, setLocation] = useState<[Number, number] | null>(null);
+  const [location, setLocation] = useState<[number, number] | null>(null);
   const [locationName, setLocationName] = useState('');
   const [help, setHelp] = useState(false);
   const [image, setImage] = useState<File | null>(null);
@@ -41,7 +41,6 @@ function PostFormCard({onClose} : {onClose: () => void}) {
                     position.coords.longitude
                 ];
                 setLocation(coords);
-                //set name
                 reverseCoordsToCityState(arrayToCoords(coords)).then(setLocationName).catch(error => console.error("Error geocoding:" + error));
             },
             (error) => {

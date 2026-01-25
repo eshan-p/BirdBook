@@ -1,21 +1,32 @@
 package com.birdbook.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.birdbook.models.Group;
 import com.birdbook.models.PostUser;
+import com.birdbook.models.User;
 import com.birdbook.repository.GroupDAO;
+import com.birdbook.repository.UserDAO;
 
 @Service
 public class GroupService {
 
     private final GroupDAO groupDAO;
+    private final UserDAO userDAO;
 
-    public GroupService(GroupDAO groupDAO) {
+    public GroupService(GroupDAO groupDAO, UserDAO userDAO) {
         this.groupDAO = groupDAO;
+        this.userDAO = userDAO;
     }
 
     public List<Group> getAllGroups() {
@@ -27,9 +38,24 @@ public class GroupService {
                 .orElseThrow(() -> new IllegalArgumentException("Group not found."));
     }
 
-    public void createGroup(String groupName, PostUser owner) {
-        Group newGroup = new Group(groupName, owner);
-        groupDAO.insert(newGroup);
+    public Group createGroup(Group newGroup, MultipartFile imageFile) {
+        if(imageFile != null && !imageFile.isEmpty()) {
+            String imagePath = saveImage(imageFile);
+            newGroup.setImage(imagePath);
+        }
+        Group savedGroup = groupDAO.save(newGroup);
+        ObjectId userId = savedGroup.getOwner().getUserId();
+        User user = userDAO.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+        ObjectId[] currentGroups = user.getGroups();
+        ObjectId[] updatedGroups = Arrays.copyOf(currentGroups, currentGroups.length +1);
+
+        updatedGroups[currentGroups.length] = savedGroup.getId();
+        user.setGroups(updatedGroups);
+
+        userDAO.save(user);
+        
+        return savedGroup;
     }
 
     public Group updateGroup(ObjectId groupId, Group updatedData) {
@@ -43,6 +69,23 @@ public class GroupService {
             throw new IllegalArgumentException("Group not found.");
         }
         groupDAO.deleteById(groupId);
+    }
+
+    private String saveImage(MultipartFile imageFile){
+        try {
+            String uploadDir = "images";
+            Files.createDirectories(Paths.get(uploadDir));
+
+            String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir, fileName);
+
+            Files.copy(imageFile.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            return "/" + uploadDir + "/" + fileName;
+
+        } catch (IOException e){
+            throw new RuntimeException("Failed to store image", e);
+        }
     }
 
     /* =========================

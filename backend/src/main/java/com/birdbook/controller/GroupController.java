@@ -2,18 +2,27 @@ package com.birdbook.controller;
 
 import com.birdbook.models.PostUser;
 import com.birdbook.service.PostUserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.birdbook.models.Group;
 import com.birdbook.models.User;
 import com.birdbook.service.GroupService;
 
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 @CrossOrigin(
@@ -24,10 +33,14 @@ import org.springframework.http.ResponseEntity;
 @RequestMapping("/groups")
 public class GroupController {
     private final GroupService groupService;
+    private final ObjectMapper objectMapper;
+    private final Validator validator;
     private final PostUserService puService;
 
-    public GroupController(GroupService groupService, PostUserService puService) {
+    public GroupController(GroupService groupService, ObjectMapper objectMapper, Validator validator, PostUserService puService) {
         this.groupService = groupService;
+        this.objectMapper = objectMapper;
+        this.validator = validator;
         this.puService = puService;
     }
 
@@ -53,11 +66,35 @@ public class GroupController {
         return groupService.getGroupMembers(new ObjectId(groupId));
     }
 
+    /*
     @PostMapping
     public ResponseEntity<String> createGroup(@RequestParam String name, @RequestParam String ownerId) {
         PostUser owner = puService.buildPostUser(new ObjectId(ownerId));
         groupService.createGroup(name, owner);
         return ResponseEntity.status(HttpStatus.CREATED).body("Group created successfully");
+    }
+    */
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createGroup(
+        @RequestPart("group") String groupJson,
+        @RequestPart(value = "image", required = false) MultipartFile image,
+        @RequestParam String userId
+    ) {
+        try {
+            Group group = objectMapper.readValue(groupJson, Group.class);
+            group.setOwner(puService.buildPostUser(new ObjectId(userId)));
+            Set<ConstraintViolation<Group>> voilations = validator.validate(group);
+            if(!voilations.isEmpty()){
+                Map<String, String> errors = new HashMap<>();
+                for(ConstraintViolation<Group> v : voilations) {
+                    errors.put(v.getPropertyPath().toString(), v.getMessage());
+                }
+                return ResponseEntity.badRequest().body(errors);
+            }
+            return ResponseEntity.ok(groupService.createGroup(group, image));
+        } catch(Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/{groupId}/join-requests")

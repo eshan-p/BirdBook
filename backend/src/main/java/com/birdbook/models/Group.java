@@ -30,6 +30,8 @@ public class Group {
     private List<PostUser> members;
     private List<PostUser> requests;
 
+    private String image;
+
     public Group() {}
 
     public Group(String name, PostUser owner) {
@@ -70,6 +72,14 @@ public class Group {
 
     public void setMembers(List<PostUser> members) {
         this.members = members;
+    }
+
+    public String getImage(){
+        return this.image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public List<PostUser> getRequests() {
