@@ -36,6 +36,10 @@ function Header() {
                   className="mt-2">
                     Friends
             </button>
+            <button onClick={() => navigate(`/users`)}
+                  className="mt-2">
+                    Users
+            </button>
             <button onClick={() => navigate(`/birds`)}
                   className="mt-2">
                     Birds
