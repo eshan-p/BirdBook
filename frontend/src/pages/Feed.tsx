@@ -38,6 +38,8 @@ function Feed() {
 
   const [page, setPage] = useState(0); // zero-based index
 
+  const [newlyLoadedPosts, setNewlyLoadedPosts] = useState<string[]>([]);
+
   const navigate = useNavigate();
   
   // Reset page if posts change
@@ -86,6 +88,13 @@ useEffect(() => {
       }
     }, [user?.id])
 
+    useEffect(() => {
+  const startIdx = page * PAGE_SIZE;
+  const endIdx = Math.min(posts.length, (page + 1) * PAGE_SIZE);
+  const newPosts = posts.slice(startIdx, endIdx).map(post => post.id.toString());
+  setNewlyLoadedPosts(newPosts);
+}, [page, posts]);
+
   const totalPages = Math.ceil(posts.length / PAGE_SIZE);
 
   const pagedPosts = posts.slice(
@@ -133,30 +142,46 @@ useEffect(() => {
         {/* Main Feed */}
         <div className='basis-1/2 m-6 max-h-screen'>
           <div className='flex flex-col'>
-            <CreatePost/>
+            <CreatePost />
+
             {pagedPosts.map(post => (
               <button
+                key={post.id.toString()}
                 onClick={() => navigate(`/sightings/${post.id.toString()}`)}
-                className="mb-6"
+                className={`mb-6 transition-opacity duration-700 ${
+                  newlyLoadedPosts.includes(post.id.toString())
+                    ? 'opacity-0 animate-fadeIn'
+                    : 'opacity-100'
+                }`}
               >
                 <PostCard
-                  key={post.id?.toString()}
                   description={post.header}
                   author={post.user.username}
                   dateTime={parseDate(post.timestamp)}
-                  location={post.tags?.latitude && post.tags?.longitude 
-                    ? {
-                        latitude: parseFloat(post.tags.latitude),
-                        longitude: parseFloat(post.tags.longitude)
-                      }
-                    : undefined
+                  location={
+                    post.tags?.latitude && post.tags?.longitude
+                      ? {
+                          latitude: parseFloat(post.tags.latitude),
+                          longitude: parseFloat(post.tags.longitude)
+                        }
+                      : undefined
                   }
                   likes={post.likes.length}
                   comments={post.comments.length}
                 />
               </button>
             ))}
-          </div> 
+
+            {/* Load more button */}
+            {page < totalPages - 1 && (
+              <button
+                onClick={() => setPage(prev => prev + 1)}
+                className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition mt-4"
+              >
+                Load more...
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Right Sidebar */}
