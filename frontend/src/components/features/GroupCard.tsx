@@ -29,23 +29,6 @@ function GroupCard({ group, onJoin, onLeave, onDelete }: GroupCardProps) {
           <p className='text-xs'>{group.members?.length || 0} followers</p>
         </div>
       </div>
-      <div className='flex gap-2'>
-        {onJoin && (
-          <button onClick={onJoin} className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'>
-            Join
-          </button>
-        )}
-        {onLeave && (
-          <button onClick={onLeave} className='px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700'>
-            Leave
-          </button>
-        )}
-        {onDelete && (
-          <button onClick={onDelete} className='px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300'>
-            Delete
-          </button>
-        )}
-      </div>
     </div>
   );
 }

@@ -1,24 +1,37 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import PostCard from '../components/features/PostCard'
 import ProfileCard from '../components/features/ProfileCard'
 import ProfileIcon from '../components/common/ProfileIcon'
 import { Post } from '../types/Post'
-import { Group } from '../types/Group'
+import { Group, PostUser } from '../types/Group'
 import { parseDate } from '../utils/dateTime'
 import { getSightingsByGroup } from '../api/Sightings'
-import { getAllGroups, getUserGroups } from '../api/Groups'
+import { 
+  getAllGroups, 
+  getUserGroups, 
+  requestToJoinGroup, 
+  leaveGroup, 
+  approveJoinRequest, 
+  denyJoinRequest, 
+  removeMember, 
+  updateGroup, 
+  deleteGroup,
+  getJoinRequests
+} from '../api/Groups'
 import { useAuth } from '../context/AuthContext'
 import { getUserById } from '../api/Users'
 import { User } from '../types/User'
 import SearchBar from '../components/common/SearchBar'
 import BirdCard from '../components/features/BirdCard'
 import { Bird } from '../types/Bird'
+import GroupFormCard from '../components/common/GroupFormCard'
 import CreatePost from '../components/features/CreatePost'
 import { getAllBirds } from '../api/Birds'
 import FriendCard from '../components/features/FriendCard'
 import { Friend } from '../types/Friend'
 import GroupCard from '../components/features/GroupCard'
+import { isAdmin } from '../utils/roleUtils'
 
 const PAGE_SIZE = 5;
 
@@ -34,6 +47,13 @@ function GroupFeed() {
   const [birds, setBirds] = useState<Bird[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [joinRequests, setJoinRequests] = useState<PostUser[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isMember, setIsMember] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [hasRequested, setHasRequested] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
   const BASE_URL = "http://localhost:8080";
   const navigate = useNavigate();
 
@@ -44,7 +64,7 @@ function GroupFeed() {
         .then(setUserData)
         .catch(console.error);
       
-      fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
+      fetch(`${BASE_URL}/users/${user.id}/friends`, {credentials: 'include'})
         .then(r => r.json())
         .then(setFriends)
         .catch(err => console.error("Failed to fetch user: " + err));
@@ -64,6 +84,41 @@ function GroupFeed() {
       .then(setBirds)
       .catch(err => console.error("Failed to fetch birds:", err));
   }, []);
+
+  // Check membership status
+  useEffect(() => {
+    if (!group || !user?.id) return;
+    
+    setIsOwner(group.owner.userId === user.id);
+    setIsMember(group.members?.some(m => m.userId === user.id) || false);
+    
+    // Check if user is in requests array
+    // Handle MongoDB ObjectId format - sometimes comes as object with timestamp/date
+    const userInRequests = group.requests?.some(r => {
+      let requestUserId: string;
+      
+      // If userId is an object (MongoDB ObjectId), we need to extract the actual ID
+      if (typeof r.userId === 'object' && r.userId !== null) {
+        // Try common ObjectId formats
+        requestUserId = (r.userId as any).$oid || (r.userId as any).toString?.() || String(r.userId);
+      } else {
+        requestUserId = String(r.userId);
+      }
+      
+      return requestUserId === user.id;
+    }) || false;
+    
+    setHasRequested(userInRequests);
+  }, [group, user?.id]);
+
+  // Fetch join requests (for group owner only)
+  useEffect(() => {
+    if (!groupId || !user?.id || !isOwner) return;
+    
+    getJoinRequests(groupId)
+      .then(setJoinRequests)
+      .catch(console.error);
+  }, [groupId, user?.id, isOwner]);
 
   // Fetch group details
   useEffect(() => {
@@ -107,6 +162,127 @@ function GroupFeed() {
     }
   }, [user, loading, navigate]);
 
+  // Handler functions
+  const handleJoinRequest = async () => {
+    // Use ref for immediate blocking (synchronous check)
+    if (!groupId || !user?.id || isSubmittingRef.current) return;
+    
+    // Double-check database state before proceeding
+    if (hasRequested) return;
+    
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+    try {
+      await requestToJoinGroup(groupId, user.id);
+      
+      // IMMEDIATELY set hasRequested to true
+      setHasRequested(true);
+      
+      // Also manually update the group state to include the user in requests
+      // Create a PostUser object with the correct structure
+      if (group && userData) {
+        const postUser: PostUser = {
+          userId: userData.id,
+          username: userData.username,
+          profilePic: userData.profilePic
+        };
+        const updatedGroup = {
+          ...group,
+          requests: [...(group.requests || []), postUser]
+        };
+        setGroup(updatedGroup);
+      }
+    } catch (err: any) {
+      console.error(err);
+      const errorMessage = err.message || 'Failed to send join request';
+      if (errorMessage.includes('already')) {
+        // Refresh group data to sync with database
+        const groups = await getAllGroups();
+        const foundGroup = groups.find(g => g.id === groupId);
+        setGroup(foundGroup || null);
+      } else {
+        alert(errorMessage);
+      }
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleLeaveGroup = async () => {
+    if (!groupId || !user?.id) return;
+    if (!confirm('Are you sure you want to leave this group?')) return;
+    
+    try {
+      await leaveGroup(groupId, user.id);
+      setIsMember(false);
+      navigate('/groups');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to leave group');
+    }
+  };
+
+  const handleApprove = async (userId: string) => {
+    if (!groupId) return;
+    try {
+      await approveJoinRequest(groupId, userId);
+      setJoinRequests(prev => prev.filter(r => r.userId !== userId));
+      // Refresh group data
+      const groups = await getAllGroups();
+      const foundGroup = groups.find(g => g.id === groupId);
+      setGroup(foundGroup || null);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to approve request');
+    }
+  };
+
+  const handleDeny = async (userId: string) => {
+    if (!groupId) return;
+    try {
+      await denyJoinRequest(groupId, userId);
+      setJoinRequests(prev => prev.filter(r => r.userId !== userId));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to deny request');
+    }
+  };
+
+  const handleRemoveMember = async (userId: string) => {
+    if (!groupId) return;
+    if (!confirm('Are you sure you want to remove this member?')) return;
+    
+    try {
+      await removeMember(groupId, userId);
+      // Refresh group data
+      const groups = await getAllGroups();
+      const foundGroup = groups.find(g => g.id === groupId);
+      setGroup(foundGroup || null);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to remove member');
+    }
+  };
+
+  const handleUpdateGroup = (updatedGroup: Group) => {
+    setGroup(updatedGroup);
+    setIsEditing(false);
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!groupId || !user?.id) return;
+    if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) return;
+    
+    try {
+      await deleteGroup(groupId, user.id);
+      navigate('/groups');
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Failed to delete group');
+    }
+  };
+
   const totalPages = Math.ceil(posts.length / PAGE_SIZE);
   const pagedPosts = posts.slice(
     page * PAGE_SIZE,
@@ -128,12 +304,99 @@ function GroupFeed() {
               <p className='text-lg font-bold'>{group.name}</p>
             </div>
             <p className='text-sm text-gray-600 mb-2'>
+              Owner: {group.owner.username}
+            </p>
+            {group.description && (
+              <p className='text-sm text-gray-600 mb-2 italic'>
+                {group.description}
+              </p>
+            )}
+            <p className='text-sm text-gray-600 mb-2'>
               {group.members?.length || 0} members
             </p>
             {group.followers && (
               <p className='text-sm text-gray-600 mb-3'>
                 {group.followers} followers
               </p>
+            )}
+
+            {/* Owner Controls */}
+            {isOwner && (
+              <div className='mt-3 border-t border-gray-300 pt-3 space-y-2'>
+                <button 
+                  onClick={() => setIsEditing(true)} 
+                  className='w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700'
+                >
+                  Edit Group
+                </button>
+                <button 
+                  onClick={handleDeleteGroup} 
+                  className='w-full px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700'
+                >
+                  Delete Group
+                </button>
+              </div>
+            )}
+
+            {/* Join/Leave Buttons (Non-owners) */}
+            {!isOwner && (
+              <div className='mt-3 border-t border-gray-300 pt-3'>
+                {!isMember && !hasRequested && (
+                  <button 
+                    onClick={handleJoinRequest}
+                    disabled={isSubmitting}
+                    className='w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed'
+                  >
+                    {isSubmitting ? 'Sending...' : 'Request to Join'}
+                  </button>
+                )}
+                {!isMember && hasRequested && (
+                  <div className='px-3 py-2 bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm rounded text-center'>
+                    Request pending...
+                  </div>
+                )}
+                {isMember && (
+                  <button 
+                    onClick={handleLeaveGroup} 
+                    className='w-full px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700'
+                  >
+                    Leave Group
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Join Requests Section (Group owner only) */}
+            {isOwner && joinRequests.length > 0 && (
+              <div className='mt-3 border-t border-gray-300 pt-3'>
+                <p className='text-sm font-semibold mb-2'>Join Requests:</p>
+                <ul className='space-y-2'>
+                  {joinRequests.map((request) => (
+                    <li key={request.userId} className='flex items-center justify-between p-2 bg-gray-50 rounded'>
+                      <div className='flex items-center gap-2'>
+                        <ProfileIcon size="sm" src={request.profilePic} />
+                        <span className='text-sm truncate'>{request.username}</span>
+                      </div>
+                      <div className='flex gap-1'>
+                        <button 
+                          onClick={() => handleApprove(request.userId)} 
+                          className='px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700'
+                          title='Approve'
+                        >
+                          ✓
+                        </button>
+                        <button 
+                          onClick={() => handleDeny(request.userId)} 
+                          className='px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700'
+                          title='Deny'
+                        >
+                          ✗
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
             
             {/* Members List */}
@@ -144,11 +407,27 @@ function GroupFeed() {
                   {group.members.map((member, index) => (
                     <li 
                       key={member.userId || `member-${index}`} 
-                      className='flex items-center gap-2 hover:bg-gray-50 p-1 rounded cursor-pointer'
-                      onClick={() => member.userId && navigate(`/profile/${member.userId}`)}
+                      className='flex items-center justify-between hover:bg-gray-50 p-1 rounded'
                     >
-                      <ProfileIcon size="sm" src={member.profilePic} />
-                      <span className='truncate'>{member.username || 'Unknown User'}</span>
+                      <div 
+                        className='flex items-center gap-2 cursor-pointer flex-1'
+                        onClick={() => member.userId && navigate(`/profile/${member.userId}`)}
+                      >
+                        <ProfileIcon size="sm" src={member.profilePic} />
+                        <span className='truncate'>{member.username || 'Unknown User'}</span>
+                      </div>
+                      {isOwner && member.userId !== group.owner.userId && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveMember(member.userId);
+                          }} 
+                          className='px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700'
+                          title='Remove member'
+                        >
+                          Remove
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -220,6 +499,15 @@ function GroupFeed() {
           ))
         )}
       </div>
+
+      {/* Edit Group Modal */}
+      {isEditing && group && (
+        <GroupFormCard 
+          onClose={() => setIsEditing(false)} 
+          group={group}
+          onUpdate={handleUpdateGroup}
+        />
+      )}
     </div>
   )
 }

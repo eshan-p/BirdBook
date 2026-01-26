@@ -8,8 +8,12 @@ function CreateGroup() {
 
   return (
     <div>
-      <button onClick={openForm}>
-        <h2 className='ml-2'>Create new group</h2>
+      <button onClick={openForm} className='w-full mb-6'>
+        <div className='flex w-full bg-white drop-shadow justify-center items-center'>
+          <div className='flex w-full m-4 border p-4 bg-[#F7F7F7] border-gray-400 border-dashed justify-center items-center opacity-50 font-semibold'>
+            Create a new group
+          </div>
+        </div>
       </button>
       {isFormOpen && <GroupFormCard onClose={closeForm}/>}
     </div>

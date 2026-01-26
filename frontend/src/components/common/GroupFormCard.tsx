@@ -5,15 +5,16 @@ import { Group } from '../../types/Group'
 import { reverseCoordsToCityState, arrayToCoords } from '../../utils/geolocation'
 import { User } from '../../types/User';
 
-function GroupFormCard({onClose} : {onClose: () => void}) {
+function GroupFormCard({onClose, group, onUpdate} : {onClose: () => void, group?: Group, onUpdate?: (updatedGroup: Group) => void}) {
   const { user } = useAuth();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [location, setLocation] = useState<[number, number] | null>(null);
+  const [name, setName] = useState(group?.name || '');
+  const [description, setDescription] = useState(group?.description || '');
+  const [location, setLocation] = useState<[number, number] | null>(group?.location || null);
   const [locationName, setLocationName] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const isEditMode = !!group;
 
   const BASE_URL = "http://localhost:8080";
 
@@ -45,35 +46,56 @@ function GroupFormCard({onClose} : {onClose: () => void}) {
           return;
       }
       try{
-          const groupData = {
-              name,
-              description,
-              tags: {
-                  ...(location && {
-                      latitude: location[0].toString(),
-                      longitude: location[1].toString()
-                  })
-              },
-              members: [],
-              requests: []
-          };
-          const formData = new FormData();
-          formData.append('group', JSON.stringify(groupData));
-          formData.append('userId', user.id);
-          if(image) {
-              formData.append('image', image);
+          if (isEditMode && group) {
+              // Edit mode - use PUT request
+              const response = await fetch(`${BASE_URL}/groups/${group.id}?userId=${user.id}`, {
+                  method: 'PUT',
+                  credentials: 'include',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ name, description })
+              });
+              if(!response.ok) {
+                  const errorText = await response.text();
+                  throw new Error(errorText || 'Failed to update group');
+              }
+              const updatedGroup = await response.json();
+              if (onUpdate) onUpdate(updatedGroup);
+              console.log("Group updated successfully");
+          } else {
+              // Create mode - use POST request
+              const groupData = {
+                  name,
+                  description,
+                  tags: {
+                      ...(location && {
+                          latitude: location[0].toString(),
+                          longitude: location[1].toString()
+                      })
+                  },
+                  members: [],
+                  requests: []
+              };
+              const formData = new FormData();
+              formData.append('group', JSON.stringify(groupData));
+              formData.append('userId', user.id);
+              if(image) {
+                  formData.append('image', image);
+              }
+              const response = await fetch(`${BASE_URL}/groups`, {
+                  method: 'POST',
+                  credentials: 'include',
+                  body: formData
+              });
+              if(!response.ok) {
+                  const errorData = await response.json();
+                  throw new Error(errorData.message || 'Failed to create group');
+              }
+              console.log("Group created successfully");
           }
-          const response = await fetch(`${BASE_URL}/groups`, {
-              method: 'POST',
-              credentials: 'include',
-              body: formData
-          });
-          if(!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.message || 'Failed to create post');
-          }
-          console.log("Post created successfully");
           onClose();
+          window.location.reload();
       } catch(error) {
           setError(error instanceof Error ? error.message : 'An error occured');
       } finally {
@@ -90,7 +112,7 @@ function GroupFormCard({onClose} : {onClose: () => void}) {
   return (
     <div className='fixed inset-0 z-49 flex items-center justify-center bg-black/20 backdrop-blur-sm"'>
         <div className='bg-white backdrop-blur-md p-8 rounded-2xl drop-shadow w-full max-w-xl m-4'>
-            <h2 className='text-2xl mb-6'>Create New Group</h2>
+            <h2 className='text-2xl mb-6'>{isEditMode ? 'Edit Group' : 'Create New Group'}</h2>
             <form onSubmit={handleSubmit}>
                 <div>
                     <label className='block text-sm mb-1'>

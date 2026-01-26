@@ -26,6 +26,8 @@ public class Group {
     @Size(max = 40, message = "Group Name cannot exceed 40 characters.")
     private String name;
 
+    private String description;
+
     private PostUser owner;
     private List<PostUser> members;
     private List<PostUser> requests;
@@ -56,6 +58,14 @@ public class Group {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public PostUser getOwner() {

@@ -87,6 +87,13 @@ export default function Friends() {
                     {groups.map((group) => (
                         <GroupCard key={group.id.toString()} group={group}/>
                     ))}
+                    <div className='flex flex-row w-full border-b border-gray-300 mb-3 mt-3'>
+                        <img src="src/assets/person.svg" alt="friends"/>
+                        <p className='text-lg ml-3 font-bold'>Friends</p>
+                    </div>
+                    {friends.map((friend) => (
+                        <FriendCard key={friend.id} user={friend}/>
+                    ))}
                 </div>
             </div>
 

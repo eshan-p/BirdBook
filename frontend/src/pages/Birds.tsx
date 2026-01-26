@@ -42,7 +42,7 @@ export default function Birds() {
   const [search, setSearch] = useState("");
   const [birds, setBirds] = useState<Bird[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friends, setFriends] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const BASE_URL = "http://localhost:8080";
@@ -111,32 +111,63 @@ export default function Birds() {
           {groups.map(group => (
             <GroupCard key={group.id.toString()} group={group} />
           ))}
-          <div className="flex flex-row w-full border-b border-gray-300 mb-3">
+          <div className="flex flex-row w-full border-b border-gray-300 mb-3 mt-3">
             <img src="src/assets/person.svg" alt="friends"/>
             <p className="text-lg ml-3 font-bold">Friends</p>
           </div>
           {friends.map(friend => (
-            <FriendCard key={friend.id} friend={friend} />
+            <FriendCard key={friend.id} user={friend} />
           ))}
         </div>
       </div>
 
       {/* CENTER CONTENT */}
-      <div className="basis-3/4 m-6">
-        <div className="bg-white p-4 drop-shadow mb-4">
-          <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
-        </div>
+      <div className="basis-1/2 m-6">
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="flex items-center justify-between mb-6 gap-4">
+            <h2 className="text-2xl font-bold text-gray-800 shrink-0">All Birds</h2>
+            <div className="w-64">
+              <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
+            </div>
+          </div>
 
-        <div className="bg-white p-4 drop-shadow grid grid-cols-1 gap-2">
-          {loading && <p className="text-center py-4">Loading birds...</p>}
-          {error && <p className="text-center py-4 text-red-600">{error}</p>}
-          {!loading && !error && filteredBirds.length === 0 && (
-            <p className="text-center py-4 text-gray-500">No birds found</p>
-          )}
-          {!loading && !error && filteredBirds.map(bird => (
-            <BirdCard key={bird.id} bird={bird} />
-          ))}
+          <div className="grid grid-cols-1 gap-2">
+            {loading && <p className="text-center py-4">Loading birds...</p>}
+            {error && <p className="text-center py-4 text-red-600">{error}</p>}
+            {!loading && !error && filteredBirds.length === 0 && (
+              <p className="text-center py-4 text-gray-500">No birds found</p>
+            )}
+            {!loading && !error && filteredBirds.map(bird => (
+              <BirdCard key={bird.id} bird={bird} />
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* RIGHT SIDEBAR */}
+      <div className='basis-1/4 m-6 ml-0 h-fit w-full bg-white p-4 drop-shadow'>
+        <div className='flex flex-row w-full border-b border-gray-300 mb-3 items-center'>
+          <img src="src/assets/bird.svg" alt="birds" className='w-5 h-5'/>
+          <div className='text-lg ml-3 font-bold'>All Birds</div>
+        </div>
+        {birds.length === 0 ? (
+          <p className='text-sm'>Loading...</p>
+        ) : (
+          birds.slice(0, 20).map(bird => (
+            <div key={bird.id} className='flex items-center gap-2 mb-2'>
+              {bird.imageURL && (
+                <img 
+                  src={bird.imageURL} 
+                  alt={bird.commonName}
+                  className='w-8 h-8 rounded-full object-cover'
+                />
+              )}
+              <p className='text-sm'>
+                {bird.commonName}
+              </p>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

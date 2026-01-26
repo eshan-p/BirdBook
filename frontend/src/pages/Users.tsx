@@ -56,7 +56,7 @@ export default function Users() {
           .then(setUserData)
           .catch(console.error);
         
-        fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
+        fetch(`${BASE_URL}/users/${user.id}/friends`, {credentials: 'include'})
           .then(r => r.json())
           .then(setFriends)
           .catch(err => console.error("Failed to fetch friends:", err));
