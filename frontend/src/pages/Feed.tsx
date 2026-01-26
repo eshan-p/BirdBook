@@ -97,10 +97,7 @@ useEffect(() => {
 
   const totalPages = Math.ceil(posts.length / PAGE_SIZE);
 
-  const pagedPosts = posts.slice(
-    page * PAGE_SIZE,
-    (page + 1) * PAGE_SIZE
-  );
+const pagedPosts = posts.slice(0, (page + 1) * PAGE_SIZE);
 
   if (loadingPage) return <p>Loading...</p>;
 
@@ -149,9 +146,7 @@ useEffect(() => {
                 key={post.id.toString()}
                 onClick={() => navigate(`/sightings/${post.id.toString()}`)}
                 className={`mb-6 transition-opacity duration-700 ${
-                  newlyLoadedPosts.includes(post.id.toString())
-                    ? 'opacity-0 animate-fadeIn'
-                    : 'opacity-100'
+                  newlyLoadedPosts.includes(post.id.toString()) ? 'animate-fadeIn' : ''
                 }`}
               >
                 <PostCard
