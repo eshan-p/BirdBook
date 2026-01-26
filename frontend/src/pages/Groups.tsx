@@ -69,7 +69,7 @@ export default function Groups() {
           .then(setUserData)
           .catch(console.error);
         
-        fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
+        fetch(`${BASE_URL}/users/${user.id}/friends`, {credentials: 'include'})
           .then(r => r.json())
           .then(setFriends)
           .catch(err => console.error("Failed to fetch friends:", err));
@@ -98,9 +98,13 @@ export default function Groups() {
     }
     try {
       await requestToJoinGroup(groupId, currentUserId);
-      setAllGroups(allGroups.filter((g) => g.id !== groupId));
+      await refreshLists();
     } catch (err: any) {
       console.error("Failed to join group:", err);
+      const errorMessage = err.message || 'Failed to send join request';
+      if (!errorMessage.includes('already')) {
+        alert(errorMessage);
+      }
     }
   };
 
@@ -133,9 +137,9 @@ export default function Groups() {
   };
 
   const handleDelete = async (groupId: string) => {
-    if (!canManage) return;
+    if (!canManage || !currentUserId) return;
     try {
-      await deleteGroup(groupId);
+      await deleteGroup(groupId, currentUserId);
       setAllGroups(allGroups.filter((g) => g.id !== groupId));
       setUserGroups(userGroups.filter((g) => g.id !== groupId));
     } catch (err: any) {
@@ -180,31 +184,13 @@ export default function Groups() {
       <div className='basis-1/2 m-6'>
         <div className='bg-white p-6 rounded-lg shadow-sm'>
           <div className="flex items-center justify-between mb-6 gap-4">
-        <div>
-              <h2 className="text-2xl font-bold text-gray-800 shrink-0">Groups</h2>
-          <CreateGroup/>
-        </div>
+            <h2 className="text-2xl font-bold text-gray-800 shrink-0">Groups</h2>
             <div className="w-64">
               <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
             </div>
           </div>
 
-          {canManage && (
-            <div className="mb-6 flex gap-2">
-              <input
-                className="border rounded px-3 py-2 flex-1"
-                placeholder="New group name"
-                value={newGroupName}
-                onChange={(e) => setNewGroupName(e.target.value)}
-              />
-              <button
-                onClick={handleCreate}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                Create
-              </button>
-            </div>
-          )}
+          {canManage && <CreateGroup/>}
 
           {error && (
             <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">Error: {error}</div>
@@ -213,13 +199,11 @@ export default function Groups() {
           {currentUserId && filteredUserGroups.length > 0 && (
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">My Groups</h3>
-              <ul className="divide-y">
+              <ul className="space-y-2">
                 {filteredUserGroups.map((group) => (
                   <li key={group.id}>
                     <GroupCard
                       group={group}
-                      onLeave={() => handleLeave(group.id)}
-                      onDelete={canManage ? () => handleDelete(group.id) : undefined}
                     />
                   </li>
                 ))}
@@ -229,13 +213,11 @@ export default function Groups() {
 
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Groups</h3>
-            <ul className="divide-y">
+            <ul className="space-y-2">
               {filteredAllGroups.map((group) => (
                 <li key={group.id}>
                   <GroupCard
                     group={group}
-                    onJoin={() => handleJoin(group.id)}
-                    onDelete={canManage ? () => handleDelete(group.id) : undefined}
                   />
                 </li>
               ))}

@@ -100,7 +100,7 @@ public class GroupController {
     }
 
     @PostMapping("/{groupId}/join-requests")
-    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> requestToJoin(
             @PathVariable String groupId,
             @RequestParam String userId
@@ -133,23 +133,42 @@ public class GroupController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
-    public ResponseEntity<Group> updateGroup(@PathVariable String id, @RequestBody Group groupRequest) {
-
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> updateGroup(
+            @PathVariable String id, 
+            @RequestBody Group groupRequest,
+            @RequestParam String userId
+    ) {
         ObjectId groupObjId = new ObjectId(id);
+        Group group = groupService.getGroupById(groupObjId);
+        
+        // Only owner can edit
+        if (!group.getOwner().getUserId().equals(new ObjectId(userId))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Only the group owner can edit this group");
+        }
+        
         Group updatedGroup = groupService.updateGroup(groupObjId, groupRequest);
-
         return ResponseEntity.ok(updatedGroup);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
-    public ResponseEntity<String> deleteGroup(@PathVariable String id) {
-
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> deleteGroup(
+            @PathVariable String id,
+            @RequestParam String userId
+    ) {
         ObjectId groupObjId = new ObjectId(id);
+        Group group = groupService.getGroupById(groupObjId);
+        
+        // Only owner can delete
+        if (!group.getOwner().getUserId().equals(new ObjectId(userId))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Only the group owner can delete this group");
+        }
+        
         groupService.deleteGroup(groupObjId);
-
-        return new ResponseEntity<String>("Group deleted successfully", HttpStatus.OK);
+        return ResponseEntity.ok("Group deleted successfully");
     }
 
     @DeleteMapping("/{groupId}/members/{userId}")
@@ -160,5 +179,17 @@ public class GroupController {
         ObjectId userObjId = new ObjectId(userId);
         groupService.removeGroupMember(userObjId, groupObjId);
         return ResponseEntity.ok("Left group successfully");
+    }
+
+    @DeleteMapping("/{groupId}/members/{userId}/remove")
+    @PreAuthorize("hasRole('ADMIN_USER') or hasRole('SUPER_USER')")
+    public ResponseEntity<String> removeMember(
+            @PathVariable String groupId, 
+            @PathVariable String userId
+    ) {
+        ObjectId groupObjId = new ObjectId(groupId);
+        ObjectId userObjId = new ObjectId(userId);
+        groupService.removeGroupMember(userObjId, groupObjId);
+        return ResponseEntity.ok("Member removed successfully");
     }
 }

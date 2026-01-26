@@ -56,7 +56,7 @@ export default function Users() {
           .then(setUserData)
           .catch(console.error);
         
-        fetch(`${BASE_URL}/${user.id}/friends`, {credentials: 'include'})
+        fetch(`${BASE_URL}/users/${user.id}/friends`, {credentials: 'include'})
           .then(r => r.json())
           .then(setFriends)
           .catch(err => console.error("Failed to fetch friends:", err));
@@ -142,12 +142,19 @@ export default function Users() {
                         </div>
                     </div>
 
-                    <ul className="divide-y">
+                    <ul className="space-y-2">
                         {filteredUsers.map(user => (
-                        <div key={user.id}>
-                            <li className="py-5">
+                            <li 
+                                key={user.id}
+                                className="rounded-lg p-2"
+                            >
                                 <div className="flex items-center justify-between">
-                                    <FriendCard user={user} />
+                                    <div 
+                                        onClick={() => navigate(`/user/${user.id}`)}
+                                        className="flex-1 cursor-pointer"
+                                    >
+                                        <FriendCard user={user} />
+                                    </div>
                                     
                                     {isSuperUser && (
                                         <div className="ml-4 flex items-center gap-2">
@@ -168,15 +175,11 @@ export default function Users() {
                                     )}
                                 </div>
                             </li>
-                            <button
-                                onClick={() => navigate(`/user/${user.id}`)}
-                                className="mt-2"
-                            >
-                                Click
-                            </button>
-                        </div>
                         ))}
                     </ul>
+                    {filteredUsers.length === 0 && (
+                        <p className="text-gray-500 py-4">No users found</p>
+                    )}
                 </div>
             </div>
 

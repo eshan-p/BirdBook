@@ -61,6 +61,9 @@ public class GroupService {
     public Group updateGroup(ObjectId groupId, Group updatedData) {
         Group group = getGroupById(groupId);
         group.setName(updatedData.getName());
+        if (updatedData.getDescription() != null) {
+            group.setDescription(updatedData.getDescription());
+        }
         return groupDAO.save(group);
     }
 
