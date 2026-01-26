@@ -471,6 +471,7 @@ function GroupFeed() {
                   }
                   likes={post.likes.length}
                   comments={post.comments.length}
+                  image={post.image}
                 />
               </button>
             ))
