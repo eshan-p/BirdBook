@@ -2,7 +2,6 @@ package com.birdbook.service;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,6 +48,33 @@ public class UserService {
         this.postDAO = postDAO;
         this.birdDAO = birdDAO;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    public void completeOnboarding(String userId, String firstName, String lastName, String location, MultipartFile profilePhoto) {
+        try{
+            ObjectId objectId = new ObjectId(userId);
+            User user = userDAO.findById(objectId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            user.setLocation(location);
+            user.setOnboardingComplete(true);
+            if(profilePhoto != null && !profilePhoto.isEmpty()){
+                String imagePath = saveProfilePhoto(profilePhoto);
+                user.setProfilePic(imagePath);
+            }
+            userDAO.save(user);
+        } catch(IOException e) {
+            throw new RuntimeException("Failed to save profile photo",e);
+        }
+    }
+
+    private String saveProfilePhoto(MultipartFile photoFile) throws IOException {
+        String uploadDir = "images/profile_pictures";
+        Files.createDirectories(Paths.get(uploadDir));
+        String fileName = UUID.randomUUID() + "_" + photoFile.getOriginalFilename();
+        Path filePath = Paths.get(uploadDir, fileName);
+        Files.copy(photoFile.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        return "/" + uploadDir + "/" + fileName;
     }
 
     public List<User> getAllUsers() {

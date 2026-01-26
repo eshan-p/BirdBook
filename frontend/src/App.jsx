@@ -19,6 +19,7 @@ import OtherProfile from "./pages/OtherProfile";
 import BirdDetail from "./pages/BirdDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/layout/Layout"
+import Onboarding from "./pages/Onboarding";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
           <Route element={<Layout />}>
             <Route path="/feed" element={<Feed />} />
             <Route path="/birds" element={<Birds />} /> 

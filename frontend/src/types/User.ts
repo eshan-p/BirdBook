@@ -1,8 +1,10 @@
 export interface User {
   id: string;
   username: string;
+  firstName?: string;
+  lastName?: string;
   profilePic?: string;
-  location?: [number, number];
+  location?: string;
   friends: string[];
   posts: string[];
   groups: string[];

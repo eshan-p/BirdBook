@@ -28,7 +28,7 @@ export default function Signup() {
       if (!res.ok) throw new Error("Signup failed");
       const data = await res.json();
       setUser(data);
-      navigate("/profile");
+      navigate("/onboarding");
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);

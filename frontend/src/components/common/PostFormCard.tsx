@@ -364,12 +364,7 @@ function PostFormCard({onClose} : {onClose: () => void}) {
                             <div className='px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm flex items-center justify-between'>
                                 <div>
                                     {location ? (
-                                        <div>
-                                            <p className='font-medium'>{locationName}</p>
-                                            <p className='text-xs text-gray-500'>
-                                                {location[0].toFixed(4)}, {location[1].toFixed(4)}
-                                            </p>
-                                        </div>
+                                        <p className='font-medium'>{locationName}</p>
                                     ) : (
                                         <div className='text-gray-500'>Getting location...</div>
                                     )}

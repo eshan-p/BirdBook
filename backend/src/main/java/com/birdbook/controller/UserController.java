@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.birdbook.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @CrossOrigin(
@@ -109,8 +110,26 @@ public class UserController {
         return new ResponseEntity<String>("User registered successfully", HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
+    @PostMapping("/onboard")
     @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> completeOnboarding(
+        @RequestPart("firstName") String firstName,
+        @RequestPart("lastName") String lastName,
+        @RequestPart("location") String location,
+        @RequestPart(value="profilePhoto", required = false) MultipartFile profilePhoto,
+        HttpServletRequest request
+    ) {
+        System.out.println("HIT ONBOARDING");
+        try{
+            String userId = request.getUserPrincipal().getName();
+            userService.completeOnboarding(userId, firstName, lastName, location, profilePhoto);
+            return ResponseEntity.ok(Map.of("message", "Onboarding completed"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error",e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<String> addFriend(@PathVariable String id, @PathVariable String friendId) {
 
         ObjectId userId = new ObjectId(id);

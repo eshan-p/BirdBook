@@ -1,17 +1,21 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 const BASE_URL = "http://localhost:8080";
 
-interface User{
+interface User {
     id: string;
     username: string;
     role: string;
     profilePic?: string;
+    firstName?: string;
+    lastName?: string;
+    location?: string;
+    onboardingComplete?: boolean;
 }
 
-interface AuthContextType{
+interface AuthContextType {
     user: User | null;
     setUser: (user: User | null) => void;
-    logout: () => void;
+    logout: () => Promise<void>;
     loading: boolean;
 }
 
@@ -23,10 +27,10 @@ export const AuthProvider = ({children} : {children: ReactNode}) => {
 
     useEffect(() => {
         const checkAuth = async () => {
-            try{
+            try {
                 const res = await fetch(BASE_URL + '/auth/me', {
                     credentials: 'include'
-                })
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setUser(data);
@@ -40,11 +44,11 @@ export const AuthProvider = ({children} : {children: ReactNode}) => {
             } finally {
                 setLoading(false);
             }
-        }
+        };
         checkAuth();
-    }, [])
+    }, []);
 
-    const logout = async () => {
+    const logout = async (): Promise<void> => {
         try {
             const res = await fetch(BASE_URL + '/auth/logout', {
                 method: 'POST',
@@ -58,7 +62,6 @@ export const AuthProvider = ({children} : {children: ReactNode}) => {
         } catch (err) {
             console.error("Logout error:", err);
         }
-        
     };
 
     return(
@@ -66,10 +69,10 @@ export const AuthProvider = ({children} : {children: ReactNode}) => {
             {!loading && children}
         </AuthContext.Provider>
     );
-}
+};
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    if(!context) throw new Error('useAuth must be used in AuthProvider Object');
+    if(!context) throw new Error('useAuth must be used within AuthProvider');
     return context;
 }

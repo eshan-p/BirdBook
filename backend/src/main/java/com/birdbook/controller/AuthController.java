@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.authentication.AuthenticationManager;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @CrossOrigin(
@@ -93,14 +94,7 @@ public class AuthController {
 
         response.addCookie(cookie);
 
-
-        return ResponseEntity.ok(
-                Map.of(
-                        "token", token,
-                        "username", user.getUsername(),
-                        "role", user.getRole().name()
-                )
-        );
+        return ResponseEntity.ok(formatUserResponse(user));
     }
 
 
@@ -145,14 +139,7 @@ public class AuthController {
 
         response.addCookie(cookie);
 
-        // Return logged-in user
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                Map.of(
-                        "id", user.getId().toHexString(),
-                        "username", user.getUsername(),
-                        "role", user.getRole().name()
-                )
-        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(formatUserResponse(user));
     }
 
 
@@ -182,13 +169,7 @@ public class AuthController {
                             .status(HttpStatus.UNAUTHORIZED)
                             .body(Map.of("error", "User not found"));
             }
-            return ResponseEntity.ok(
-                Map.of(
-                    "id", user.getId().toHexString(),
-                    "username", user.getUsername(),
-                    "role", user.getRole().name()
-                )
-            );
+            return ResponseEntity.ok(formatUserResponse(user));
         } catch (Exception e) {
             return ResponseEntity
                         .status(HttpStatus.UNAUTHORIZED)
@@ -209,5 +190,18 @@ public class AuthController {
         response.addCookie(cookie);
 
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
+
+    private Map<String, Object> formatUserResponse(User user) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", user.getId().toHexString());
+        response.put("username", user.getUsername());
+        response.put("role", user.getRole().name());
+        response.put("profilePic", user.getProfilePic());
+        response.put("firstName", user.getFirstName());
+        response.put("lastName", user.getLastName());
+        response.put("location", user.getLocation());
+        response.put("onboardingComplete", user.getOnboardingComplete());
+        return response;
     }
 }

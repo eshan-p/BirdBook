@@ -201,11 +201,19 @@ useEffect(() => {
               disabled={!user || isTogglingLike}
               className='flex flex-row items-center mr-6 hover:bg-gray-50 px-3 py-2 rounded transition disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              <img 
-                src="/src/assets/heart.png" 
-                alt="likes" 
-                className='w-5 h-5 mr-2'
-              />
+              {!isLiked ? (
+                <img 
+                  src="/src/assets/heart.png" 
+                  alt="likes" 
+                  className='w-5 h-5 mr-2'
+                />
+              ) : (
+                <img 
+                  src="/src/assets/liked.svg" 
+                  alt="likes" 
+                  className='w-5 h-5 mr-2'
+                />
+              )}
               <p className='text-lg'>
                 {post.likes.length} {post.likes.length === 1 ? 'like' : 'likes'}
               </p>

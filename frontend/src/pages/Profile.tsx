@@ -8,7 +8,6 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../types/User';
 import { getUserById } from '../api/Users';
-import { arrayToCoords, reverseCoordsToCityState } from '../utils/geolocation';
 
 function Profile() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -62,12 +61,6 @@ function Profile() {
     }
   }, [user?.id])
 
-  useEffect(() => {
-    if(userInfo?.location){
-        reverseCoordsToCityState(arrayToCoords(userInfo.location)).then(setLocationName)
-    }
-  }, [userInfo?.location])
-
   if (loading) return <div>loading auth</div>
   if (!userInfo) return <div>loading user data</div>
 
@@ -78,10 +71,10 @@ function Profile() {
             <div className='flex flex-row py-8 border-b border-gray-300 mb-3 px-3'>
                 <ProfileIcon size="lg" src={userInfo?.profilePic ? `http://localhost:8080${userInfo.profilePic}` : undefined}/>
                 <div>
-                    <h2 className='text-xl mt-1 ml-4'>{userInfo.username}</h2>
+                    <h2 className='text-xl mt-1 ml-4'>{userInfo.firstName} {userInfo.lastName}</h2>
                     <div className='flex flex-row ml-4 mb-2'>
                         <img src="src/assets/pin.svg" alt="location"/>
-                        <p className='text-base/4 opacity-65 ml-1'>{locationName || 'Location unkown'}</p>
+                        <p className='text-base/4 opacity-65 ml-1'>{userInfo?.location || 'Location unkown'}</p>
                     </div>
                     <div className='flex flex-row items-center w-full justify-between px-3 gap-4'>
                         <div className='flex flex-col items-center'>

@@ -31,6 +31,10 @@ public class User {
     private Role role;
 
     private String profilePic;
+    private String firstName;
+    private String lastName;
+    private String location;
+    private Boolean onboardingComplete = false;
 
     private ObjectId[] friends;
     private ObjectId[] posts;
@@ -45,6 +49,10 @@ public class User {
         this.password = password;
         this.role = (role == null) ? Role.BASIC_USER : role;
         this.profilePic = "/profile_pictures/default_pfp.jpg";
+        this.firstName = null;
+        this.lastName = null;
+        this.location = null;
+        this.onboardingComplete = false;
         this.friends = new ObjectId[0];
         this.posts = new ObjectId[0];
         this.groups = new ObjectId[0];
@@ -56,6 +64,10 @@ public class User {
         String password,
         Role role,
         String profilePic,
+        String firstName,
+        String lastName,
+        String location,
+        Boolean onboardingComplete,
         ObjectId[] friends,
         ObjectId[] posts,
         ObjectId[] groups
@@ -65,6 +77,10 @@ public class User {
         this.password = password;
         this.role = role;
         this.profilePic = profilePic;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.location = location;
+        this.onboardingComplete = onboardingComplete;
         this.friends = friends;
         this.posts = posts;
         this.groups = groups;
@@ -108,6 +124,38 @@ public class User {
 
     public void setProfilePic(String profilePic) {
         this.profilePic = profilePic;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public Boolean getOnboardingComplete() {
+        return onboardingComplete;
+    }
+
+    public void setOnboardingComplete(Boolean onboardingComplete) {
+        this.onboardingComplete = onboardingComplete;
     }
 
     public ObjectId[] getFriends() {

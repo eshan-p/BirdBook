@@ -35,3 +35,6 @@ build/
 ### env ###
 backend/src/main/resources/
 src/main/resources/application.properties
+**/images/
+backend/images/
+backend_profile_pictures/
