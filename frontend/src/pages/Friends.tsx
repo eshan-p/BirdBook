@@ -110,21 +110,19 @@ export default function Friends() {
                         </div>
                     </div>
 
-                    <ul className="divide-y">
+                    <ul className="space-y-2">
                         {filteredFriends.map(friend => (
-                        <div key={friend.id}>
-                            <li className="py-5">
+                            <li 
+                                key={friend.id}
+                                onClick={() => navigate(`/user/${friend.id}`)}
+                            >
                                 <FriendCard user={friend} />
                             </li>
-                            <button
-                                onClick={() => navigate(`/user/${friend.id}`)}
-                                className="mt-2"
-                            >
-                                Click
-                            </button>
-                        </div>
                         ))}
                     </ul>
+                    {filteredFriends.length === 0 && (
+                        <p className="text-gray-500 py-4">No friends found</p>
+                    )}
                 </div>
             </div>
 

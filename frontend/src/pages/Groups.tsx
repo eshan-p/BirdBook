@@ -199,7 +199,7 @@ export default function Groups() {
           {currentUserId && filteredUserGroups.length > 0 && (
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">My Groups</h3>
-              <ul className="divide-y">
+              <ul className="space-y-2">
                 {filteredUserGroups.map((group) => (
                   <li key={group.id}>
                     <GroupCard
@@ -213,7 +213,7 @@ export default function Groups() {
 
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Groups</h3>
-            <ul className="divide-y">
+            <ul className="space-y-2">
               {filteredAllGroups.map((group) => (
                 <li key={group.id}>
                   <GroupCard
