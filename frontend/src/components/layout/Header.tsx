@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from '../../context/AuthContext';
 import { getUserById } from '../../api/Users';
 import { User } from '../../types/User';
+import { isBasicUser, isSuperUser,isAdmin } from '../../utils/roleUtils';
 
 function Header() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ function Header() {
       getUserById(authUser.id)
         .then(setUserData)
         .catch(console.error);
+          //console.log(authUser);
     }
   }, [authUser?.id]);
 
@@ -57,7 +59,7 @@ function Header() {
 
   return (
     <div className='bg-white flex flex-row justify-between items-center h-16 px-22 drop-shadow sticky top-0 z-50'>
-      <div className='basis-1/3 flex flex-row justify-start min-w-0 gap-4'>
+      <div className='basis-1/3 flex flex-row justify-start min-w-0 gap-4'> 
         <button 
           onClick={() => navigate('/feed')}
           className='w-10 h-10 flex items-center justify-center bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-colors shrink-0'
@@ -68,7 +70,10 @@ function Header() {
       </div>
 
       <div className='basis-1/3 flex flex-row justify-center gap-6 shrink-0'>
-        {navItems.map((item) => (
+        {navItems.filter(item =>
+            !item.requiresAuth || isBasicUser(authUser?.role) || isAdmin(authUser?.role) || isSuperUser(authUser?.role)
+          )
+          .map((item) => (
           <button 
             key={item.path}
             onClick={() => navigate(item.path)}

@@ -34,7 +34,7 @@ export async function getFriends(userId: string): Promise<User[]> {
   return response.json();
 }
 
-export async function addFriend(userId: string, friendId: string): Promise<User> {
+export async function addFriend(userId: string, friendId: string): Promise<void> {
   const response = await fetch(
     `${BASE_URL}/users/${userId}/friends/${friendId}`,
     {
@@ -47,7 +47,23 @@ export async function addFriend(userId: string, friendId: string): Promise<User>
     throw new Error("Failed to add friend");
   }
 
-  return response.json();
+  //return response.json();
+}
+
+export async function removeFriend(userId: string, friendId: string): Promise<void> {
+  const response = await fetch(
+    `${BASE_URL}/users/${userId}/friends/${friendId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to remove friend");
+  }
+
+  //return response.json();
 }
 
 export async function updateUserRole(userId: string, role: string): Promise<User> {

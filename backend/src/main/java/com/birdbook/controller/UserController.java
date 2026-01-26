@@ -39,18 +39,37 @@ public class UserController {
                         user.getId().toHexString(),
                         user.getUsername(),
                         user.getRole().name(),
-                        user.getProfilePic()
+                        user.getProfilePic(),
+                        toHexArray(user.getFriends()),
+                        toHexArray(user.getPosts()),
+                        toHexArray(user.getGroups())
                 ))
                 .toList();
     }
 
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable String id) {
-        
+    public ResponseEntity<UserSummaryDTO> getUser(@PathVariable String id) {
         ObjectId userId = new ObjectId(id);
-        return userService.getUserById(userId);
+        User user = userService.getUserById(userId);
+
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(
+                new UserSummaryDTO(
+                        user.getId().toHexString(),
+                        user.getUsername(),
+                        user.getRole().name(),
+                        user.getProfilePic(),
+                        toHexArray(user.getFriends()),
+                        toHexArray(user.getPosts()),
+                        toHexArray(user.getGroups())
+                )
+        );
     }
+
 
     @GetMapping("/search")
     public List<User> searchUsers(@RequestParam String query) {
@@ -64,7 +83,10 @@ public class UserController {
                         user.getId().toHexString(),
                         user.getUsername(),
                         user.getRole().toString(),
-                        user.getProfilePic()
+                        user.getProfilePic(),
+                        toHexArray(user.getFriends()),
+                        toHexArray(user.getPosts()),
+                        toHexArray(user.getGroups())
                 ))
                 .toList();
     }
@@ -176,7 +198,10 @@ public class UserController {
                 updatedUser.getId().toHexString(),
                 updatedUser.getUsername(),
                 updatedUser.getRole().name(),
-                updatedUser.getProfilePic()
+                updatedUser.getProfilePic(),
+                toHexArray(updatedUser.getFriends()),
+                toHexArray(updatedUser.getPosts()),
+                toHexArray(updatedUser.getGroups())
             );
             
             return ResponseEntity.ok(userDTO);
@@ -185,5 +210,13 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    private String[] toHexArray(ObjectId[] ids) {
+        if (ids == null) return new String[0];
+
+        return java.util.Arrays.stream(ids)
+                .map(ObjectId::toHexString)
+                .toArray(String[]::new);
     }
 }

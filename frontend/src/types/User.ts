@@ -3,7 +3,7 @@ export interface User {
   username: string;
   profilePic?: string;
   location?: [number, number];
-  friends: string[];
+  friends?: string[];
   posts: string[];
   groups: string[];
   role: string;

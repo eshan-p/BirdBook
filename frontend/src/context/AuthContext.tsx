@@ -1,16 +1,11 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
+import { User } from '../types/User';
 const BASE_URL = "http://localhost:8080";
 
-interface User{
-    id: string;
-    username: string;
-    role: string;
-    profilePic?: string;
-}
 
 interface AuthContextType{
     user: User | null;
-    setUser: (user: User | null) => void;
+    setUser: React.Dispatch<React.SetStateAction<User | null>>;
     logout: () => void;
     loading: boolean;
 }

@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { getUserById } from '../api/Users';
 import { User } from '../types/User';
 import { getUserGroups } from '../api/Groups';
+import { isBasicUser,isAdmin,isSuperUser } from "../utils/roleUtils";
 
 // ---- MOCK DATA ----
 const mockGroups: Group[] = [
@@ -101,6 +102,7 @@ export default function Birds() {
   return (
     <div className="flex flex-row min-h-screen bg-[#F7F7F7] px-16">
       {/* LEFT SIDEBAR */}
+      {(isBasicUser(user?.role) || isAdmin(user?.role) || isSuperUser(user?.role))&&
       <div className="flex flex-col basis-1/4 m-6 mr-0">
         <ProfileCard user={userData || undefined} />
         <div className="h-fit w-full mt-6 bg-white p-4 drop-shadow">
@@ -119,7 +121,7 @@ export default function Birds() {
             <FriendCard key={friend.id} friend={friend} />
           ))}
         </div>
-      </div>
+      </div>}
 
       {/* CENTER CONTENT */}
       <div className="basis-3/4 m-6">

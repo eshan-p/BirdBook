@@ -9,11 +9,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { User } from '../types/User';
 import { getUserById } from '../api/Users';
 import { arrayToCoords, reverseCoordsToCityState } from '../utils/geolocation';
-import { addFriend } from '../api/Users';
+import { addFriend,removeFriend } from '../api/Users';
 
 function OtherProfile() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [profileUser, setUser] = useState<Post[]>([]);
   const {userId} = useParams<{userId:string}>();
   const [pageLoading, setPageLoading] = useState<boolean>(true);
   const [locationName, setLocationName] = useState<string>("");
@@ -21,8 +20,23 @@ function OtherProfile() {
   const [topBirds, setTopBirds] = useState<any[]>([]); //TODO: make typing more specific
   const navigate = useNavigate();
   const BASE_URL = "http://localhost:8080";
-  const { user, loading } = useAuth();
+  const { user, loading, setUser } = useAuth();
+  const [currentUserFull, setCurrentUserFull] = useState<User | null>(null);
+  const isUserReady = Boolean(currentUserFull && userInfo);
+  const [currentUserLoading, setCurrentUserLoading] = useState(true);
+
+
   //console.log(userId);
+
+  useEffect(() => {
+  if (user?.id) {
+    setCurrentUserLoading(true);
+    getUserById(user.id)
+      .then(setCurrentUserFull)
+      .finally(() => setCurrentUserLoading(false));
+  }
+}, [user?.id]);
+
 
   useEffect(() => {
     if(userId){
@@ -40,6 +54,9 @@ function OtherProfile() {
     image: "src/assets/examplebird.png",
     location: [0, 0]
   }))
+
+  
+  
 
   useEffect(() => {
     if(userId){
@@ -72,8 +89,24 @@ function OtherProfile() {
     }
   }, [userInfo?.location])
 
-  if (pageLoading) return <div>loading page</div>
-  if (!userInfo) return <div>loading user data</div>
+  if (pageLoading || currentUserLoading) {
+  return <div>loading page</div>;
+}
+
+if (!userInfo || !currentUserFull) {
+  return <div>loading user data</div>;
+}
+
+
+
+  const isFollowing =
+  !!currentUserFull?.friends?.includes(userId!);
+
+
+const canFollow =
+  user &&
+  userInfo &&
+  user.id !== userInfo.id;
 
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
@@ -93,7 +126,7 @@ function OtherProfile() {
                             <p className='text-sm font-extralight'>Spottings</p>
                         </div>
                         <div className='flex flex-col items-center'>
-                            <p className='text-xl font-light text-[#0700D3]'>{userInfo.friends.length}</p>
+                            <p className='text-xl font-light text-[#0700D3]'>{userInfo.friends?.length}</p>
                             <p className='text-sm font-extralight'>Friends</p>
                         </div>
                         <div className='flex flex-col items-center'>
@@ -113,6 +146,66 @@ function OtherProfile() {
         </div>
       </div>
       <div className='basis-1/3 m-6 ml-0'>
+
+{/* Profile Actions */}
+{user && userId && userInfo && currentUserFull && user.id !== userInfo.id && (
+  <div className="bg-white p-4 drop-shadow mb-6">
+    <h3 className="text-lg font-medium mb-3"></h3>
+
+    {(!isFollowing) ? (
+      <button
+  onClick={async () => {
+    if (!user || !userId) return;
+
+    try {
+      await addFriend(user.id, userId);
+      setCurrentUserFull(prev =>
+        prev
+          ? {
+              ...prev,
+              friends: [...(prev.friends ?? []), userId],
+            }
+          : prev
+      );
+    } catch (err) {
+      console.error("Failed to follow:", err);
+    }
+  }}
+  className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+>
+  Friend
+</button>
+    ) : (
+      <button
+  onClick={async () => {
+    if (!user || !userId) return;
+
+    try {
+      await removeFriend(user.id, userId);
+
+      setCurrentUserFull(prev =>
+        prev
+          ? {
+              ...prev,
+              friends: (prev.friends ?? []).filter(id => id !== userId),
+            }
+          : prev
+      );
+    } catch (err) {
+      console.error("Failed to unfollow:", err);
+    }
+  }}
+  className="w-full py-2 border border-gray-400 rounded hover:bg-gray-100 transition"
+>
+  Unfriend
+</button>
+
+    )}
+  </div>
+)}
+
+
+
         <div className='bg-white h-fit w-full p-4 drop-shadow mb-6'>
             <div className='flex flex-row w-full border-b border-gray-300 pb-2'>
                 <img src="src/assets/post.svg" alt="posts"/>
@@ -124,22 +217,6 @@ function OtherProfile() {
                 <img src="src/assets/badge.svg" alt="posts"/>
                 <h3 className='ml-3 text-lg'>Badges</h3>
             </div>
-            <button
-                onClick={() => {
-                    if (!user || !userId) return;
-
-                    addFriend(user.id, userId)
-                    .then(() => {
-                        console.log("Friend added");
-                    })
-                    .catch(err => {
-                        console.error("Failed to add friend:", err);
-                    });
-                }}
-                className="mt-2"
-                >
-            Add Friend
-            </button>
 
         </div>
       </div>

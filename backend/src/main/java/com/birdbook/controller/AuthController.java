@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.authentication.AuthenticationManager;
 
+import java.util.Arrays;
 import java.util.Map;
 
 @CrossOrigin(
@@ -183,11 +184,15 @@ public class AuthController {
                             .body(Map.of("error", "User not found"));
             }
             return ResponseEntity.ok(
-                Map.of(
-                    "id", user.getId().toHexString(),
-                    "username", user.getUsername(),
-                    "role", user.getRole().name()
-                )
+                    Map.of(
+                            "id", user.getId().toHexString(),
+                            "username", user.getUsername(),
+                            "role", user.getRole().name(),
+                            "profilePic", user.getProfilePic(),
+                            "friends", Arrays.stream(user.getFriends())
+                                    .map(ObjectId::toHexString)
+                                    .toArray(String[]::new)
+                    )
             );
         } catch (Exception e) {
             return ResponseEntity
