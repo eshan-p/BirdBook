@@ -375,7 +375,7 @@ function GroupFeed() {
                   {joinRequests.map((request) => (
                     <li key={request.userId} className='flex items-center justify-between p-2 bg-gray-50 rounded'>
                       <div className='flex items-center gap-2'>
-                        <ProfileIcon size="sm" src={request.profilePic} />
+                        <ProfileIcon size="sm" src={request.profilePic ? `http://localhost:8080${request.profilePic}` : undefined} />
                         <span className='text-sm truncate'>{request.username}</span>
                       </div>
                       <div className='flex gap-1'>
@@ -414,7 +414,7 @@ function GroupFeed() {
                         className='flex items-center gap-2 cursor-pointer flex-1'
                         onClick={() => member.userId && navigate(`/profile/${member.userId}`)}
                       >
-                        <ProfileIcon size="sm" src={member.profilePic} />
+                        <ProfileIcon size="sm" src={member.profilePic ? `http://localhost:8080${member.profilePic}` : undefined} />
                         <span className='truncate'>{member.username || 'Unknown User'}</span>
                       </div>
                       {isOwner && member.userId !== group.owner.userId && (
@@ -454,22 +454,27 @@ function GroupFeed() {
             </div>
           ) : (
             pagedPosts.map(post => (
-              <div key={post.id?.toString()}>
+              <button
+                key={post.id?.toString()}
+                onClick={() => navigate(`/sightings/${post.id.toString()}`)}
+                className="mb-6"
+              >
                 <PostCard
                   description={post.header}
                   author={post.user.username}
                   dateTime={parseDate(post.timestamp)}
-                  location={{latitude: parseFloat(post.tags!.latitude!) || 0, longitude: parseFloat(post.tags!.longitude!) || 0}}
+                  location={post.tags?.latitude && post.tags?.longitude 
+                    ? {
+                        latitude: parseFloat(post.tags.latitude),
+                        longitude: parseFloat(post.tags.longitude)
+                      }
+                    : undefined
+                  }
                   likes={post.likes.length}
                   comments={post.comments.length}
+                  image={post.image}
                 />
-                <button
-                  onClick={() => navigate(`/sightings/${post.id.toString()}`)}
-                  className="mt-2"
-                >
-                  Click
-                </button>
-              </div>
+              </button>
             ))
           )}
         </div>

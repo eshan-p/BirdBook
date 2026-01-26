@@ -15,7 +15,7 @@ function FriendCard(props: FriendCardProps) {
     const user = props.user;
 
     name = user.username;
-    profilePhoto = user.profilePic;
+    profilePhoto = user.profilePic ? `http://localhost:8080${user.profilePic}` : undefined;
     subText = `${user.friends?.length || 0} friends`;
   } else {
     const friend = props.friend;

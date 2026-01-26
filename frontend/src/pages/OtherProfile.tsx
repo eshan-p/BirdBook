@@ -24,6 +24,7 @@ function OtherProfile() {
   const [currentUserFull, setCurrentUserFull] = useState<User | null>(null);
   const isUserReady = Boolean(currentUserFull && userInfo);
   const [currentUserLoading, setCurrentUserLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
 
 
   //console.log(userId);
@@ -84,7 +85,7 @@ function OtherProfile() {
 
   useEffect(() => {
     if(userInfo?.location){
-        reverseCoordsToCityState(arrayToCoords(userInfo.location)).then(setLocationName)
+        reverseCoordsToCityState(arrayToCoords([Number(userInfo.location.latitude),Number(userInfo.location.longitude)])).then(setLocationName)
     }
   }, [userInfo?.location])
 
@@ -96,10 +97,29 @@ if (!userInfo || !currentUserFull) {
   return <div>loading user data</div>;
 }
 
+console.log(userInfo);
+console.log(user);
+console.log("currentUserFull.friends:", currentUserFull.friends);
+console.log("viewed userId:", userId);
+console.log("Type of userId: ",typeof(userId));
+if (currentUserFull.friends){
+    console.log("Type of currentUserFull.friends[0]: ",typeof(currentUserFull.friends[0]));
+    console.log("Type of currentUserFull.friends[1]: ",typeof(currentUserFull.friends[1]));
+    console.log("Type of currentUserFull.friends[2]: ",typeof(currentUserFull.friends[2]));
+    console.log("Type of currentUserFull.friends[3]: ",typeof(currentUserFull.friends[3]));
+    console.log("Type of currentUserFull.friends[4]: ",typeof(currentUserFull.friends[4]));
+}
 
+/*
+const isFollowing =
+  !!(
+    currentUserFull?.friends &&
+    userInfo?.id &&
+    currentUserFull.friends
+      .map(String)
+      .includes(String(userInfo.id))
+  ); */
 
-  const isFollowing =
-  !!currentUserFull?.friends?.includes(userId!);
 
 
 const canFollow =
@@ -162,10 +182,11 @@ const canFollow =
         prev
           ? {
               ...prev,
-              friends: [...(prev.friends ?? []), userId],
+              friends: [...new Set([...(prev.friends ?? []).map(String), String(userId)])],
             }
           : prev
       );
+      setIsFollowing(true);
     } catch (err) {
       console.error("Failed to follow:", err);
     }
@@ -183,13 +204,16 @@ const canFollow =
       await removeFriend(user.id, userId);
 
       setCurrentUserFull(prev =>
-        prev
-          ? {
-              ...prev,
-              friends: (prev.friends ?? []).filter(id => id !== userId),
-            }
-          : prev
-      );
+  prev
+    ? {
+        ...prev,
+        friends: (prev.friends ?? []).filter(
+          id => String(id) !== String(userId)
+        ),
+      }
+    : prev
+);
+setIsFollowing(false);
     } catch (err) {
       console.error("Failed to unfollow:", err);
     }

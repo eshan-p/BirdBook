@@ -146,3 +146,38 @@ export async function deleteComment(postId: string, comment: Comment): Promise<P
 
   return response.json();
 }
+
+// Delete a post
+export async function deletePost(postId: string, userId: string): Promise<void> {
+  const response = await fetch(`${BASE_URL}/sightings/${postId}?userId=${userId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete post");
+  }
+}
+
+// Update a post
+export async function updatePost(postId: string, userId: string, postData: any, image?: File | null): Promise<Post> {
+  const formData = new FormData();
+  formData.append('post', JSON.stringify(postData));
+  formData.append('userId', userId);
+  if (image) {
+    formData.append('image', image);
+  }
+
+  const response = await fetch(`${BASE_URL}/sightings/${postId}`, {
+    method: 'PUT',
+    credentials: 'include',
+    body: formData
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to update post');
+  }
+
+  return response.json();
+}
