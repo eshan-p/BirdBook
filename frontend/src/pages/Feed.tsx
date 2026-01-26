@@ -74,7 +74,6 @@ useEffect(() => {
           getUserById(user.id)
             .then(setUserData)
             .catch(console.error);
-          
           fetch(`${BASE_URL}/users/${user.id}/friends`, {credentials: 'include'})
             .then(async (r) => {
       if (!r.ok) {

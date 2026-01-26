@@ -8,12 +8,14 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../types/User';
 import { getUserById } from '../api/Users';
+import EditProfileModal from '../components/common/EditProfileModal';
 
 function Profile() {
   const [posts, setPosts] = useState<Post[]>([]);
   const { user, loading } = useAuth();
   const [pageLoading, setPageLoading] = useState<boolean>(true);
   const [locationName, setLocationName] = useState<string>("");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [topBirds, setTopBirds] = useState<any[]>([]); //TODO: make typing more specific
   const navigate = useNavigate();
@@ -66,12 +68,26 @@ function Profile() {
 
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
+      {isEditingProfile && (
+        <EditProfileModal
+          user={userInfo}
+          onClose={() => setIsEditingProfile(false)}
+          onSave={(updatedUser) => setUserInfo(updatedUser)}/>
+      )}
       <div className='basis-2/3 m-6'>
         <div className='bg-white h-fit w-full p-4 drop-shadow flex flex-col'>
             <div className='flex flex-row py-8 border-b border-gray-300 mb-3 px-3'>
                 <ProfileIcon size="lg" src={userInfo?.profilePic ? `http://localhost:8080${userInfo.profilePic}` : undefined}/>
                 <div>
-                    <h2 className='text-xl mt-1 ml-4'>{userInfo.firstName} {userInfo.lastName}</h2>
+                    <div className='flex flex-row mb-2'>
+                      <h2 className='text-xl mt-1 ml-4 mr-4'>{userInfo.firstName} {userInfo.lastName}</h2>
+                      <button
+                        onClick={() => setIsEditingProfile(true)}
+                        className='px-2 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium'
+                      >
+                        Edit Profile
+                      </button>
+                    </div>
                     <div className='flex flex-row ml-4 mb-2'>
                         <img src="src/assets/pin.svg" alt="location"/>
                         <p className='text-base/4 opacity-65 ml-1'>{userInfo?.location || 'Location unkown'}</p>
@@ -82,7 +98,7 @@ function Profile() {
                             <p className='text-sm font-extralight'>Spottings</p>
                         </div>
                         <div className='flex flex-col items-center'>
-                            <p className='text-xl font-light text-[#0700D3]'>{userInfo.friends.length}</p>
+                            <p className='text-xl font-light text-[#0700D3]'>{userInfo.friends?.length || '0'}</p>
                             <p className='text-sm font-extralight'>Friends</p>
                         </div>
                         <div className='flex flex-col items-center'>

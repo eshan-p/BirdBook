@@ -39,6 +39,9 @@ public class UserController {
                 .map(user -> new UserSummaryDTO(
                         user.getId().toHexString(),
                         user.getUsername(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getLocation(),
                         user.getRole().name(),
                         user.getProfilePic(),
                         toHexArray(user.getFriends()),
@@ -62,6 +65,9 @@ public class UserController {
                 new UserSummaryDTO(
                         user.getId().toHexString(),
                         user.getUsername(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getLocation(),
                         user.getRole().name(),
                         user.getProfilePic(),
                         toHexArray(user.getFriends()),
@@ -83,7 +89,10 @@ public class UserController {
                 .map(user -> new UserSummaryDTO(
                         user.getId().toHexString(),
                         user.getUsername(),
-                        user.getRole().toString(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getLocation(),
+                        user.getRole().name(),
                         user.getProfilePic(),
                         toHexArray(user.getFriends()),
                         toHexArray(user.getPosts()),
@@ -216,6 +225,9 @@ public class UserController {
             UserSummaryDTO userDTO = new UserSummaryDTO(
                 updatedUser.getId().toHexString(),
                 updatedUser.getUsername(),
+                updatedUser.getFirstName(),
+                updatedUser.getLastName(),
+                updatedUser.getLocation(),
                 updatedUser.getRole().name(),
                 updatedUser.getProfilePic(),
                 toHexArray(updatedUser.getFriends()),
