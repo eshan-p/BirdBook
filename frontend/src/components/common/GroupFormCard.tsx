@@ -11,6 +11,8 @@ function GroupFormCard({onClose} : {onClose: () => void}) {
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState<[number, number] | null>(null);
   const [locationName, setLocationName] = useState('');
+  const [locationInput, setLocationInput] = useState('');
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,6 +36,53 @@ function GroupFormCard({onClose} : {onClose: () => void}) {
             );
         }
     }, []);
+
+    const handleLocationSearch = async () => {
+        if (!locationInput.trim()) return;
+
+        try {
+            const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationInput)}`,
+            { headers: { 'Accept': 'application/json' } }
+            );
+
+            const results = await response.json();
+
+            if (results.length > 0) {
+            const result = results[0];
+            const coords: [number, number] = [parseFloat(result.lat), parseFloat(result.lon)];
+            setLocation(coords);
+            setLocationName(locationInput);
+            setIsEditingLocation(false);
+            setLocationInput('');
+            } else {
+            setError('Location not found. Please try another search.');
+            }
+        } catch (err) {
+            console.error("Error searching location:", err);
+            setError('Failed to search location');
+        }
+    };
+    
+    const handleUseCurrentLocation = () => {
+        if(navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const coords: [number, number] = [
+                        position.coords.latitude,
+                        position.coords.longitude
+                    ];
+                    setLocation(coords);
+                    reverseCoordsToCityState(arrayToCoords(coords)).then(setLocationName).catch(error => console.error("Error geocoding:" + error));
+                    setIsEditingLocation(false);
+                },
+                (error) => {
+                    console.error("Error getting location:" + error);
+                    setError('Failed to get current location');
+                }
+            );
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -128,18 +177,66 @@ function GroupFormCard({onClose} : {onClose: () => void}) {
                         <label className='block text-sm mb-1'>
                             location
                         </label>
-                        <div className='px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm'>
-                            {location ? (
+                        {!isEditingLocation ? (
+                            <div className='px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm flex items-center justify-between'>
                                 <div>
-                                <div>{locationName}</div>
-                                <div className='text-xs text-gray-500'>
-                                    {location[0].toFixed(6)}, {location[1].toFixed(6)}
+                                    {location ? (
+                                        <div>
+                                            <p className='font-medium'>{locationName}</p>
+                                            <p className='text-xs text-gray-500'>
+                                                {location[0].toFixed(4)}, {location[1].toFixed(4)}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className='text-gray-500'>Getting location...</div>
+                                    )}
                                 </div>
+                                <button
+                                    type='button'
+                                    onClick={() => setIsEditingLocation(true)}
+                                    className='ml-2 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 whitespace-nowrap'
+                                >
+                                    Change
+                                </button>
+                            </div>
+                        ) : (
+                            <div className='space-y-2'>
+                                <input
+                                    type='text'
+                                    value={locationInput}
+                                    onChange={(e) => setLocationInput(e.target.value)}
+                                    placeholder='Enter location (city, address, coordinates)'
+                                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                    onKeyDown={(e) => e.key === 'Enter' && handleLocationSearch()}
+                                />
+                                <div className='flex gap-2'>
+                                    <button
+                                        type='button'
+                                        onClick={handleLocationSearch}
+                                        className='flex-1 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600'
+                                    >
+                                        Search
+                                    </button>
+                                    <button
+                                        type='button'
+                                        onClick={handleUseCurrentLocation}
+                                        className='flex-1 px-3 py-2 bg-gray-500 text-white text-sm rounded hover:bg-gray-600'
+                                    >
+                                        Use Current
+                                    </button>
+                                    <button
+                                        type='button'
+                                        onClick={() => {
+                                            setIsEditingLocation(false);
+                                            setLocationInput('');
+                                        }}
+                                        className='flex-1 px-3 py-2 border border-gray-300 text-sm rounded hover:bg-gray-50'
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
-                            ) : (
-                                <div className='text-gray-500'>Getting location...</div>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
 
                     <div>

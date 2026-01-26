@@ -45,7 +45,7 @@ function Header() {
   };
 
   const protectedNavItems = [
-    { label: 'Global Feed', path: '/feed' },
+    { label: 'Home', path: '/feed' },
     { label: 'Groups', path: '/groups' },
     { label: 'Friends', path: '/friends' },
     { label: 'Birds', path: '/birds' },
@@ -59,7 +59,7 @@ function Header() {
     <div className='bg-white flex flex-row justify-between items-center h-16 px-22 drop-shadow sticky top-0 z-50'>
       <div className='basis-1/3 flex flex-row justify-start min-w-0 gap-4'>
         <button 
-          onClick={() => navigate('/feed')}
+          onClick={() => navigate('/')}
           className='w-10 h-10 flex items-center justify-center bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-colors shrink-0'
         >
           BB
