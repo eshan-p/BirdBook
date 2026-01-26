@@ -139,7 +139,7 @@ const pagedPosts = posts.slice(0, (page + 1) * PAGE_SIZE);
         {/* Main Feed */}
         <div className='basis-1/2 m-6 max-h-screen'>
           <div className='flex flex-col'>
-            <CreatePost />
+            {user? (<CreatePost />):(<></>)}
 
             {pagedPosts.map(post => (
               <button
