@@ -189,7 +189,7 @@ useEffect(() => {
           {post.image && (
             <div className='mb-4'>
               <img 
-                src={post.image} 
+                src={`http://localhost:8080${post.image}`} 
                 alt={post.header} 
                 className='w-full rounded-lg object-cover max-h-96'
               />

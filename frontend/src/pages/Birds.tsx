@@ -13,6 +13,7 @@ import { getUserById } from '../api/Users';
 import { User } from '../types/User';
 import { getUserGroups } from '../api/Groups';
 import { isBasicUser,isAdmin,isSuperUser } from "../utils/roleUtils";
+import CreateBird from "../components/features/CreateBird";
 
 // ---- MOCK DATA ----
 const mockGroups: Group[] = [
@@ -132,6 +133,8 @@ export default function Birds() {
               <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
             </div>
           </div>
+
+          {isSuperUser(user?.role) && <CreateBird/>}
 
           <div className="grid grid-cols-1 gap-2">
             {loading && <p className="text-center py-4">Loading birds...</p>}

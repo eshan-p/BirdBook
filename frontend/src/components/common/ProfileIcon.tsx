@@ -7,7 +7,10 @@ interface ProfileIconProps {
     src?: string;
 }
 
-function ProfileIcon({size, src = "http://localhost:8080/profile_pictures/default_pfp.jpg"}: ProfileIconProps) {
+function ProfileIcon({size, src}: ProfileIconProps) {
+    const defaultPic = "http://localhost:8080/profile_pictures/default_pfp.jpg";
+    const imageSrc = src && src.trim() !== "" ? src : defaultPic;
+    
     const sizeClasses = {
         sm: 'w-10 h-10',
         md: 'w-14 h-14',
@@ -15,7 +18,7 @@ function ProfileIcon({size, src = "http://localhost:8080/profile_pictures/defaul
     }
     return (
         <div className={`${sizeClasses[size]} rounded-full bg-gray-500 border border-gray-300 overflow-hidden`}>
-            <img src={src} alt="profile" className='w-full h-full object-cover'/>
+            <img src={imageSrc} alt="profile" className='w-full h-full object-cover'/>
         </div>
     )
 }
