@@ -2,21 +2,39 @@ import React, { ChangeEvent, useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import { Bird } from '../../types/Bird';
 import { Group } from '../../types/Group'
+import { Post } from '../../types/Post'
 import { reverseCoordsToCityState, arrayToCoords } from '../../utils/geolocation'
+import { updatePost } from '../../api/Sightings';
 
-function PostFormCard({onClose} : {onClose: () => void}) {
+interface PostFormCardProps {
+  onClose: () => void;
+  existingPost?: Post;
+  onUpdate?: () => void;
+}
+
+function PostFormCard({onClose, existingPost, onUpdate} : PostFormCardProps) {
   const { user } = useAuth();
-  const [header, setHeader] = useState('');
-  const [textBody, setTextBody] = useState('');
+  const isEditing = !!existingPost;
+  const [header, setHeader] = useState(existingPost?.header || '');
+  const [textBody, setTextBody] = useState(existingPost?.textBody || '');
   const [selectedBird, setSelectedBird] = useState<Bird | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-  const [location, setLocation] = useState<[number, number] | null>(null);
+  const [location, setLocation] = useState<[number, number] | null>(
+    existingPost?.tags?.latitude && existingPost?.tags?.longitude
+      ? [parseFloat(existingPost.tags.latitude), parseFloat(existingPost.tags.longitude)]
+      : null
+  );
   const [locationName, setLocationName] = useState('');
   const [locationInput, setLocationInput] = useState('');
   const [isEditingLocation, setIsEditingLocation] = useState(false);
-  const [help, setHelp] = useState(false);
+  const [help, setHelp] = useState(existingPost?.help || false);
   const [image, setImage] = useState<File | null>(null);
-  const [tags, setTags] = useState<{ [key: string]: string }>({});
+  const [existingImage, setExistingImage] = useState<string | null>(existingPost?.image || null);
+  const [tags, setTags] = useState<{ [key: string]: string }>(
+    existingPost?.tags ? Object.fromEntries(
+      Object.entries(existingPost.tags).filter(([k]) => k !== 'latitude' && k !== 'longitude')
+    ) : {}
+  );
   const [tagKey, setTagKey] = useState('');
   const [tagValue, setTagValue] = useState('');
   const [error, setError] = useState('');
@@ -174,8 +192,8 @@ function PostFormCard({onClose} : {onClose: () => void}) {
         const postData = {
             header,
             textBody,
-            bird: selectedBird?.id || null,
-            group: selectedGroup?.id || null,
+            bird: selectedBird?.id || existingPost?.bird || null,
+            group: selectedGroup?.id || existingPost?.group || null,
             help,
             tags: {
                 ...tags,
@@ -184,27 +202,35 @@ function PostFormCard({onClose} : {onClose: () => void}) {
                     longitude: location[1].toString()
                 })
             },
-            flagged: false,
-            likes: [],
-            comments: []
+            flagged: existingPost?.flagged || false,
+            likes: existingPost?.likes || [],
+            comments: existingPost?.comments || []
         };
-        const formData = new FormData();
-        formData.append('post', JSON.stringify(postData));
-        formData.append('userId', user.id);
-        if(image) {
-            formData.append('image', image);
+        
+        if (isEditing && existingPost?.id) {
+            await updatePost(existingPost.id, user.id, postData, image);
+            console.log("Post updated successfully");
+            onUpdate?.();
+            onClose();
+        } else {
+            const formData = new FormData();
+            formData.append('post', JSON.stringify(postData));
+            formData.append('userId', user.id);
+            if(image) {
+                formData.append('image', image);
+            }
+            const response = await fetch(`${BASE_URL}/sightings`, {
+                method: 'POST',
+                credentials: 'include',
+                body: formData
+            });
+            if(!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create post');
+            }
+            console.log("Post created successfully");
+            onClose();
         }
-        const response = await fetch(`${BASE_URL}/sightings`, {
-            method: 'POST',
-            credentials: 'include',
-            body: formData
-        });
-        if(!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to create post');
-        }
-        console.log("Post created successfully");
-        onClose();
     } catch(error) {
         setError(error instanceof Error ? error.message : 'An error occured');
     } finally {
@@ -235,7 +261,7 @@ function PostFormCard({onClose} : {onClose: () => void}) {
   return (
     <div className='fixed inset-0 z-49 flex items-center justify-center bg-black/20 backdrop-blur-sm"'>
         <div className='bg-white backdrop-blur-md p-8 rounded-2xl drop-shadow w-full max-w-xl m-4'>
-            <h2 className='text-2xl mb-6'>Create New Sighting</h2>
+            <h2 className='text-2xl mb-6'>{isEditing ? 'Edit Sighting' : 'Create New Sighting'}</h2>
             <form onSubmit={handleSubmit}>
                 <div>
                     <label className='block text-sm mb-1'>
@@ -513,7 +539,7 @@ function PostFormCard({onClose} : {onClose: () => void}) {
                             className='flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed'
                             disabled={loading}
                         >
-                            {loading ? 'Creating...' : 'Create Sighting'}
+                            {loading ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Sighting' : 'Create Sighting')}
                         </button>
                     </div>
                 </div>
