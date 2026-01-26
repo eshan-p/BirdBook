@@ -49,12 +49,11 @@ function OtherProfile() {
 
   const topBirdsMapped: Bird[] = topBirds.map((b, i) => ({
     id: String(i),
-    commonName: b.bird,
-    scientificName: "", //TODO: implement scientific name
-    image: "src/assets/examplebird.png",
-    location: [0, 0]
+    commonName: b.commonName,
+    scientificName: b.scientificName,
+    imageURL: b.imageURL,
+    location: b.location ? [b.location[0], b.location[1]] : null
   }))
-
   
   
 

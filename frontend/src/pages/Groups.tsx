@@ -19,6 +19,7 @@ import { User } from "../types/User";
 import { Bird } from "../types/Bird";
 import { getAllBirds } from "../api/Birds";
 import { getUserById } from "../api/Users";
+import GroupFormCard from "../components/common/GroupFormCard";
 
 export default function Groups() {
   const [allGroups, setAllGroups] = useState<Group[]>([]);
@@ -167,16 +168,28 @@ export default function Groups() {
             <img src="src/assets/groups.svg" alt="groups"/>
             <p className='text-lg ml-3 font-bold'>Groups</p>
           </div>
-          {userGroups.map((group) => (
-            <GroupCard key={group.id.toString()} group={group}/>
-          ))}
-          <div className='flex flex-row w-full border-b border-gray-300 mb-3 mt-3'>
+          {userGroups.length === 0 ? (
+            <p className='text-gray-500 text-sm text-center py-8'>No groups yet</p>
+          ) : (
+            <>
+              {userGroups.map((group) => (
+                <GroupCard key={group.id.toString()} group={group}/>
+              ))}
+            </>
+          )}
+          <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
             <img src="src/assets/person.svg" alt="friends"/>
             <p className='text-lg ml-3 font-bold'>Friends</p>
           </div>
-          {friends.map((friend) => (
-            <FriendCard key={friend.id} user={friend}/>
-          ))}
+          {friends.length === 0 ? (
+            <p className='text-gray-500 text-sm text-center py-8'>No friends yet</p>
+          ) : (
+            <>
+              {friends.map((friend) => (
+                <FriendCard key={friend.id} user={friend}/>
+              ))}
+            </>
+          )}
         </div>
       </div>
 
@@ -184,8 +197,14 @@ export default function Groups() {
       <div className='basis-1/2 m-6'>
         <div className='bg-white p-6 rounded-lg shadow-sm'>
           <div className="flex items-center justify-between mb-6 gap-4">
-            <h2 className="text-2xl font-bold text-gray-800 shrink-0">Groups</h2>
-            <div className="w-64">
+            <div className="flex">
+              <h2 className="text-2xl font-bold text-gray-800 shrink-0">Groups</h2>
+              
+            </div>
+            <div className="flex">
+              <div className="mr-7 min-w-24">
+                <CreateGroup/>
+              </div>
               <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
             </div>
           </div>

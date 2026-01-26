@@ -32,6 +32,7 @@ import FriendCard from '../components/features/FriendCard'
 import { Friend } from '../types/Friend'
 import GroupCard from '../components/features/GroupCard'
 import { isAdmin } from '../utils/roleUtils'
+import { arrayToCoords, reverseCoordsToCityState } from '../utils/geolocation'
 
 const PAGE_SIZE = 5;
 
@@ -458,7 +459,7 @@ function GroupFeed() {
                   description={post.header}
                   author={post.user.username}
                   dateTime={parseDate(post.timestamp)}
-                  location={post.tags?.location}
+                  location={{latitude: parseFloat(post.tags!.latitude!) || 0, longitude: parseFloat(post.tags!.longitude!) || 0}}
                   likes={post.likes.length}
                   comments={post.comments.length}
                 />

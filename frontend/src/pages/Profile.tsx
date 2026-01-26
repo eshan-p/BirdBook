@@ -8,16 +8,26 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../types/User';
 import { getUserById } from '../api/Users';
+import { useSearchParams } from 'react-router-dom';
 import EditProfileModal from '../components/common/EditProfileModal';
+import { Badge } from '../types/Badge';
+import { BADGES, getUnlockedBadges } from '../utils/badgeUtils';
+import { BadgesDisplay } from '../components/common/BadgesDisplay';
+import { Toast } from '../components/common/Toast';
 
 function Profile() {
   const [posts, setPosts] = useState<Post[]>([]);
   const { user, loading } = useAuth();
   const [pageLoading, setPageLoading] = useState<boolean>(true);
   const [locationName, setLocationName] = useState<string>("");
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [isEditingProfile, setIsEditingProfile] = useState(
+    searchParams.get('edit') === 'true'
+  );
   const [userInfo, setUserInfo] = useState<User | null>(null);
-  const [topBirds, setTopBirds] = useState<any[]>([]); //TODO: make typing more specific
+  const [unlockedBadges, setUnlockedBadges] = useState<string[]>([]);
+  const [toast, setToast] = useState<Badge | null>(null);
+  const [topBirds, setTopBirds] = useState<any[]>([]);
   const navigate = useNavigate();
   const BASE_URL = "http://localhost:8080";
 
@@ -30,11 +40,24 @@ function Profile() {
     }
   }, [user?.id])
 
+  useEffect(() => {
+    if (userInfo && posts) {
+      const newUnlocked = getUnlockedBadges(userInfo, posts);
+      const newBadges = newUnlocked.filter(b => !unlockedBadges.includes(b));
+      if (newBadges.length > 0) {
+        const badgeId = newBadges[0];
+        const badge = BADGES[badgeId.toUpperCase().replace(/_/g, '_')];
+        setToast(badge);
+      }
+      setUnlockedBadges(newUnlocked);
+    }
+  }, [userInfo, posts]);
+
   const topBirdsMapped: Bird[] = topBirds.map((b, i) => ({
     id: String(i),
     commonName: b.commonName,
     scientificName: b.scientificName,
-    image: "src/assets/examplebird.png",
+    imageURL: b.imageURL,
     location: b.location ? [b.location[0], b.location[1]] : null
   }))
 
@@ -80,7 +103,7 @@ function Profile() {
                 <ProfileIcon size="lg" src={userInfo?.profilePic ? `http://localhost:8080${userInfo.profilePic}` : undefined}/>
                 <div>
                     <div className='flex flex-row mb-2'>
-                      <h2 className='text-xl mt-1 ml-4 mr-4'>{userInfo.firstName} {userInfo.lastName}</h2>
+                      <h2 className='text-xl mt-1 ml-4 mr-3'>{userInfo.firstName} {userInfo.lastName}</h2>
                       <button
                         onClick={() => setIsEditingProfile(true)}
                         className='px-2 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium'
@@ -179,8 +202,12 @@ function Profile() {
                 <img src="src/assets/badge.svg" alt="posts"/>
                 <h3 className='ml-3 text-lg'>Badges</h3>
             </div>
+            <BadgesDisplay unlockedBadges={unlockedBadges} />
         </div>
       </div>
+      {toast && (
+        <Toast badge={toast} onClose={() => setToast(null)} />
+      )}
     </div>
   )
 }
