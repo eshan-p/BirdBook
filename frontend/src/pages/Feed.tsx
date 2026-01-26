@@ -163,6 +163,7 @@ const pagedPosts = posts.slice(0, (page + 1) * PAGE_SIZE);
                   }
                   likes={post.likes.length}
                   comments={post.comments.length}
+                  image={post.image}
                 />
               </button>
             ))}
