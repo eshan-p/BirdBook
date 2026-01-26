@@ -5,7 +5,7 @@ export interface User {
   lastName?: string;
   profilePic?: string;
   location?: string;
-  friends: string[];
+  friends?: string[];
   posts: string[];
   groups: string[];
   role: string;

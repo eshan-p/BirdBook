@@ -1,4 +1,5 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
+import { User } from '../types/User';
 const BASE_URL = "http://localhost:8080";
 
 interface User {

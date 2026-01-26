@@ -45,8 +45,10 @@ class BirdServiceTest {
         Bird result = birdService.getBirdByCommonName("Cardinal");
 
         assertNotNull(result);
-        assertEquals("Cardinal", result.getCommonName());
         verify(birdDAO).findByCommonName("Cardinal");
+ 
+        assertEquals("Cardinal", result.getCommonName());
+        assertEquals(birdId, result.getId());
     }
 
     @Test
@@ -61,12 +63,15 @@ class BirdServiceTest {
 
     @Test
     void addBird_insertsAndReturnsBird() {
-        when(birdDAO.insert(bird)).thenReturn(bird);
+        when(birdDAO.save(bird)).thenReturn(bird);
 
         Bird result = birdService.addBird(bird, null);
 
         assertNotNull(result);
-        verify(birdDAO).insert(bird);
+        verify(birdDAO).save(bird);
+        
+        assertEquals("Cardinal", result.getCommonName());
+        assertEquals("image-url", result.getImageURL());
     }
 
     @Test
@@ -95,6 +100,7 @@ class BirdServiceTest {
     void updateBird_whenBirdExists_updatesAndSaves() {
         Bird updateRequest = new Bird();
         updateRequest.setCommonName("Blue Jay");
+        updateRequest.setScientificName("Cyanocitta cristata");
         updateRequest.setImageURL("new-image-url");
 
         when(birdDAO.findById(birdId)).thenReturn(Optional.of(bird));
@@ -102,9 +108,10 @@ class BirdServiceTest {
 
         Bird updatedBird = birdService.updateBird(birdId, updateRequest, null);
 
-        assertEquals("Blue Jay", updatedBird.getCommonName());
-        assertEquals("new-image-url", updatedBird.getImageURL());
         verify(birdDAO).save(bird);
+        
+        assertEquals("Blue Jay", bird.getCommonName());
+        assertEquals("Cyanocitta cristata", bird.getScientificName());
     }
 
     @Test

@@ -15,36 +15,23 @@ function GroupCard({ group, onJoin, onLeave, onDelete }: GroupCardProps) {
     const navigate = useNavigate();
 
     return (
-    <div className="flex flex-row items-center justify-between p-4">
+    <div 
+      onClick={() => navigate(`/groups/${group.id}`)}
+      className="flex flex-row items-center justify-between p-4 hover:bg-gray-100 rounded cursor-pointer"
+    >
       <div className="flex flex-row items-center">
         <div>
           <ProfileIcon size='sm' />
         </div>
         <div className='ml-3'>
-          <button 
-            onClick={() => navigate(`/groups/${group.id}`)}
-            className="mt-2 text-blue-600 hover:underline">
+          <h3 className="text-sm font-semibold text-gray-900 leading-tight">
             {group.name}
-          </button>
-          <p className='text-xs'>{group.members?.length || 0} followers</p>
+          </h3>
+          {group.description && (
+            <p className='text-xs text-gray-600 mt-0.5'>{group.description}</p>
+          )}
+          <p className='text-xs text-gray-500 mt-0.5'>{group.members?.length || 0} followers</p>
         </div>
-      </div>
-      <div className='flex gap-2'>
-        {onJoin && (
-          <button onClick={onJoin} className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700'>
-            Join
-          </button>
-        )}
-        {onLeave && (
-          <button onClick={onLeave} className='px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700'>
-            Leave
-          </button>
-        )}
-        {onDelete && (
-          <button onClick={onDelete} className='px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300'>
-            Delete
-          </button>
-        )}
       </div>
     </div>
   );

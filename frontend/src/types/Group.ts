@@ -7,6 +7,7 @@ export interface PostUser {
 export interface Group {
     id: string;
     name: string;
+    description?: string;
     owner: PostUser;
     members: PostUser[];
     requests: PostUser[];

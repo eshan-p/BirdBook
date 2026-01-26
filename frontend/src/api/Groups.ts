@@ -47,7 +47,9 @@ export async function requestToJoinGroup(groupId: string, userId: string): Promi
   );
 
   if (!response.ok) {
-    throw new Error("Failed to send join request");
+    // Try to get the actual error message from backend
+    const errorText = await response.text();
+    throw new Error(errorText || "Failed to send join request");
   }
 }
 
@@ -78,14 +80,15 @@ export async function createGroup(name: string, ownerId: string): Promise<Group>
   return response.text().then(() => ({ id: "", name, owner, members: [], requests: [] })); // placeholder until backend returns body
 }
 
-export async function deleteGroup(groupId: string): Promise<void> {
-  const response = await fetch(`${BASE_URL}/groups/${groupId}`, {
+export async function deleteGroup(groupId: string, userId: string): Promise<void> {
+  const response = await fetch(`${BASE_URL}/groups/${groupId}?userId=${userId}`, {
     method: "DELETE",
     credentials: "include"
   });
 
   if (!response.ok) {
-    throw new Error("Failed to delete group");
+    const error = await response.text();
+    throw new Error(error || "Failed to delete group");
   }
 }
 
@@ -109,4 +112,52 @@ export async function denyJoinRequest(groupId: string, userId: string): Promise<
   if (!response.ok) {
     throw new Error("Failed to deny request");
   }
+}
+
+export async function updateGroup(groupId: string, name: string, userId: string): Promise<Group> {
+  const response = await fetch(
+    `${BASE_URL}/groups/${groupId}?userId=${userId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ name })
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error || "Failed to update group");
+  }
+
+  return response.json();
+}
+
+export async function removeMember(groupId: string, userId: string): Promise<void> {
+  const response = await fetch(
+    `${BASE_URL}/groups/${groupId}/members/${userId}/remove`,
+    {
+      method: "DELETE",
+      credentials: "include"
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to remove member");
+  }
+}
+
+export async function getJoinRequests(groupId: string): Promise<PostUser[]> {
+  const response = await fetch(
+    `${BASE_URL}/groups/${groupId}/join-requests`,
+    {
+      credentials: "include"
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch join requests");
+  }
+
+  return response.json();
 }

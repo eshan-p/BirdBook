@@ -2,7 +2,10 @@ package com.birdbook.UserTests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,8 +18,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.birdbook.models.Role;
 import com.birdbook.models.User;
+import com.birdbook.repository.GroupDAO;
+import com.birdbook.repository.PostDAO;
 import com.birdbook.repository.UserDAO;
 import com.birdbook.service.UserService;
 
@@ -25,6 +32,15 @@ public class UserServiceTest {
     
     @Mock
     private UserDAO userDAO;
+
+    @Mock
+    private PostDAO postDAO;
+
+    @Mock
+    private GroupDAO groupDAO;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -63,12 +79,22 @@ public class UserServiceTest {
 
         String username = "newuser";
         String password = "pass123";
+        String hashedPassword = "hashed_pass123";
 
         when(userDAO.findByUsername(username)).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(password)).thenReturn(hashedPassword);
 
-        userService.registerUser(username, password);
+        User result = userService.registerUser(username, password);
 
+        verify(passwordEncoder, times(1)).encode(password);
         verify(userDAO, times(1)).insert(any(User.class));
+        
+        assertEquals(username, result.getUsername());
+        assertEquals(hashedPassword, result.getPassword());
+        assertEquals(Role.BASIC_USER, result.getRole());
+        assertNotNull(result.getFriends());
+        assertNotNull(result.getGroups());
+        assertNotNull(result.getPosts());
     }
 
     @Test
@@ -89,15 +115,19 @@ public class UserServiceTest {
         ObjectId id = new ObjectId();
         User existingUser = new User("olduser", "oldpass");
         User updatedData = new User("updateduser", "newpass123");
+        String hashedNewPassword = "hashed_newpass123";
 
         when(userDAO.findById(id)).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.encode("newpass123")).thenReturn(hashedNewPassword);
         when(userDAO.save(any(User.class))).thenReturn(existingUser);
 
         User result = userService.updateUser(id, updatedData, null);
 
+        verify(passwordEncoder, times(1)).encode("newpass123");
         verify(userDAO, times(1)).save(existingUser);
-        assertEquals("updateduser", result.getUsername());
-        assertEquals("newpass123", result.getPassword());
+
+        assertEquals("updateduser", existingUser.getUsername());
+        assertEquals(hashedNewPassword, existingUser.getPassword());
     }
 
     @Test
@@ -139,9 +169,10 @@ public class UserServiceTest {
     public void addFriend_Success(){
         ObjectId userId = new ObjectId();
         ObjectId friendId = new ObjectId();
+        ObjectId existingFriendId = new ObjectId();
 
         User user = new User("user1", "pass1");
-        user.setFriends(new ObjectId[] {});
+        user.setFriends(new ObjectId[] {existingFriendId});
         User friend = new User("user2", "pass2");
 
         when(userDAO.findById(userId)).thenReturn(Optional.of(user));
@@ -150,6 +181,10 @@ public class UserServiceTest {
         userService.addFriend(userId, friendId);
 
         verify(userDAO, times(1)).save(user);
+        
+        assertEquals(2, user.getFriends().length);
+        assertEquals(existingFriendId, user.getFriends()[0]);
+        assertEquals(friendId, user.getFriends()[1]);
     }
 
     @Test

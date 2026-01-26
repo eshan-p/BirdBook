@@ -14,6 +14,7 @@ import ProfileIcon from '../components/common/ProfileIcon';
 import { useAuth } from '../context/AuthContext';
 import { getUserById } from '../api/Users';
 import { User } from '../types/User';
+import { isBasicUser,isAdmin,isSuperUser } from '../utils/roleUtils';
 
 function Sighting() {
   //grabs params from the current url
@@ -145,6 +146,7 @@ useEffect(() => {
   return (
     <div className='flex flex-row h-full bg-[#F7F7F7] px-16'>
       {/* Left Sidebar */}
+      {(isBasicUser(user?.role) || isAdmin(user?.role) || isSuperUser(user?.role))&&
       <div className='flex flex-col basis-1/4 m-6 mr-0'>
         <ProfileCard user={userData || undefined}/>
         
@@ -161,7 +163,7 @@ useEffect(() => {
             </div>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Main Content */}
       <div className='basis-3/4 m-6'>
