@@ -25,6 +25,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     public JwtAuthFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
+
     //  SKIP JWT FOR PUBLIC ROUTES
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -33,7 +34,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         return path.startsWith("/auth/")
             || (path.equals("/users") && method.equals("POST"))
-            || (path.startsWith("/sightings") && method.equals("GET")); // Only skip GET
+            || (path.startsWith("/sightings") && method.equals("GET"))
+            
+            || (path.startsWith("/api/birds") && method.equals("GET"));
     }
 
     @Override
@@ -42,21 +45,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+
         String token = null;
+
+        // Authorization header
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
         }
 
+        // Cookie fallback
         if (token == null && request.getCookies() != null){
-            for(Cookie cookie : request.getCookies()){
-                if("jwt".equals(cookie.getName())){
+            for (Cookie cookie : request.getCookies()) {
+                if ("jwt".equals(cookie.getName())) {
                     token = cookie.getValue();
                     break;
                 }
             }
         }
 
+        // Validate token
         if (token != null && jwtUtil.isTokenValid(token)) {
             Claims claims = jwtUtil.getClaims(token);
 
@@ -72,13 +80,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             )
                     );
 
-
             authentication.setDetails(
                     new WebAuthenticationDetailsSource().buildDetails(request)
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+
         filterChain.doFilter(request, response);
     }
 }

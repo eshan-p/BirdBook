@@ -17,7 +17,7 @@ function BirdCard({ bird }: { bird: Bird }) {
       className="flex items-center gap-3 p-2 rounded hover:bg-gray-100 cursor-pointer"
     >
       <img
-        src={getBirdImageUrl(bird.imageURL)}
+        src={getBirdImageUrl(bird.imageURL) || "/placeholder-bird.png"}
         alt={bird.commonName}
         className="w-12 h-12 rounded object-cover"
       />

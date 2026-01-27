@@ -1,9 +1,13 @@
 import { Bird } from "../types/Bird";
 
-const BASE_URL = "http://localhost:8080";
+const API_BASE = "http://localhost:8080/birds";
+
+/* =========================
+   READ
+========================= */
 
 export async function getAllBirds(): Promise<Bird[]> {
-  const response = await fetch(`${BASE_URL}/birds`);
+  const response = await fetch(API_BASE);
 
   if (!response.ok) {
     throw new Error("Failed to fetch birds");
@@ -12,8 +16,24 @@ export async function getAllBirds(): Promise<Bird[]> {
   return response.json();
 }
 
+export async function getBirdById(id: string): Promise<Bird> {
+  const response = await fetch(`${API_BASE}/${id}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch bird");
+  }
+
+  return response.json();
+}
+
+/* =========================
+   SEARCH
+========================= */
+
 export async function searchBirds(query: string): Promise<Bird[]> {
-  const response = await fetch(`${BASE_URL}/birds/search?query=${encodeURIComponent(query)}`);
+  const response = await fetch(
+    `${API_BASE}/search?query=${encodeURIComponent(query)}`
+  );
 
   if (!response.ok) {
     throw new Error("Failed to search birds");
@@ -22,38 +42,32 @@ export async function searchBirds(query: string): Promise<Bird[]> {
   return response.json();
 }
 
-export async function getBirdByCommonName(commonName: string): Promise<Bird> {
-  const response = await fetch(`${BASE_URL}/birds/${encodeURIComponent(commonName)}`);
+/* =========================
+   CREATE
+========================= */
 
-  if (!response.ok) {
-    if (response.status === 404) {
-      throw new Error("Bird not found");
-    }
-    throw new Error("Failed to fetch bird");
-  }
-
-  return response.json();
-}
-
-export async function addBird(bird: Partial<Bird>, imageFile?: File): Promise<Bird> {
+export async function addBird(
+  bird: Partial<Bird>,
+  imageFile?: File
+): Promise<Bird> {
   const formData = new FormData();
-  
-  // Create bird JSON without the image field
+
   const birdData = {
     commonName: bird.commonName,
     scientificName: bird.scientificName,
-    imageURL: bird.imageURL // This can be a Wikipedia URL if no file is uploaded
+    imageURL: bird.imageURL,
   };
-  
+
   formData.append("bird", JSON.stringify(birdData));
-  
+
   if (imageFile) {
     formData.append("image", imageFile);
   }
 
-  const response = await fetch(`${BASE_URL}/birds`, {
+  const response = await fetch(API_BASE, {
     method: "POST",
     body: formData,
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -63,24 +77,33 @@ export async function addBird(bird: Partial<Bird>, imageFile?: File): Promise<Bi
   return response.json();
 }
 
-export async function updateBird(id: string, bird: Partial<Bird>, imageFile?: File): Promise<Bird> {
+/* =========================
+   UPDATE
+========================= */
+
+export async function updateBird(
+  id: string,
+  bird: Partial<Bird>,
+  imageFile?: File
+): Promise<Bird> {
   const formData = new FormData();
-  
+
   const birdData = {
     commonName: bird.commonName,
     scientificName: bird.scientificName,
-    imageURL: bird.imageURL
+    imageURL: bird.imageURL,
   };
-  
+
   formData.append("bird", JSON.stringify(birdData));
-  
+
   if (imageFile) {
     formData.append("image", imageFile);
   }
 
-  const response = await fetch(`${BASE_URL}/birds/${id}`, {
+  const response = await fetch(`${API_BASE}/${id}`, {
     method: "PATCH",
     body: formData,
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -90,9 +113,14 @@ export async function updateBird(id: string, bird: Partial<Bird>, imageFile?: Fi
   return response.json();
 }
 
+/* =========================
+   DELETE
+========================= */
+
 export async function deleteBird(id: string): Promise<void> {
-  const response = await fetch(`${BASE_URL}/birds/${id}`, {
+  const response = await fetch(`${API_BASE}/${id}`, {
     method: "DELETE",
+    credentials: "include",
   });
 
   if (!response.ok) {

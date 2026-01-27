@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Bird } from "../types/Bird";
-import { fetchBirdById } from "../services/birdService";
+import { getAllBirds } from "../api/Birds";
 
 export default function BirdDetail() {
   const { birdId } = useParams<{ birdId: string }>();
@@ -11,15 +11,15 @@ export default function BirdDetail() {
   useEffect(() => {
     if (!birdId) return;
 
-    fetchBirdById(birdId)
-      .then(setBird)
-      .catch(() => setBird(null))
+    getAllBirds()
+      .then(birds => {
+        const found = birds.find(b => b.id === birdId);
+        setBird(found || null);
+      })
       .finally(() => setLoading(false));
   }, [birdId]);
 
-  if (loading) {
-    return <p className="p-6">Loading bird...</p>;
-  }
+  if (loading) return <p className="p-6">Loading bird...</p>;
 
   if (!bird) {
     return (
@@ -39,7 +39,7 @@ export default function BirdDetail() {
       </Link>
 
       <img
-        src={bird.image || "/placeholder-bird.png"}
+        src={bird.imageURL || "/placeholder-bird.png"}
         alt={bird.commonName}
         className="w-full h-64 object-cover rounded mt-4"
       />
@@ -49,7 +49,7 @@ export default function BirdDetail() {
       </h1>
 
       {bird.scientificName && (
-        <p className="text-gray-500 italic">
+        <p className="text-gray-500 italic mt-1">
           {bird.scientificName}
         </p>
       )}

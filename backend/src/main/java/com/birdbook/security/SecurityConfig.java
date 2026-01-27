@@ -45,44 +45,68 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
-                .authorizeHttpRequests(auth -> auth
-                    // Preflight
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .authorizeHttpRequests(auth -> auth
+                // Preflight
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                    // AUTH / PUBLIC - Login & Registration
-                    .requestMatchers("/auth/**").permitAll()
-                    
-                    // STATIC RESOURCES - Images and profile pictures
-                    .requestMatchers("/images/**").permitAll()
-                    .requestMatchers("/profile_pictures/**").permitAll()
-                    .requestMatchers("/backend_profile_pictures/**").permitAll()
-                    
-                    // GUEST ACCESS - Main feed (sightings), birds list (read-only)
-                    .requestMatchers(HttpMethod.GET, "/sightings/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/birds/**").permitAll()
+                // AUTH / PUBLIC
+                .requestMatchers("/auth/**").permitAll()
 
-                    // AUTHENTICATED USERS ONLY - Everything else requires login
-                    // AUTHENTICATED USERS ONLY
-                    .requestMatchers("/groups/**").authenticated()
-                    .requestMatchers("/search/**").authenticated()  
-                    .requestMatchers("/users/**").authenticated()
-                    .requestMatchers(HttpMethod.POST, "/sightings/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
-                    .requestMatchers(HttpMethod.PUT, "/sightings/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
-                    .requestMatchers(HttpMethod.PATCH, "/sightings/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
-                    .requestMatchers(HttpMethod.DELETE, "/sightings/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
-                    .requestMatchers(HttpMethod.POST, "/birds/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
-                    .requestMatchers(HttpMethod.PUT, "/birds/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
-                    .requestMatchers(HttpMethod.PATCH, "/birds/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
-                    .requestMatchers(HttpMethod.DELETE, "/birds/**").hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
-                    
-                    // ADMIN ROUTES
-                    .requestMatchers("/admin/**").hasAnyRole("ADMIN_USER", "SUPER_USER")
+                // STATIC FILES
+                .requestMatchers("/images/**").permitAll()
+                .requestMatchers("/profile_pictures/**").permitAll()
+                .requestMatchers("/backend_profile_pictures/**").permitAll()
 
-                    // EVERYTHING ELSE
-                    .anyRequest().authenticated()
-                )
+                // ==============================
+                // PUBLIC READ-ONLY ROUTES
+                // ==============================
+
+                // Sightings
+                .requestMatchers(HttpMethod.GET, "/sightings/**").permitAll()
+
+                // Birds (legacy + API)
+                .requestMatchers(HttpMethod.GET, "/birds/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/birds").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/birds/**").permitAll()
+
+                // ==============================
+                // AUTHENTICATED ROUTES
+                // ==============================
+
+                .requestMatchers("/groups/**").authenticated()
+                .requestMatchers("/search/**").authenticated()
+                .requestMatchers("/users/**").authenticated()
+
+                // Sightings WRITE
+                .requestMatchers(HttpMethod.POST, "/sightings/**")
+                    .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                .requestMatchers(HttpMethod.PUT, "/sightings/**")
+                    .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                .requestMatchers(HttpMethod.PATCH, "/sightings/**")
+                    .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                .requestMatchers(HttpMethod.DELETE, "/sightings/**")
+                    .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+
+                // Birds WRITE
+                .requestMatchers(HttpMethod.POST, "/api/birds/**")
+                    .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                .requestMatchers(HttpMethod.PUT, "/api/birds/**")
+                    .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                .requestMatchers(HttpMethod.PATCH, "/api/birds/**")
+                    .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+                .requestMatchers(HttpMethod.DELETE, "/api/birds/**")
+                    .hasAnyRole("BASIC_USER", "ADMIN_USER", "SUPER_USER")
+
+                // ADMIN
+                .requestMatchers("/admin/**")
+                    .hasAnyRole("ADMIN_USER", "SUPER_USER")
+
+                // EVERYTHING ELSE
+                .anyRequest().authenticated()
+            )
 
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
