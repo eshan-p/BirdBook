@@ -97,10 +97,7 @@ useEffect(() => {
 
   const totalPages = Math.ceil(posts.length / PAGE_SIZE);
 
-  const pagedPosts = posts.slice(
-    page * PAGE_SIZE,
-    (page + 1) * PAGE_SIZE
-  );
+const pagedPosts = posts.slice(0, (page + 1) * PAGE_SIZE);
 
   if (loadingPage) return <p>Loading...</p>;
 
@@ -121,16 +118,28 @@ useEffect(() => {
                 <img src="src/assets/groups.svg" alt="groups"/>
                 <p className='text-lg ml-3 font-bold'>Groups</p>
               </div>
-              {groups.map((group) => (
-                <GroupCard key={group.id.toString()} group={group}/>
-              ))}
+              {groups.length === 0 ? (
+                <p className='text-gray-500 text-sm text-center py-8'>No groups yet</p>
+              ) : (
+                <>
+                  {groups.map((group) => (
+                    <GroupCard key={group.id.toString()} group={group}/>
+                  ))}
+                </>
+              )}
               <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
                 <img src="src/assets/person.svg" alt="friends"/>
                 <p className='text-lg ml-3 font-bold'>Friends</p>
               </div>
-              {friends.map((friend) => (
-                <FriendCard key={friend.id} user={friend}/>
-              ))}
+              {friends.length === 0 ? (
+                <p className='text-gray-500 text-sm text-center py-8'>No friends yet</p>
+              ) : (
+                <>
+                  {friends.map((friend) => (
+                    <FriendCard key={friend.id} user={friend}/>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         ): (
@@ -142,16 +151,14 @@ useEffect(() => {
         {/* Main Feed */}
         <div className='basis-1/2 m-6 max-h-screen'>
           <div className='flex flex-col'>
-            <CreatePost />
+            {user? (<CreatePost />):(<></>)}
 
             {pagedPosts.map(post => (
               <button
                 key={post.id.toString()}
                 onClick={() => navigate(`/sightings/${post.id.toString()}`)}
                 className={`mb-6 transition-opacity duration-700 ${
-                  newlyLoadedPosts.includes(post.id.toString())
-                    ? 'opacity-0 animate-fadeIn'
-                    : 'opacity-100'
+                  newlyLoadedPosts.includes(post.id.toString()) ? 'animate-fadeIn' : ''
                 }`}
               >
                 <PostCard
@@ -168,6 +175,7 @@ useEffect(() => {
                   }
                   likes={post.likes.length}
                   comments={post.comments.length}
+                  image={post.image}
                 />
               </button>
             ))}

@@ -19,11 +19,9 @@ function Header() {
       getUserById(authUser.id)
         .then(setUserData)
         .catch(console.error);
-          //console.log(authUser);
     }
   }, [authUser?.id]);
 
-  // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -35,9 +33,14 @@ function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleEditProfile = () => {
+  const handleViewProfile = () => {
     setIsMenuOpen(false);
     navigate('/profile');
+  };
+
+  const handleEditProfile = () => {
+    setIsMenuOpen(false);
+    navigate('/profile?edit=true');
   };
 
   const handleLogout = async () => {
@@ -51,7 +54,6 @@ function Header() {
     { label: 'Groups', path: '/groups' },
     { label: 'Friends', path: '/friends' },
     { label: 'Birds', path: '/birds' },
-    { label: 'Profile', path: '/profile' },
     { label: 'Users', path: '/users' }
   ];
 
@@ -59,17 +61,17 @@ function Header() {
 
   return (
     <div className='bg-white flex flex-row justify-between items-center h-16 px-22 drop-shadow sticky top-0 z-50'>
-      <div className='basis-1/3 flex flex-row justify-start min-w-0 gap-4'> 
+      <div className='basis-2/6 flex flex-row justify-start min-w-0 gap-4'> 
         <button 
           onClick={() => navigate('/')}
-          className='w-10 h-10 flex items-center justify-center bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-colors shrink-0'
+          className='w-10 h-10 flex items-center justify-center bg-gray-300 text-white font-bold rounded hover:bg-white transition-colors shrink-0'
         >
-          BB
+          <img src="/sparrow-svgrepo-com.svg" alt="logo" className='w-6 h-6'/>
         </button>
         <SearchBar searchType='all' placeholder='Search birds, users, groups...'/>
       </div>
 
-      <div className='basis-1/3 flex flex-row justify-center gap-6 shrink-0'>
+      <div className='basis-3/6 flex flex-row justify-center  item-center gap-12 shrink-0 w-full'>
         {navItems.filter(item =>
             !item.requiresAuth || isBasicUser(authUser?.role) || isAdmin(authUser?.role) || isSuperUser(authUser?.role)
           )
@@ -77,20 +79,23 @@ function Header() {
           <button 
             key={item.path}
             onClick={() => navigate(item.path)}
-            className='text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors'
+            className='text-base font-medium text-gray-700 hover:text-blue-600 transition-colors p-4'
           >
             {item.label}
           </button>
         ))}
       </div>
 
-      <div className='basis-1/3 flex flex-row justify-end shrink-0 relative' ref={menuRef}>
+      <div className='basis-1/6 flex flex-row shrink-0 relative justify-end items-center' ref={menuRef}>
         {authUser ? (
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className='hover:opacity-80 transition-opacity'
+            className='hover:opacity-80 transition-opacity '
           >
-            <ProfileIcon size='sm' src={userData?.profilePic ? `http://localhost:8080${userData.profilePic}` : undefined}/>
+            <div className='flex gap-2 items-center text-base font-medium text-gray-700 px-4 py-1 border border-gray-300 rounded-lg hover:bg-gray-50'>
+              <h2>{userData?.username}</h2>
+              <ProfileIcon size='sm' src={userData?.profilePic ? `http://localhost:8080${userData.profilePic}` : undefined}/>
+            </div>
           </button>
         ) : (
           <button
@@ -103,6 +108,13 @@ function Header() {
 
         {authUser && isMenuOpen && (
           <div className='absolute top-14 right-0 bg-white rounded-lg drop-shadow-lg overflow-hidden w-48 z-10'>
+            <button
+              onClick={handleViewProfile}
+              className='w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2 border-b border-gray-200'
+            >
+              <img src="src/assets/person.svg" alt="profile" className='w-5 h-5'/>
+              View Profile
+            </button>
             <button
               onClick={handleEditProfile}
               className='w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2 border-b border-gray-200'

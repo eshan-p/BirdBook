@@ -82,28 +82,26 @@ export default function Birds() {
   return (
     <div className="flex flex-row min-h-screen bg-[#F7F7F7] px-16">
       {/* LEFT SIDEBAR */}
-      {(isBasicUser(role) || isAdmin(role) || isSuperUser(role)) && (
-        <div className="flex flex-col basis-1/4 m-6 mr-0">
-          <ProfileCard user={userData || undefined} />
-          <div className="h-fit w-full mt-6 bg-white p-4 drop-shadow">
-            <div className="flex flex-row w-full border-b border-gray-300 mb-3">
-              <img src="src/assets/groups.svg" alt="groups" />
-              <p className="text-lg ml-3 font-bold">Groups</p>
-            </div>
-            {groups.map(group => (
-              <GroupCard key={group.id} group={group} />
-            ))}
-
-            <div className="flex flex-row w-full border-b border-gray-300 mb-3 mt-3">
-              <img src="src/assets/person.svg" alt="friends" />
-              <p className="text-lg ml-3 font-bold">Friends</p>
-            </div>
-            {friends.map(friend => (
-              <FriendCard key={friend.id} user={friend} />
-            ))}
+      {(isBasicUser(user?.role) || isAdmin(user?.role) || isSuperUser(user?.role))&&
+      <div className="flex flex-col basis-1/4 m-6 mr-0">
+        <ProfileCard user={userData || undefined} />
+        <div className="h-fit w-full mt-6 bg-white p-4 drop-shadow">
+          <div className="flex flex-row w-full border-b border-gray-300 mb-3">
+            <img src="src/assets/groups.svg" alt="groups"/>
+            <p className="text-lg ml-3 font-bold">Groups</p>
           </div>
+          {groups.map(group => (
+            <GroupCard key={group.id.toString()} group={group} />
+          ))}
+          <div className="flex flex-row w-full border-b border-gray-300 mb-3 mt-3">
+            <img src="src/assets/person.svg" alt="friends"/>
+            <p className="text-lg ml-3 font-bold">Friends</p>
+          </div>
+          {friends.map(friend => (
+            <FriendCard key={friend.id} user={friend} />
+          ))}
         </div>
-      )}
+      </div>}
 
       {/* CENTER CONTENT */}
       <div className="basis-1/2 m-6">

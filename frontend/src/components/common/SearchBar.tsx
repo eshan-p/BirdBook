@@ -43,22 +43,24 @@ function SearchBar({
   };
 
   return (
-    <form onSubmit={autoSubmit ? handleSubmit : undefined} className="flex-1">
-      <div className="flex flex-row items-center min-w-0 px-4 py-1 border border-gray-300 rounded">
-        <img
-          src="/src/assets/search.svg"
-          alt="search"
-          className="w-4 h-4 shrink mr-3 opacity-80"
-        />
-        <input
-          type="text"
-          placeholder={placeholder}
-          value={query}
-          onChange={handleChange}
-          className="flex-1 min-w-0 text-sm outline-transparent bg-transparent w-full"
-        />
-      </div>
-    </form>
+    <div className='flex items-center justify-center w-full'>
+      <form onSubmit={autoSubmit ? handleSubmit : undefined} className="flex-1">
+        <div className="flex flex-row items-center min-w-0 px-4 py-2 border border-gray-300 rounded">
+          <img
+            src="/src/assets/search.svg"
+            alt="search"
+            className="w-4 h-4 shrink mr-3 opacity-80"
+          />
+          <input
+            type="text"
+            placeholder={placeholder}
+            value={query}
+            onChange={handleChange}
+            className="flex-1 min-w-0 text-sm outline-transparent bg-transparent w-full"
+          />
+        </div>
+      </form>
+    </div>
   );
 }
 

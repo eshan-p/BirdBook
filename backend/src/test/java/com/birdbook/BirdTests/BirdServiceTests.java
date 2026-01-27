@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class BirdServiceTest {
+class BirdServiceTests {
 
     @Mock
     private BirdDAO birdDAO;
@@ -33,7 +33,7 @@ class BirdServiceTest {
     void setUp() {
         birdId = new ObjectId();
         bird = new Bird();
-        bird.setId(birdId);
+        bird.setObjectId(birdId);
         bird.setCommonName("Cardinal");
         bird.setImageURL("image-url");
     }
@@ -48,7 +48,7 @@ class BirdServiceTest {
         verify(birdDAO).findByCommonName("Cardinal");
  
         assertEquals("Cardinal", result.getCommonName());
-        assertEquals(birdId, result.getId());
+        assertEquals(birdId.toHexString(), result.getId());
     }
 
     @Test
@@ -92,7 +92,7 @@ class BirdServiceTest {
                 () -> birdService.deleteBird(birdId)
         );
 
-        assertEquals("Bird not found.", exception.getMessage());
+        assertEquals("Bird not found", exception.getMessage());
         verify(birdDAO, never()).deleteById(any());
     }
 
@@ -106,7 +106,7 @@ class BirdServiceTest {
         when(birdDAO.findById(birdId)).thenReturn(Optional.of(bird));
         when(birdDAO.save(any(Bird.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Bird updatedBird = birdService.updateBird(birdId, updateRequest, null);
+        birdService.updateBird(birdId, updateRequest, null);
 
         verify(birdDAO).save(bird);
         
@@ -123,7 +123,7 @@ class BirdServiceTest {
                 () -> birdService.updateBird(birdId, bird, null)
         );
 
-        assertEquals("Bird not found.", exception.getMessage());
+        assertEquals("Bird not found", exception.getMessage());
         verify(birdDAO, never()).save(any());
     }
 }

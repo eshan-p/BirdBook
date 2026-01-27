@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 //Actual page
-import { getSightingById, likePost, unlikePost, addComment } from "../api/Sightings";
+import { getSightingById, likePost, unlikePost, addComment, deletePost } from "../api/Sightings";
 import { Post } from "../types/Post";
 import { Comment } from "../types/Comment";
 import { parseDate } from '../utils/dateTime';
@@ -14,7 +14,8 @@ import ProfileIcon from '../components/common/ProfileIcon';
 import { useAuth } from '../context/AuthContext';
 import { getUserById } from '../api/Users';
 import { User } from '../types/User';
-import { isBasicUser,isAdmin,isSuperUser } from '../utils/roleUtils';
+import { isBasicUser,isAdmin,isSuperUser, canPerformAction, Role } from '../utils/roleUtils';
+import PostFormCard from '../components/common/PostFormCard';
 
 function Sighting() {
   //grabs params from the current url
@@ -33,6 +34,7 @@ function Sighting() {
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isTogglingLike, setIsTogglingLike] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   //first fetch post
   useEffect(() => {
@@ -133,6 +135,42 @@ useEffect(() => {
     }
   };
 
+  const handleDeletePost = async () => {
+    if (!user?.id || !postId) return;
+    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
+
+    try {
+      await deletePost(postId, user.id);
+      navigate('/feed');
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete post');
+    }
+  };
+
+  const handleUpdatePost = async () => {
+    if (!postId) return;
+    setLoading(true);
+    try {
+      const updatedPost = await getSightingById(postId);
+      setPost(updatedPost);
+    } catch (err) {
+      console.error("Failed to refresh post:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper to extract userId string from post
+  const getPostOwnerId = (): string | undefined => {
+    if (!post?.user) return undefined;
+    const userId = post.user.userId;
+    if (typeof userId === 'string') return userId;
+    if (typeof userId === 'object' && userId !== null) {
+      return (userId as any).$oid || (userId as any).toString?.() || String(userId);
+    }
+    return undefined;
+  };
+
   if (loading) return <p className="text-center mt-8">Loading...</p>;
   if (error) return (
     <div className="flex justify-center mt-8">
@@ -162,6 +200,24 @@ useEffect(() => {
               <p className='font-medium'>{parseDate(post.timestamp).toDateString()}</p>
             </div>
           </div>
+
+          {/* Owner/Admin Controls */}
+          {user && canPerformAction(user.id, user.role, getPostOwnerId(), Role.ADMIN_USER) && (
+            <div className='mt-3 border-t border-gray-300 pt-3 space-y-2'>
+              <button 
+                onClick={() => setIsEditing(true)} 
+                className='w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700'
+              >
+                Edit Post
+              </button>
+              <button 
+                onClick={handleDeletePost} 
+                className='w-full px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700'
+              >
+                Delete Post
+              </button>
+            </div>
+          )}
         </div>
       </div>}
 
@@ -270,6 +326,15 @@ useEffect(() => {
           <CommentsList comments={post.comments} />
         </div>
       </div>
+
+      {/* Edit Post Modal */}
+      {isEditing && post && (
+        <PostFormCard 
+          onClose={() => setIsEditing(false)} 
+          existingPost={post}
+          onUpdate={handleUpdatePost}
+        />
+      )}
     </div>
   );
 }

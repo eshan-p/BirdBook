@@ -66,11 +66,13 @@ export async function addBird(
 
   const response = await fetch(API_BASE, {
     method: "POST",
+    credentials: "include",
     body: formData,
     credentials: "include",
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
     throw new Error("Failed to add bird");
   }
 
