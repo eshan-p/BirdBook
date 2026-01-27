@@ -53,10 +53,12 @@ export async function addBird(bird: Partial<Bird>, imageFile?: File): Promise<Bi
 
   const response = await fetch(`${BASE_URL}/birds`, {
     method: "POST",
+    credentials: "include",
     body: formData,
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
     throw new Error("Failed to add bird");
   }
 

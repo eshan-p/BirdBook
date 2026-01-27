@@ -200,16 +200,16 @@ export default function Groups() {
             <div className="flex">
               <h2 className="text-2xl font-bold text-gray-800 shrink-0">Groups</h2>
               
-            </div>
+          </div>
             <div className="flex">
               <div className="mr-7 min-w-24">
-                <CreateGroup/>
+                {canManage && <CreateGroup/>}
               </div>
               <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
             </div>
           </div>
 
-          {canManage && <CreateGroup/>}
+          {/* {canManage && <CreateGroup/>} */}
 
           {error && (
             <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">Error: {error}</div>
@@ -231,7 +231,7 @@ export default function Groups() {
           )}
 
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Groups</h3>
+            {/* <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Groups</h3> */}
             <ul className="space-y-2">
               {filteredAllGroups.map((group) => (
                 <li key={group.id}>
