@@ -68,7 +68,6 @@ export async function addBird(
     method: "POST",
     credentials: "include",
     body: formData,
-    credentials: "include",
   });
 
   if (!response.ok) {

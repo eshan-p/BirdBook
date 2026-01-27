@@ -115,7 +115,7 @@ function Profile() {
                         <img src="src/assets/pin.svg" alt="location"/>
                         <p className='text-base/4 opacity-65 ml-1'>{userInfo?.location || 'Location unkown'}</p>
                     </div>
-                    <div className='flex flex-row items-center w-full justify-between px-3 gap-4'>
+                    <div className='flex flex-row items-center w-full justify-start px-3 gap-5'>
                         <div className='flex flex-col items-center'>
                             <p className='text-xl font-light text-[#0700D3]'>{userInfo.posts.length}</p>
                             <p className='text-sm font-extralight'>Spottings</p>

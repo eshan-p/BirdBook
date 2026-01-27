@@ -26,17 +26,14 @@ function OtherProfile() {
   const [currentUserLoading, setCurrentUserLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
 
-
-  //console.log(userId);
-
   useEffect(() => {
-  if (user?.id) {
-    setCurrentUserLoading(true);
-    getUserById(user.id)
-      .then(setCurrentUserFull)
-      .finally(() => setCurrentUserLoading(false));
-  }
-}, [user?.id]);
+    if (user?.id) {
+      setCurrentUserLoading(true);
+      getUserById(user.id)
+        .then(setCurrentUserFull)
+        .finally(() => setCurrentUserLoading(false));
+    }
+  }, [user?.id]);
 
 
   useEffect(() => {
@@ -55,8 +52,6 @@ function OtherProfile() {
     imageURL: b.imageURL,
     location: b.location ? [b.location[0], b.location[1]] : null
   }))
-  
-  
 
   useEffect(() => {
     if(userId){
@@ -89,13 +84,22 @@ function OtherProfile() {
     }
   }, [userInfo?.location])
 
-  if (pageLoading || currentUserLoading) {
-  return <div>loading page</div>;
-}
+  useEffect(() => {
+    if (currentUserFull && userInfo) {
+      const isFriend = currentUserFull.friends?.some(
+        friendId => String(friendId) === String(userInfo.id)
+      );
+      setIsFollowing(isFriend || false);
+    }
+  }, [currentUserFull, userInfo]);
 
-if (!userInfo || !currentUserFull) {
-  return <div>loading user data</div>;
-}
+  if (pageLoading || currentUserLoading) {
+    return <div>loading page</div>;
+  }
+
+  if (!userInfo || !currentUserFull) {
+    return <div>loading user data</div>;
+  }
 
 console.log(userInfo);
 console.log(user);
@@ -110,18 +114,6 @@ if (currentUserFull.friends){
     console.log("Type of currentUserFull.friends[4]: ",typeof(currentUserFull.friends[4]));
 }
 
-/*
-const isFollowing =
-  !!(
-    currentUserFull?.friends &&
-    userInfo?.id &&
-    currentUserFull.friends
-      .map(String)
-      .includes(String(userInfo.id))
-  ); */
-
-
-
 const canFollow =
   user &&
   userInfo &&
@@ -134,18 +126,18 @@ const canFollow =
             <div className='flex flex-row py-8 border-b border-gray-300 mb-3 px-3'>
                 <ProfileIcon size="lg"/>
                 <div>
-                    <h2 className='text-xl mt-1 ml-4'>{userInfo.username}</h2>
+                    <h2 className='text-xl mt-1 ml-4'>{userInfo.firstName} {userInfo.lastName}</h2>
                     <div className='flex flex-row ml-4 mb-2'>
-                        <img src="src/assets/pin.svg" alt="location"/>
-                        <p className='text-base/4 opacity-65 ml-1'>{locationName || 'Location unkown'}</p>
+                        <img src="/src/assets/pin.svg" alt="location"/>
+                        <p className='text-base/4 opacity-65 ml-1'>{userInfo?.location || 'Location unkown'}</p>
                     </div>
-                    <div className='flex flex-row items-center w-full justify-between px-3 gap-4'>
+                    <div className='flex flex-row items-center w-full justify-start px-3 gap-5'>
                         <div className='flex flex-col items-center'>
                             <p className='text-xl font-light text-[#0700D3]'>{userInfo.posts.length}</p>
                             <p className='text-sm font-extralight'>Spottings</p>
                         </div>
                         <div className='flex flex-col items-center'>
-                            <p className='text-xl font-light text-[#0700D3]'>{userInfo.friends?.length}</p>
+                            <p className='text-xl font-light text-[#0700D3]'>{userInfo.friends?.length || '0'}</p>
                             <p className='text-sm font-extralight'>Friends</p>
                         </div>
                         <div className='flex flex-col items-center'>
@@ -231,16 +223,58 @@ setIsFollowing(false);
 
         <div className='bg-white h-fit w-full p-4 drop-shadow mb-6'>
             <div className='flex flex-row w-full border-b border-gray-300 pb-2'>
-                <img src="src/assets/post.svg" alt="posts"/>
+                <img src="/src/assets/post.svg" alt="posts"/>
                 <h3 className='ml-3 text-lg'>Posts</h3>
             </div>
-        </div>
-        <div className='bg-white h-fit w-full p-4 drop-shadow mb-6'>
-            <div className='flex flex-row w-full border-b border-gray-300 pb-2'>
-                <img src="src/assets/badge.svg" alt="posts"/>
-                <h3 className='ml-3 text-lg'>Badges</h3>
+          {posts.length === 0 ? (
+            <p className='text-gray-500 text-sm text-center py-8'>No posts yet</p>
+          ) : (
+            <div className='grid grid-cols-4 gap-2'>
+              {posts.map((post) => (
+                <button
+                  key={post.id}
+                  onClick={() => navigate(`/sightings/${post.id}`)}
+                  className='aspect-square bg-gray-100 rounded-lg overflow-hidden hover:opacity-80 transition-opacity relative group'
+                >
+                  {post.image ? (
+                    <img 
+                      src={`http://localhost:8080${post.image}`}
+                      alt={post.header}
+                      className='w-full h-full object-cover'
+                    />
+                  ) : (
+                    <div className='w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200'>
+                      <div className='text-center'>
+                        {post.bird && typeof post.bird === 'object' && 'commonName' in post.bird ? (
+                          <p className='text-sm font-medium text-gray-700'>
+                            {(post.bird as any).commonName}
+                          </p>
+                        ) : (
+                          <p className='text-xs text-gray-600'>{post.header.substring(0, 20)}...</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Overlay on hover */}
+                  <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4'>
+                    <div className='flex flex-col items-center gap-1'>
+                      <svg className='w-5 h-5 text-white' fill='currentColor' viewBox='0 0 24 24'>
+                        <path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z' />
+                      </svg>
+                      <span className='text-white text-xs font-medium'>{post.likes.length}</span>
+                    </div>
+                    <div className='flex flex-col items-center gap-1'>
+                      <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z' />
+                      </svg>
+                      <span className='text-white text-xs font-medium'>{post.comments.length}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
-
+          )}
         </div>
       </div>
     </div>

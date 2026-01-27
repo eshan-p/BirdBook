@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Landing() {
   const handleNavigation = (path: string) => {
@@ -10,9 +11,12 @@ export default function Landing() {
       <nav className='fixed w-full top-0 bg-white drop-shadow z-40'>
         <div className='max-w-6xl mx-auto px-6 py-4 flex items-center justify-between'>
           <div className='flex items-center gap-2'>
-            <div className='w-8 h-8 bg-blue-600 text-white flex items-center justify-center font-bold rounded text-sm'>
-              BB
-            </div>
+            <button 
+              onClick={() => ('')}
+              className='w-10 h-10 flex items-center justify-center bg-gray-300 text-white font-bold rounded transition-colors shrink-0'
+            >
+              <img src="/sparrow-svgrepo-com.svg" alt="logo" className='w-6 h-6'/>
+            </button>
             <span className='text-lg font-semibold text-gray-900'>BirdBook</span>
           </div>
           <div className='flex items-center gap-4'>
@@ -47,6 +51,9 @@ export default function Landing() {
           >
             Get Started
           </button>
+          <div className="auth-link mt-0">
+            Or <Link to="/feed">continue as guest</Link>
+          </div>
         </div>
       </section>
 

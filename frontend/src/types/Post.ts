@@ -30,11 +30,7 @@ export interface Post {
 
   user: {
     profilePic: string;
-    userId?: {
-      timestamp?: number;
-      date?: string;
-      $oid?: string;
-    };
+    userId: string;
     username: string;
   };
 }

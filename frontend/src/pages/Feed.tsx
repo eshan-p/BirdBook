@@ -49,7 +49,12 @@ function Feed() {
 
 useEffect(() => {
   getSightings()
-    .then(setPosts)
+    .then(data => {
+      const sorted = data.sort((a, b) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      });
+      setPosts(sorted)
+    })
     .catch(err => setError(err.message))
     .finally(() => {
       setLoading(false);
@@ -88,7 +93,7 @@ useEffect(() => {
       }
     }, [user?.id])
 
-    useEffect(() => {
+useEffect(() => {
   const startIdx = page * PAGE_SIZE;
   const endIdx = Math.min(posts.length, (page + 1) * PAGE_SIZE);
   const newPosts = posts.slice(startIdx, endIdx).map(post => post.id.toString());
@@ -164,6 +169,8 @@ const pagedPosts = posts.slice(0, (page + 1) * PAGE_SIZE);
                 <PostCard
                   description={post.header}
                   author={post.user.username}
+                  authorId={post.user.userId}
+                  authorProfilePic={post.user.profilePic}
                   dateTime={parseDate(post.timestamp)}
                   location={
                     post.tags?.latitude && post.tags?.longitude
@@ -184,7 +191,7 @@ const pagedPosts = posts.slice(0, (page + 1) * PAGE_SIZE);
             {page < totalPages - 1 && (
               <button
                 onClick={() => setPage(prev => prev + 1)}
-                className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition mt-4"
+                className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition mb-8"
               >
                 Load more...
               </button>

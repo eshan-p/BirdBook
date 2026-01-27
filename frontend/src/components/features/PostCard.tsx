@@ -11,6 +11,8 @@ import { getUserById } from '../../api/Users';
 interface PostCardProps {
   description: string;
   author: string;
+  authorId: string;
+  authorProfilePic?: string;
   dateTime: Date;
   location?: {latitude:number,longitude:number};
   likes: number;
@@ -27,7 +29,7 @@ interface NominatimResponse {
 }
 
 
-function PostCard({description, author, dateTime, location, likes, comments, image}: PostCardProps) {
+function PostCard({description, author, authorId, authorProfilePic, dateTime, location, likes, comments, image}: PostCardProps) {
   const [locationName, setLocationName] = useState<String>('Loading...');
   const [timeSince, setTimeSince] = useState<String>('');
   //const [user, setUser] = useState<User | null>(null);
@@ -88,10 +90,10 @@ useEffect(() => {
   }, [dateTime])
 
   return (
-    <div className='w-full bg-white p-4 drop-shadow'>
-      <div className='flex flex-row mb-3 text-left'>
-        <ProfileIcon size="md"/>
-        <div className='h-14 w-full ml-3'>
+    <div className='w-full bg-white p-4 drop-shadow hover:drop-shadow-lg'>
+      <div className='flex flex-row mb-3 text-left items-start'>
+        <ProfileIcon size="md" src={authorProfilePic} userId={authorId}/>
+        <div className='ml-3'>
           <h3 className='font-bold text-base'>{author ? author : "Unknown user"}</h3>
           <p className='text-sm/3 opacity-85'>{locationName}</p>
           <p className='text-sm/6 opacity-85'>{timeSince}</p>

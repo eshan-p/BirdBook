@@ -1,24 +1,33 @@
 import React, { useState } from 'react'
 import ProfileIcon from '../common/ProfileIcon'
 import PostFormCard from '../common/PostFormCard';
+import { Image, MapPin } from 'lucide-react';
 
 function CreatePost() {
-  const[isFormOpen, setIsFormOpen] = useState<boolean>(false);
+  const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
 
   const openForm = () => setIsFormOpen(true);
   const closeForm = () => setIsFormOpen(false);
 
   return (
-    <div>
-        <button onClick={openForm} className='w-full mb-6'>
-            <div className='flex w-full bg-white drop-shadow justify-center items-center'>
-                <div className='flex w-full m-4 border p-4 bg-[#F7F7F7] border-gray-400 border-dashed justify-center items-center opacity-50 font-semibold'>
-                    Log a new bird sighting
-                </div>
+    <>
+      <div className='w-full mb-6 bg-white rounded-lg drop-shadow'>
+        <div className='p-4 border-b border-gray-200'>
+          <div className='flex gap-4'>
+            <div className='shrink-0'>
+              <ProfileIcon size='md'/>
             </div>
-        </button>
-        {isFormOpen && <PostFormCard onClose={closeForm}/>}
-    </div>
+            <button
+              onClick={openForm}
+              className='flex-1 px-4 py-3 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition-colors text-left font-medium'
+            >
+              Log a new bird sighting...
+            </button>
+          </div>
+        </div>
+      </div>
+      {isFormOpen && <PostFormCard onClose={closeForm} />}
+    </>
   )
 }
 

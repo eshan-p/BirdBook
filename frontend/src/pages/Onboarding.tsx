@@ -102,9 +102,12 @@ export default function Onboarding() {
       <div className='w-full max-w-md'>
         {/* Header */}
         <div className='text-center mb-8'>
-          <div className='inline-flex items-center justify-center w-12 h-12 bg-blue-600 text-white font-bold rounded mb-4'>
-            BB
-          </div>
+        <button 
+          onClick={() => ('')}
+          className='w-10 h-10 flex items-center justify-center bg-gray-300 text-white font-bold rounded hover:bg-white transition-colors shrink-0'
+        >
+          <img src="/sparrow-svgrepo-com.svg" alt="logo" className='w-6 h-6'/>
+        </button>
           <h1 className='text-3xl font-bold text-gray-900 mb-2'>Welcome to BirdBook</h1>
           <p className='text-gray-600'>Complete your profile to get started</p>
         </div>
