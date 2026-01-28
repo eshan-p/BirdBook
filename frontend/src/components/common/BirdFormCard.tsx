@@ -1,14 +1,16 @@
 import React, { ChangeEvent, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
-import { addBird } from '../../api/Birds';
+import { addBird, updateBird } from '../../api/Birds';
+import { Bird } from '../../types/Bird';
 
-function BirdFormCard({onClose} : {onClose: () => void}) {
+function BirdFormCard({onClose, bird, onUpdate} : {onClose: () => void, bird?: Bird, onUpdate?: (updatedBird: Bird) => void}) {
   const { user } = useAuth();
-  const [commonName, setCommonName] = useState('');
-  const [scientificName, setScientificName] = useState('');
+  const [commonName, setCommonName] = useState(bird?.commonName || '');
+  const [scientificName, setScientificName] = useState(bird?.scientificName || '');
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const isEditMode = !!bird;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,8 +29,16 @@ function BirdFormCard({onClose} : {onClose: () => void}) {
         scientificName,
       };
       
-      await addBird(birdData, image || undefined);
-      console.log("Bird created successfully");
+      if (isEditMode && bird) {
+        // Edit mode - use PATCH request
+        const updatedBird = await updateBird(bird.id, birdData, image || undefined);
+        if (onUpdate) onUpdate(updatedBird);
+        console.log("Bird updated successfully");
+      } else {
+        // Create mode - use POST request
+        await addBird(birdData, image || undefined);
+        console.log("Bird created successfully");
+      }
       onClose();
       window.location.reload();
     } catch(error) {
@@ -47,7 +57,7 @@ function BirdFormCard({onClose} : {onClose: () => void}) {
   return (
     <div className='fixed inset-0 z-49 flex items-center justify-center bg-black/20'>
       <div className='bg-white p-8 rounded-2xl drop-shadow w-full max-w-xl m-4'>
-        <h2 className='text-2xl mb-6'>Create New Bird</h2>
+        <h2 className='text-2xl mb-6'>{isEditMode ? 'Edit Bird' : 'Create New Bird'}</h2>
         <form onSubmit={handleSubmit}>
           <div>
             <label className='block text-sm mb-1'>
@@ -116,7 +126,7 @@ function BirdFormCard({onClose} : {onClose: () => void}) {
               disabled={loading || !commonName.trim() || !scientificName.trim()}
               className='flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:cursor-not-allowed'
             >
-              {loading ? 'Creating...' : 'Create bird'}
+              {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Bird' : 'Create Bird')}
             </button>
           </div>
         </form>

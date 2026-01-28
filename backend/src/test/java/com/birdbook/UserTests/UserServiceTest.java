@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -11,8 +12,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +29,11 @@ import com.birdbook.repository.GroupDAO;
 import com.birdbook.repository.PostDAO;
 import com.birdbook.repository.UserDAO;
 import com.birdbook.service.UserService;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -44,6 +52,14 @@ public class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    private Validator validator;
+
+    @BeforeEach
+    public void setUp() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
 
     @Test
     public void getAllUsers_Success(){
@@ -200,5 +216,27 @@ public class UserServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> userService.addFriend(userId, friendId));
         verify(userDAO, times(0)).save(user);
+    }
+
+    @Test
+    public void validateUsername_Invalid(){
+        User user = new User("ab@", "Pass1!");
+        
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getPropertyPath().toString().equals("username")));
+    }
+
+    @Test
+    public void validatePassword_Invalid(){
+        User user = new User("validuser", "pass1!");
+        
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream()
+            .anyMatch(v -> v.getPropertyPath().toString().equals("password")));
     }
 }

@@ -35,7 +35,7 @@ export default function Groups() {
   const [search, setSearch] = useState("");
   const BASE_URL = "http://localhost:8080";
 
-  const currentUserId = localStorage.getItem("userId") || "";
+  const currentUserId = user?.id || "";
   const role = user?.role;
   const canManage = role === "ADMIN_USER" || role === "SUPER_USER";
 
@@ -231,7 +231,7 @@ export default function Groups() {
           )}
 
           <div>
-            {/* <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Groups</h3> */}
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Groups</h3>
             <ul className="space-y-2">
               {filteredAllGroups.map((group) => (
                 <li key={group.id}>

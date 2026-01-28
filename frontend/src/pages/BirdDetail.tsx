@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Bird } from "../types/Bird";
-import { getAllBirds } from "../api/Birds";
+import { getAllBirds, deleteBird } from "../api/Birds";
+import { useAuth } from "../context/AuthContext";
+import { isSuperUser } from "../utils/roleUtils";
+import BirdFormCard from "../components/common/BirdFormCard";
 
 export default function BirdDetail() {
   const { birdId } = useParams<{ birdId: string }>();
   const [bird, setBird] = useState<Bird | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!birdId) return;
@@ -18,6 +24,24 @@ export default function BirdDetail() {
       })
       .finally(() => setLoading(false));
   }, [birdId]);
+
+  const handleUpdateBird = (updatedBird: Bird) => {
+    setBird(updatedBird);
+    setIsEditing(false);
+  };
+
+  const handleDeleteBird = async () => {
+    if (!birdId || !user?.id) return;
+    if (!confirm('Are you sure you want to delete this bird? This action cannot be undone.')) return;
+    
+    try {
+      await deleteBird(birdId);
+      navigate('/birds');
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Failed to delete bird');
+    }
+  };
 
   if (loading) return <p className="p-6">Loading bird...</p>;
 
@@ -58,6 +82,31 @@ export default function BirdDetail() {
         <p className="mt-4 text-sm text-gray-600">
           Location: {bird.location[1]}, {bird.location[0]}
         </p>
+      )}
+
+      {user && isSuperUser(user.role) && (
+        <div className='mt-6 border-t border-gray-300 pt-4 space-y-2'>
+          <button 
+            onClick={() => setIsEditing(true)} 
+            className='w-full px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700'
+          >
+            Edit Bird
+          </button>
+          <button 
+            onClick={handleDeleteBird} 
+            className='w-full px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700'
+          >
+            Delete Bird
+          </button>
+        </div>
+      )}
+      
+      {isEditing && bird && (
+        <BirdFormCard 
+          onClose={() => setIsEditing(false)} 
+          bird={bird}
+          onUpdate={handleUpdateBird}
+        />
       )}
     </div>
   );

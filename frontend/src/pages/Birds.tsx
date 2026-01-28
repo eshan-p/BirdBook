@@ -107,13 +107,17 @@ export default function Birds() {
       <div className="basis-1/2 m-6">
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <div className="flex items-center justify-between mb-6 gap-4">
-            <h2 className="text-2xl font-bold text-gray-800">All Birds</h2>
-            <div className="w-64">
+            <div className="flex">
+              <h2 className="text-2xl font-bold text-gray-800 shrink-0">All Birds</h2>
+              
+          </div>
+            <div className="flex">
+              <div className="mr-7 min-w-24">
+                {isSuperUser(role) && <CreateBird />}
+              </div>
               <SearchBar onChange={(e: any) => setSearch(e.target.value)} />
             </div>
           </div>
-
-          {isSuperUser(role) && <CreateBird />}
 
           <div className="grid grid-cols-1 gap-2">
             {loading && <p className="text-center py-4">Loading birds...</p>}
