@@ -25,13 +25,19 @@ public class MongoDataInitializer implements CommandLineRunner {
     private final ObjectId superUser = new ObjectId();
     private final List<ObjectId> basicUsers = new ArrayList<>();
     private final Map<ObjectId, String> userNames = new HashMap<>();
+    private final Map<ObjectId, String> userProfilePics = new HashMap<>();
 
     // ===== GROUPS =====
     private final ObjectId groupDFW = new ObjectId();
     private final ObjectId groupCoastal = new ObjectId();
+    private final ObjectId groupHillCountry = new ObjectId();
+    private final ObjectId groupGulfCoast = new ObjectId();
+    private final ObjectId groupMetroBirders = new ObjectId();
+    private final Map<String, ObjectId> groupIdsByName = new HashMap<>();
 
     // ===== BIRDS =====
     private final List<ObjectId> birds = new ArrayList<>();
+    private final List<String> birdCommonNames = new ArrayList<>();
 
     // ===== POSTS =====
     private final List<ObjectId> posts = new ArrayList<>();
@@ -75,30 +81,71 @@ public class MongoDataInitializer implements CommandLineRunner {
         List<Document> docs = new ArrayList<>();
 
         userNames.put(adminUser, "admin_alice");
-        docs.add(userDoc(adminUser, "admin_alice", "Admin1!", Role.ADMIN_USER));
+        userProfilePics.put(adminUser, "/profile_pictures/adminAlice.jpg");
+        docs.add(userDoc(adminUser, "admin_alice", "Admin1!", Role.ADMIN_USER,
+            "/profile_pictures/adminAlice.jpg"));
 
         userNames.put(superUser, "super_sam");
-        docs.add(userDoc(superUser, "super_sam", "Super1!", Role.SUPER_USER));
+        userProfilePics.put(superUser, "/profile_pictures/superSam.jpg");
+        docs.add(userDoc(superUser, "super_sam", "Super1!", Role.SUPER_USER,
+            "/profile_pictures/superSam.jpg"));
 
-        for (int i = 0; i < 25; i++) {
+        List<String> sampleUsernames = List.of(
+            "taylor_b",
+            "jordanlee2",
+            "camila_ro",
+            "noahh",
+            "ava_r5",
+            "mariag",
+            "liam_k9",
+            "emma_j",
+            "lucasm",
+            "sofia_p6",
+            "ethan_w2",
+            "olivia_c",
+            "mason_t1",
+            "mia_v",
+            "isabellaq",
+            "owl_at_dawn",
+            "kestrel_kite7",
+            "warblerwatch",
+            "heron_haven5",
+            "robinridge",
+            "finch_finder9",
+            "tern_trail",
+            "egret_eye1",
+            "sparrowspot",
+            "cardinalcall2"
+        );
+
+        List<String> defaultPics = List.of(
+                "/profile_pictures/default1.jpg",
+                "/profile_pictures/default2.jpg",
+                "/profile_pictures/default3.png",
+                "/profile_pictures/default4.png"
+        );
+
+        for (int i = 0; i < sampleUsernames.size(); i++) {
+            String username = sampleUsernames.get(i);
             ObjectId id = new ObjectId();
-            String username = "birder" + i;
 
             basicUsers.add(id);
             userNames.put(id, username);
 
-            docs.add(userDoc(id, username, "Bird1!", Role.BASIC_USER));
+            String profilePic = defaultPics.get(i % defaultPics.size());
+            userProfilePics.put(id, profilePic);
+            docs.add(userDoc(id, username, "Bird1!", Role.BASIC_USER, profilePic));
         }
 
         collection.insertMany(docs);
     }
 
-    private Document userDoc(ObjectId id, String username, String rawPassword, Role role) {
+    private Document userDoc(ObjectId id, String username, String rawPassword, Role role, String profilePic) {
         return new Document("_id", id)
                 .append("username", username)
                 .append("password", passwordEncoder.encode(rawPassword))
                 .append("role", role.name())
-                .append("profilePic", "/profile_pictures/default_pfp.jpg")
+                .append("profilePic", profilePic)
                 .append("friends", List.of())
                 .append("posts", List.of())
                 .append("groups", List.of());
@@ -109,18 +156,42 @@ public class MongoDataInitializer implements CommandLineRunner {
     // =====================================================
 
     private void populateGroups(MongoCollection<Document> collection) {
+        groupIdsByName.put("DFW Birders", groupDFW);
+        groupIdsByName.put("Coastal Bird Committee", groupCoastal);
+        groupIdsByName.put("Hill Country Spotters", groupHillCountry);
+        groupIdsByName.put("Gulf Coast Birding", groupGulfCoast);
+        groupIdsByName.put("Metro Birdwatchers", groupMetroBirders);
+
         collection.insertMany(List.of(
                 new Document("_id", groupDFW)
                         .append("name", "DFW Birders")
                         .append("owner", postUser(adminUser))
-                        .append("members", basicUsers.stream().map(this::postUser).toList())
+                .append("members", basicUsers.subList(0, 20).stream().map(this::postUser).toList())
                         .append("requests", List.of()),
 
                 new Document("_id", groupCoastal)
                         .append("name", "Coastal Bird Committee")
                         .append("owner", postUser(superUser))
-                        .append("members", basicUsers.subList(0, 10).stream().map(this::postUser).toList())
-                        .append("requests", List.of())
+                .append("members", basicUsers.subList(5, 15).stream().map(this::postUser).toList())
+                .append("requests", List.of()),
+
+            new Document("_id", groupHillCountry)
+                .append("name", "Hill Country Spotters")
+                .append("owner", postUser(adminUser))
+                .append("members", basicUsers.subList(10, 22).stream().map(this::postUser).toList())
+                .append("requests", List.of()),
+
+            new Document("_id", groupGulfCoast)
+                .append("name", "Gulf Coast Birding")
+                .append("owner", postUser(superUser))
+                .append("members", basicUsers.subList(0, 8).stream().map(this::postUser).toList())
+                .append("requests", List.of()),
+
+            new Document("_id", groupMetroBirders)
+                .append("name", "Metro Birdwatchers")
+                .append("owner", postUser(adminUser))
+                .append("members", basicUsers.subList(3, 19).stream().map(this::postUser).toList())
+                .append("requests", List.of())
         ));
     }
 
@@ -392,6 +463,7 @@ public class MongoDataInitializer implements CommandLineRunner {
 
             String commonName = bird[0];
             String scientificName = bird[1];
+            this.birdCommonNames.add(commonName);
 
             // Convert to Wikimedia filename format
             String fileName = commonName
@@ -423,59 +495,253 @@ public class MongoDataInitializer implements CommandLineRunner {
         Random rand = new Random();
         List<Document> docs = new ArrayList<>();
 
-        long baseTime = System.currentTimeMillis() - 2_000_000_000L;
+        long baseTime = System.currentTimeMillis() - 3_000_000_000L;
 
-        double[][] locations = {
-                {32.7767, -96.7970},   // Dallas, TX
-                {29.3013, -94.7977},   // Galveston, TX
-                {26.1118, -97.1681},   // South Padre Island, TX
-                {30.2672, -97.7431},   // Austin, TX
-                {27.8006, -97.3964}    // Corpus Christi, TX
-        };
+        if (groupIdsByName.isEmpty()) {
+            MongoCollection<Document> groupsCollection =
+                    ConnectionHandler.getDatabase().getCollection("groups");
+            for (Document groupDoc : groupsCollection.find()) {
+                String name = groupDoc.getString("name");
+                ObjectId id = groupDoc.getObjectId("_id");
+                if (name != null && id != null) {
+                    groupIdsByName.put(name, id);
+                }
+            }
+        }
 
+        if (basicUsers.isEmpty() || userNames.isEmpty()) {
+            MongoCollection<Document> usersCollection =
+                    ConnectionHandler.getDatabase().getCollection("users");
+            List<ObjectId> loadedBasics = new ArrayList<>();
+            for (Document userDoc : usersCollection.find()) {
+                ObjectId userId = userDoc.getObjectId("_id");
+                String username = userDoc.getString("username");
+                String profilePic = userDoc.getString("profilePic");
+                String role = userDoc.getString("role");
+                if (userId != null && username != null) {
+                    userNames.put(userId, username);
+                    if (profilePic != null) {
+                        userProfilePics.put(userId, profilePic);
+                    }
+                    if (role != null && role.equals(Role.BASIC_USER.name())) {
+                        loadedBasics.add(userId);
+                    }
+                }
+            }
+            if (!loadedBasics.isEmpty()) {
+                basicUsers.clear();
+                basicUsers.addAll(loadedBasics);
+            } else if (basicUsers.isEmpty()) {
+                basicUsers.addAll(userNames.keySet());
+            }
+        }
 
-        for (int i = 0; i < 100; i++) {
+        if (basicUsers.isEmpty()) {
+            return;
+        }
+
+        if (birds.isEmpty()) {
+            MongoCollection<Document> birdsCollection =
+                    ConnectionHandler.getDatabase().getCollection("birds");
+            for (Document birdDoc : birdsCollection.find()) {
+                ObjectId birdId = birdDoc.getObjectId("_id");
+                String commonName = birdDoc.getString("commonName");
+                if (birdId != null && commonName != null) {
+                    birds.add(birdId);
+                    birdCommonNames.add(commonName);
+                }
+            }
+        }
+
+        Map<String, Integer> birdNameToIndex = new HashMap<>();
+        for (int i = 0; i < birdCommonNames.size(); i++) {
+            birdNameToIndex.put(birdCommonNames.get(i), i);
+        }
+
+        Map<String, String> birdImagePaths = new HashMap<>();
+        birdImagePaths.put("Bald Eagle", "/images/baldEagle.jpg");
+        birdImagePaths.put("Barred Owl", "/images/barredOwl.jpg");
+        birdImagePaths.put("Bewick's Wren", "/images/bewickWren.jpg");
+        birdImagePaths.put("Black-necked Stilt", "/images/blackNeckedStilt.jpg");
+        birdImagePaths.put("Brown-headed Nuthatch", "/images/brownHeadedNuthatch.jpg");
+        birdImagePaths.put("Western Scrub-Jay", "/images/californiaScrubJay.jpg");
+        birdImagePaths.put("Cattle Egret", "/images/cattleEgret.jpg");
+        birdImagePaths.put("Common Tern", "/images/commonTern.jpg");
+        birdImagePaths.put("Eastern Phoebe", "/images/easternPhoebe.jpg");
+        birdImagePaths.put("Gadwall", "/images/gadwall.jpg");
+        birdImagePaths.put("Least Flycatcher", "/images/leastFlycatcher.jpg");
+        birdImagePaths.put("Least Sandpiper", "/images/leastSandpiper.jpg");
+        birdImagePaths.put("Lesser Scaup", "/images/lesserScaup.jpg");
+        birdImagePaths.put("Mallard", "/images/mallard.jpg");
+        birdImagePaths.put("Mountain Chickadee", "/images/mountainChickadee.jpg");
+        birdImagePaths.put("Red-bellied Woodpecker", "/images/redBelliedWoodpecker.jpg");
+        birdImagePaths.put("Ring-necked Pheasant", "/images/ringNeckedPheasant.jpg");
+        birdImagePaths.put("Rock Pigeon", "/images/rockPigeon.jpg");
+        birdImagePaths.put("Rough-legged Hawk", "/images/roughLeggedHawk.jpg");
+        birdImagePaths.put("Townsend's Solitaire", "/images/townsendsSolitaire.jpg");
+
+        List<Integer> birdsWithImages = new ArrayList<>();
+        for (int i = 0; i < birdCommonNames.size(); i++) {
+            String name = birdCommonNames.get(i);
+            if (birdImagePaths.containsKey(name)) {
+                birdsWithImages.add(i);
+            }
+        }
+
+        class PostSeed {
+            final String header;
+            final String textBody;
+            final double latitude;
+            final double longitude;
+            final String groupName;
+            final boolean help;
+            final boolean includeBirdName;
+            final String birdName;
+            final String imagePath;
+
+            PostSeed(String header, String textBody, double latitude, double longitude, String groupName, boolean help, boolean includeBirdName, String birdName, String imagePath) {
+            this.header = header;
+            this.textBody = textBody;
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.groupName = groupName;
+            this.help = help;
+            this.includeBirdName = includeBirdName;
+            this.birdName = birdName;
+            this.imagePath = imagePath;
+            }
+        }
+
+        List<PostSeed> seeds = List.of(
+            new PostSeed("Early morning at White Rock Lake",
+                "Caught a small flock skimming the water just after sunrise. The light was perfect and they were actively feeding along the shoreline. I lingered for about twenty minutes and watched them shift between the reeds and open water as the breeze picked up.",
+                32.8256, -96.7166, "DFW Birders", false, true, "Mallard", "/images/mallard.jpg"),
+            new PostSeed("Quick flyby at the Galveston pier",
+                "Quick flyby over the pier—heard them before I saw them. Great reminder to listen for calls when scanning the surf.",
+                29.3107, -94.7905, "Coastal Bird Committee", false, false, "Common Tern", "/images/commonTern.jpg"),
+            new PostSeed("Pair working the Padre Island dunes",
+                "Spotted a pair working the dunes and picking insects from the sparse grass. Stayed at a distance to avoid flushing.",
+                26.1595, -97.1680, "Gulf Coast Birding", false, true, "Black-necked Stilt", "/images/blackNeckedStilt.jpg"),
+            new PostSeed("Songbird in the Austin greenbelt",
+                "Heard a clear, ringing song from the canopy. Took a bit of patience, but finally got a clean look through the leaves. It moved in short hops between branches and paused long enough for a quick sketch and note on the call pattern.",
+                30.2649, -97.7733, "Hill Country Spotters", false, false, "Eastern Phoebe", "/images/easternPhoebe.jpg"),
+            new PostSeed("Marsh activity in Corpus Christi",
+                "Low tide revealed a lot of movement in the shallows. Plenty of feeding activity and a few great photo moments.",
+                27.8006, -97.3964, "Gulf Coast Birding", false, true, "Cattle Egret", "/images/cattleEgret.jpg"),
+            new PostSeed("Soaring over the Trinity River",
+                "Gliding circles above the treeline for several minutes. Surprised to see it so close to the city.",
+                32.8145, -96.7459, "Metro Birdwatchers", false, false, "Bald Eagle", "/images/baldEagle.jpg"),
+            new PostSeed("Mixed flock on the Cedar Hill loop",
+                "Found a mixed flock along the trail. Noted a clear field mark on the wing bars when it perched. The flock kept rotating through the understory, so I stayed still and let them come to me instead of chasing.",
+                32.5885, -96.9561, "DFW Birders", false, true, "Red-bellied Woodpecker", "/images/redBelliedWoodpecker.jpg"),
+            new PostSeed("Calm morning at the Aransas boardwalk",
+                "Calm morning, glassy water. Great views and behavior notes—feeding method was easy to observe.",
+                28.0206, -96.9903, "Coastal Bird Committee", false, false, "Gadwall", "/images/gadwall.jpg"),
+            new PostSeed("Surprise at Brazos Bend",
+                "Wasn’t expecting to see this species here today. Stayed still and it lingered for a good five minutes.",
+                29.3928, -95.6083, "Coastal Bird Committee", false, true, "Barred Owl", "/images/barredOwl.jpg"),
+            new PostSeed("Fence line views at Katy Prairie",
+                "Pair calling from the fence line. Spotted a second individual in the brush after a few minutes.",
+                29.7858, -95.8244, "Hill Country Spotters", false, false, "Ring-necked Pheasant", "/images/ringNeckedPheasant.jpg"),
+            new PostSeed("Sunset silhouette on the Austin shoreline",
+                "A clean silhouette against the sunset. The flight pattern was distinctive and easy to confirm. It made a wide loop over the water twice before settling on a snag, which helped confirm the shape and tail pattern.",
+                30.2500, -97.7500, "Hill Country Spotters", false, true, "Rough-legged Hawk", "/images/roughLeggedHawk.jpg"),
+            new PostSeed("Short stop at the Frisco ponds",
+                "Short visit but rewarding—steady activity around the reed edges. Submitted a checklist afterward.",
+                33.1507, -96.8236, "Metro Birdwatchers", false, false, "Lesser Scaup", "/images/lesserScaup.jpg"),
+            new PostSeed("Diving along the Grapevine Lake shoreline",
+                "Foraging along the shoreline with quick dives. Nice contrast between plumage and the water. It surfaced with small prey a couple of times and briefly preened before moving on to the next cove.",
+                32.9342, -97.0780, "DFW Birders", false, true, "Least Sandpiper", "/images/leastSandpiper.jpg"),
+            new PostSeed("Quick look at McKinney Preserve",
+                "Heard rustling in the shrubs and caught a quick look. Confirmed with a short burst of song.",
+                33.1972, -96.6398, "Metro Birdwatchers", false, false, "Least Flycatcher", "/images/leastFlycatcher.jpg"),
+            new PostSeed("Sandbar action at Matagorda Bay",
+                "Wind picked up mid‑morning but the birds kept moving along the sandbar. Great behavior notes.",
+                28.7092, -95.9494, "Coastal Bird Committee", false, true, "Common Tern", "/images/commonTern.jpg"),
+            new PostSeed("Thermals over Big Bend",
+                "High‑soaring and riding thermals for quite a while. Noted wing shape and tail pattern clearly. It climbed steadily without flapping for several minutes, then drifted east along the ridge line before dropping back into view.",
+                29.1275, -103.2425, "Hill Country Spotters", true, false, "Townsend's Solitaire", "/images/townsendsSolitaire.jpg"),
+            new PostSeed("Lunch break find on the San Antonio River Walk",
+                "Quick stop during lunch and caught a surprise in the trees. Busy area, but it kept to a quiet pocket.",
+                29.4239, -98.4936, "Hill Country Spotters", false, true, "Rock Pigeon", "/images/rockPigeon.jpg"),
+            new PostSeed("Trailside perch at Lake Ray Roberts",
+                "Nice close perch near the trail. Gave plenty of time for a photo and a few notes.",
+                33.3657, -97.0331, "DFW Birders", false, false, "Bewick's Wren", "/images/bewickWren.jpg"),
+            new PostSeed("Shoreline flocking at Gulf State Park",
+                "Flocking behavior along the shoreline was interesting—kept an eye on spacing and feeding turns.",
+                30.2387, -87.7150, "Gulf Coast Birding", false, true, "Brown-headed Nuthatch", "/images/brownHeadedNuthatch.jpg"),
+            new PostSeed("Long drive to Falcon State Park",
+                "Long drive but worth it. The habitat fit perfectly and the sighting was brief but unmistakable.",
+                26.5445, -99.1450, "Gulf Coast Birding", true, false, "Mountain Chickadee", "/images/mountainChickadee.jpg")
+        );
+
+        for (int i = 0; i < seeds.size(); i++) {
+            PostSeed seed = seeds.get(i);
             ObjectId postId = new ObjectId();
             posts.add(postId);
 
-            ObjectId authorId = basicUsers.get(rand.nextInt(basicUsers.size()));
-            ObjectId bird = birds.get(rand.nextInt(birds.size()));
+            ObjectId authorId = basicUsers.get(i % basicUsers.size());
+            Integer birdIndex = birdNameToIndex.get(seed.birdName);
+            if (birdIndex == null) {
+                continue;
+            }
+            ObjectId bird = birds.get(birdIndex);
+            String birdName = birdCommonNames.get(birdIndex);
+            String imagePath = seed.imagePath;
+                String textBody = seed.includeBirdName
+                    ? seed.textBody + " Noted a " + birdName + " in the area."
+                    : seed.textBody;
 
-            double[] loc = locations[rand.nextInt(locations.length)];
-
+            ObjectId groupId = groupIdsByName.get(seed.groupName);
             docs.add(new Document("_id", postId)
-                    .append("user", postUser(authorId))
-                    .append("header", "Bird Sighting #" + i)
-                    .append("bird", bird)
-                    .append("group", rand.nextBoolean() ? groupDFW : groupCoastal)
-                    .append("flagged", false)
-                    .append("help", rand.nextBoolean())
-                    .append("likes", List.of())
-                    .append("image", "TODO")
-                    .append("textBody", "Automated test post content " + i)
-                    .append("timestamp", new Date(baseTime + (i * 10_000)))
-                    .append("tags", new Document("location",
-                            new Document("latitude", loc[0])
-                                    .append("longitude", loc[1])
-                    ))
-                    .append("comments", generateComments(rand))
+                .append("user", postUser(authorId))
+                .append("header", seed.header)
+                .append("bird", bird)
+                .append("group", groupId)
+                .append("flagged", false)
+                .append("help", seed.help)
+                .append("likes", List.of())
+                .append("image", imagePath)
+                .append("textBody", textBody)
+                .append("timestamp", new Date(baseTime + (i * 86_400_000L)))
+                .append("tags", new Document("location",
+                    new Document("latitude", seed.latitude)
+                        .append("longitude", seed.longitude)
+                ))
+                .append("comments", generateComments(rand, birdName))
             );
         }
 
         collection.insertMany(docs);
     }
 
-    private List<Document> generateComments(Random rand) {
-        int count = rand.nextInt(5);
+    private List<Document> generateComments(Random rand, String birdName) {
+        int count = rand.nextInt(4) + 1;
         List<Document> comments = new ArrayList<>();
 
         long baseTime = System.currentTimeMillis() - 500_000;
+
+        List<String> templates = List.of(
+            "Love the details on the " + birdName + " — great find!",
+            "Nice spot! The " + birdName + " can be tricky to pick out.",
+            "Thanks for sharing. I’ve only seen a " + birdName + " there once.",
+            "Beautiful sighting — that " + birdName + " must’ve been exciting.",
+            "Great notes! I’ll keep an eye out for the " + birdName + ".",
+            "Awesome! The " + birdName + " has been on my list this season.",
+            "Nice photo opportunity. The " + birdName + " is a favorite of mine.",
+            "Lucky catch — I usually hear the " + birdName + " before I see it.",
+            "Great write‑up — thanks for the location details!",
+            "I was there last week and missed it. Nice find!",
+            "Love the field notes — super helpful.",
+            "The lighting sounds perfect for photos.",
+            "Thanks for sharing! Adding this spot to my weekend list."
+        );
 
         for (int i = 0; i < count; i++) {
             ObjectId uid = basicUsers.get(rand.nextInt(basicUsers.size()));
 
             comments.add(new Document("user", postUser(uid))
-                    .append("textBody", "Nice spotting! " + i)
+                    .append("textBody", templates.get(rand.nextInt(templates.size())))
                     .append("timestamp", new Date(baseTime + (i * 5_000)))
             );
         }
@@ -489,6 +755,7 @@ public class MongoDataInitializer implements CommandLineRunner {
 
     private Document postUser(ObjectId id) {
         return new Document("userId", id)
-                .append("username", userNames.get(id));
+                .append("username", userNames.get(id))
+                .append("profilePic", userProfilePics.get(id));
     }
 }
