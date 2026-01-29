@@ -120,7 +120,10 @@ public class MongoDataInitializer implements CommandLineRunner {
                 "rockPigeonLover41",
                 "Bird1!",
                 Role.BASIC_USER,
-                "/profile_pictures/rockPigeon.jpg"
+                "/profile_pictures/rockPigeon.jpg",
+                "The",
+                "Rock",
+                "Dallas, Dallas County, Texas, United States"
         ));
 
 
