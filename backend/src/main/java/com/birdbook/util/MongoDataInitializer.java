@@ -46,6 +46,7 @@ public class MongoDataInitializer implements CommandLineRunner {
 
     // ===== POSTS =====
     private final List<ObjectId> posts = new ArrayList<>();
+    Map<ObjectId, List<ObjectId>> postsByUser = new HashMap<>();
 
     @Override
     public void run(String... args) {
@@ -94,6 +95,20 @@ public class MongoDataInitializer implements CommandLineRunner {
         userProfilePics.put(superUser, "/profile_pictures/superSam.jpg");
         docs.add(userDoc(superUser, "super_sam", "Super1!", Role.SUPER_USER,
             "/profile_pictures/superSam.jpg"));
+
+        ObjectId birdUser = new ObjectId();
+        basicUsers.add(birdUser);
+        userNames.put(birdUser, "rockPigeonLover41");
+        userProfilePics.put(birdUser, "/profile_pictures/rockPigeon.jpg");
+
+        docs.add(userDoc(
+                birdUser,
+                "rockPigeonLover41",
+                "Bird1!",
+                Role.BASIC_USER,
+                "/profile_pictures/rockPigeon.jpg"
+        ));
+
 
         List<String> sampleUsernames = List.of(
             "taylor_b",
@@ -558,9 +573,9 @@ public class MongoDataInitializer implements CommandLineRunner {
             }
         }
 
-        Map<String, Integer> birdNameToIndex = new HashMap<>();
+        Map<String, ObjectId> birdNameToId = new HashMap<>();
         for (int i = 0; i < birdCommonNames.size(); i++) {
-            birdNameToIndex.put(birdCommonNames.get(i), i);
+            birdNameToId.put(birdCommonNames.get(i), birds.get(i));
         }
 
         Map<String, String> birdImagePaths = new HashMap<>();
@@ -686,12 +701,17 @@ public class MongoDataInitializer implements CommandLineRunner {
             posts.add(postId);
 
             ObjectId authorId = basicUsers.get(i % basicUsers.size());
-            Integer birdIndex = birdNameToIndex.get(seed.birdName);
-            if (birdIndex == null) {
+
+            postsByUser
+                    .computeIfAbsent(authorId, k -> new ArrayList<>())
+                    .add(postId);
+
+            ObjectId bird = birdNameToId.get(seed.birdName);
+            if (bird == null) {
                 continue;
             }
-            ObjectId bird = birds.get(birdIndex);
-            String birdName = birdCommonNames.get(birdIndex);
+            String birdName = seed.birdName;
+
             String imagePath = seed.imagePath;
                 String textBody = seed.includeBirdName
                     ? seed.textBody + " Noted a " + birdName + " in the area."
@@ -716,6 +736,27 @@ public class MongoDataInitializer implements CommandLineRunner {
                 .append("comments", generateComments(rand, birdName))
             );
         }
+
+        long now = System.currentTimeMillis();
+
+        addSuperUserPosts(docs, now);
+        addTrollPost(docs, now);
+
+        MongoCollection<Document> usersCollection =
+                ConnectionHandler.getDatabase().getCollection("users");
+
+        for (Map.Entry<ObjectId, List<ObjectId>> entry : postsByUser.entrySet()) {
+            usersCollection.updateOne(
+                    new Document("_id", entry.getKey()),
+                    new Document("$push",
+                            new Document("posts",
+                                    new Document("$each", entry.getValue())
+                            )
+                    )
+            );
+        }
+
+
 
         collection.insertMany(docs);
     }
@@ -763,4 +804,70 @@ public class MongoDataInitializer implements CommandLineRunner {
                 .append("username", userNames.get(id))
                 .append("profilePic", userProfilePics.get(id));
     }
+
+    private void addSuperUserPosts(List<Document> docs, long now) {
+
+        // Safety check
+        if (birds.size() < 9) {
+            throw new IllegalStateException("Not enough birds to assign to super user posts");
+        }
+
+        ObjectId groupOwnedBySuper = groupCoastal;
+
+        for (int i = 0; i < 9; i++) {
+            ObjectId postId = new ObjectId();
+            ObjectId birdId = birds.get(i); // 👈 guaranteed unique + real
+
+            postsByUser
+                    .computeIfAbsent(superUser, k -> new ArrayList<>())
+                    .add(postId);
+
+            docs.add(new Document("_id", postId)
+                    .append("user", postUser(superUser))
+                    .append("header", "Daily sighting #" + (i + 1))
+                    .append("bird", birdId)
+                    .append("group", groupOwnedBySuper)
+                    .append("flagged", false)
+                    .append("help", false)
+                    .append("likes", List.of())
+                    .append("image", null)
+                    .append("textBody", "Observed a notable species during a routine outing.")
+                    .append("timestamp", new Date(now - ((8 - i) * 86_400_000L)))
+                    .append("tags", new Document("latitude", 32.7767)
+                            .append("longitude", -96.7970))
+                    .append("comments", List.of())
+            );
+        }
+    }
+
+
+    private void addTrollPost(List<Document> docs, long now) {
+        ObjectId postId = new ObjectId();
+        ObjectId commenter = basicUsers.get(0);
+
+        postsByUser
+                .computeIfAbsent(basicUsers.get(1), k -> new ArrayList<>())
+                .add(postId);
+
+        docs.add(new Document("_id", postId)
+                .append("user", postUser(basicUsers.get(1)))
+                .append("header", "Rare sighting???")
+                .append("bird", null)
+                .append("group", groupDFW)
+                .append("flagged", false)
+                .append("help", false)
+                .append("likes", List.of())
+                .append("image", "/images/megastarrapter.jpg")
+                .append("textBody", "Guys I found this awesome bird and it... MEGA EVOLVED")
+                .append("timestamp", new Date(now - (14L * 86_400_000L))) // 2 weeks ago
+                .append("tags", new Document("latitude", 32.5007).append("longitude", 94.7405))
+                .append("comments", List.of(
+                        new Document("user", postUser(commenter))
+                                .append("textBody", "Erm... That's not a real bird... Awkward")
+                                .append("timestamp", new Date(now - 86_000_000L))
+                ))
+        );
+    }
+
+
 }
