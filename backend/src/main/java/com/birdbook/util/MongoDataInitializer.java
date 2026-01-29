@@ -1,14 +1,19 @@
 package com.birdbook.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
-import com.birdbook.models.Role;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import com.birdbook.models.Role;
 import com.mongodb.client.MongoCollection;
 
 @Component
@@ -704,10 +709,10 @@ public class MongoDataInitializer implements CommandLineRunner {
                 .append("image", imagePath)
                 .append("textBody", textBody)
                 .append("timestamp", new Date(baseTime + (i * 86_400_000L)))
-                .append("tags", new Document("location",
-                    new Document("latitude", seed.latitude)
-                        .append("longitude", seed.longitude)
-                ))
+                .append("tags", new Document()
+                    .append("latitude", seed.latitude)
+                    .append("longitude", seed.longitude)
+                )
                 .append("comments", generateComments(rand, birdName))
             );
         }
