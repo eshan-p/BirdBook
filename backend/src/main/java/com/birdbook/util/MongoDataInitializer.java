@@ -81,6 +81,20 @@ public class MongoDataInitializer implements CommandLineRunner {
     // =====================================================
     // USERS
     // =====================================================
+    private Document userDoc(ObjectId id, String username, String rawPassword, Role role, String profilePic, String firstName, String lastName, String location) {
+        return new Document("_id", id)
+                .append("username", username)
+                .append("password", passwordEncoder.encode(rawPassword))
+                .append("role", role.name())
+                .append("profilePic", profilePic)
+                .append("firstName", firstName)
+                .append("lastName", lastName)
+                .append("location", location)
+                .append("onboardingComplete", true)
+                .append("friends", List.of())
+                .append("posts", List.of())
+                .append("groups", List.of());
+    }
 
     private void populateUsers(MongoCollection<Document> collection) {
         List<Document> docs = new ArrayList<>();
@@ -88,46 +102,54 @@ public class MongoDataInitializer implements CommandLineRunner {
         userNames.put(adminUser, "admin_alice");
         userProfilePics.put(adminUser, "/profile_pictures/adminAlice.jpg");
         docs.add(userDoc(adminUser, "admin_alice", "Admin1!", Role.ADMIN_USER,
-            "/profile_pictures/adminAlice.jpg"));
+            "/profile_pictures/adminAlice.jpg", "Alice", "Anderson", "Austin, Travis County, Texas, United States"));
 
         userNames.put(superUser, "super_sam");
         userProfilePics.put(superUser, "/profile_pictures/superSam.jpg");
         docs.add(userDoc(superUser, "super_sam", "Super1!", Role.SUPER_USER,
-            "/profile_pictures/superSam.jpg"));
+            "/profile_pictures/superSam.jpg", "Sam", "Smith", "Dallas, Dallas County, Texas, United States"));
 
         List<String> sampleUsernames = List.of(
-            "taylor_b",
-            "jordanlee2",
-            "camila_ro",
-            "noahh",
-            "ava_r5",
-            "mariag",
-            "liam_k9",
-            "emma_j",
-            "lucasm",
-            "sofia_p6",
-            "ethan_w2",
-            "olivia_c",
-            "mason_t1",
-            "mia_v",
-            "isabellaq",
-            "owl_at_dawn",
-            "kestrel_kite7",
-            "warblerwatch",
-            "heron_haven5",
-            "robinridge",
-            "finch_finder9",
-            "tern_trail",
-            "egret_eye1",
-            "sparrowspot",
-            "cardinalcall2"
+            "taylor_b", "jordanlee2", "camila_ro", "noahh", "ava_r5",
+            "mariag", "liam_k9", "emma_j", "lucasm", "sofia_p6",
+            "ethan_w2", "olivia_c", "mason_t1", "mia_v", "isabellaq",
+            "owl_at_dawn", "kestrel_kite7", "warblerwatch", "heron_haven5", "robinridge",
+            "finch_finder9", "tern_trail", "egret_eye1", "sparrowspot", "cardinalcall2"
+        );
+
+        List<String[]> userDetails = List.of(
+            new String[]{"Taylor", "Brown", "Houston, Harris County, Texas, United States"},
+            new String[]{"Jordan", "Lee", "San Antonio, Bexar County, Texas, United States"},
+            new String[]{"Camila", "Rodriguez", "Fort Worth, Tarrant County, Texas, United States"},
+            new String[]{"Noah", "Harris", "El Paso, El Paso County, Texas, United States"},
+            new String[]{"Ava", "Roberts", "Arlington, Tarlington County, Texas, United States"},
+            new String[]{"Maria", "Garcia", "Corpus Christi, Nueces County, Texas, United States"},
+            new String[]{"Liam", "Kennedy", "Plano, Collin County, Texas, United States"},
+            new String[]{"Emma", "Johnson", "Garland, Dallas County, Texas, United States"},
+            new String[]{"Lucas", "Martinez", "Laredo, Webb County, Texas, United States"},
+            new String[]{"Sofia", "Perez", "Chandler, Maricopa County, Arizona, United States"},
+            new String[]{"Ethan", "Wilson", "Lubbock, Lubbock County, Texas, United States"},
+            new String[]{"Olivia", "Clark", "Irving, Dallas County, Texas, United States"},
+            new String[]{"Mason", "Taylor", "Grapevine, Tarrant County, Texas, United States"},
+            new String[]{"Mia", "Valdez", "McKinney, Collin County, Texas, United States"},
+            new String[]{"Isabella", "Quinn", "Frisco, Collin County, Texas, United States"},
+            new String[]{"Owen", "Hayes", "Austin, Travis County, Texas, United States"},
+            new String[]{"Sophia", "King", "San Marcos, Hays County, Texas, United States"},
+            new String[]{"Aiden", "Webb", "Rockport, Aransas County, Texas, United States"},
+            new String[]{"Charlotte", "Morris", "Galveston, Galveston County, Texas, United States"},
+            new String[]{"Mason", "Ridge", "New Braunfels, Comal County, Texas, United States"},
+            new String[]{"Amelia", "Finch", "Wimberley, Hays County, Texas, United States"},
+            new String[]{"Benjamin", "Trail", "Gruene, Comal County, Texas, United States"},
+            new String[]{"Harper", "Egret", "Port Aransas, Nueces County, Texas, United States"},
+            new String[]{"Lucas", "Sparrow", "Kerrville, Kerr County, Texas, United States"},
+            new String[]{"Evelyn", "Cardinal", "Boerne, Kendall County, Texas, United States"}
         );
 
         List<String> defaultPics = List.of(
-                "/profile_pictures/default1.jpg",
-                "/profile_pictures/default2.jpg",
-                "/profile_pictures/default3.png",
-                "/profile_pictures/default4.png"
+            "/profile_pictures/default1.jpg",
+            "/profile_pictures/default2.jpg",
+            "/profile_pictures/default3.png",
+            "/profile_pictures/default4.png"
         );
 
         for (int i = 0; i < sampleUsernames.size(); i++) {
@@ -139,21 +161,12 @@ public class MongoDataInitializer implements CommandLineRunner {
 
             String profilePic = defaultPics.get(i % defaultPics.size());
             userProfilePics.put(id, profilePic);
-            docs.add(userDoc(id, username, "Bird1!", Role.BASIC_USER, profilePic));
+            
+            String[] details = userDetails.get(i);
+            docs.add(userDoc(id, username, "Bird1!", Role.BASIC_USER, profilePic, details[0], details[1], details[2]));
         }
 
         collection.insertMany(docs);
-    }
-
-    private Document userDoc(ObjectId id, String username, String rawPassword, Role role, String profilePic) {
-        return new Document("_id", id)
-                .append("username", username)
-                .append("password", passwordEncoder.encode(rawPassword))
-                .append("role", role.name())
-                .append("profilePic", profilePic)
-                .append("friends", List.of())
-                .append("posts", List.of())
-                .append("groups", List.of());
     }
 
     // =====================================================
