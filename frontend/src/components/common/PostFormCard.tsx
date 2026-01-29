@@ -10,9 +10,10 @@ interface PostFormCardProps {
   onClose: () => void;
   existingPost?: Post;
   onUpdate?: () => void;
+  onPostCreated?: () => void;
 }
 
-function PostFormCard({onClose, existingPost, onUpdate} : PostFormCardProps) {
+function PostFormCard({onClose, existingPost, onUpdate, onPostCreated} : PostFormCardProps) {
   const { user } = useAuth();
   const isEditing = !!existingPost;
   const [header, setHeader] = useState(existingPost?.header || '');
@@ -229,6 +230,7 @@ function PostFormCard({onClose, existingPost, onUpdate} : PostFormCardProps) {
                 throw new Error(errorData.message || 'Failed to create post');
             }
             console.log("Post created successfully");
+            onPostCreated?.();
             onClose();
         }
     } catch(error) {

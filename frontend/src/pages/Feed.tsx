@@ -47,6 +47,21 @@ function Feed() {
     setPage(0);
   }, [posts]);
 
+  const handlePostCreated = () => {
+    getSightings()
+    .then(data => {
+      const sorted = data.sort((a, b) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      });
+      setPosts(sorted)
+    })
+    .catch(err => setError(err.message))
+    .finally(() => {
+      setLoading(false);
+      console.log(posts);
+    });
+  }
+
 useEffect(() => {
   getSightings()
     .then(data => {
@@ -156,7 +171,7 @@ const pagedPosts = posts.slice(0, (page + 1) * PAGE_SIZE);
         {/* Main Feed */}
         <div className='basis-1/2 m-6 max-h-screen'>
           <div className='flex flex-col'>
-            {user? (<CreatePost />):(<></>)}
+            {user? (<CreatePost onPostCreated={handlePostCreated}/>):(<></>)}
 
             {pagedPosts.map(post => (
               <button

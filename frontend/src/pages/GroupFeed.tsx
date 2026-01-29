@@ -6,7 +6,7 @@ import ProfileIcon from '../components/common/ProfileIcon'
 import { Post } from '../types/Post'
 import { Group, PostUser } from '../types/Group'
 import { parseDate } from '../utils/dateTime'
-import { getSightingsByGroup } from '../api/Sightings'
+import { getSightings, getSightingsByGroup } from '../api/Sightings'
 import { 
   getAllGroups, 
   getUserGroups, 
@@ -209,6 +209,21 @@ function GroupFeed() {
       setIsSubmitting(false);
     }
   };
+
+  const handlePostCreated = () => {
+    getSightings()
+    .then(data => {
+      const sorted = data.sort((a, b) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      });
+      setPosts(sorted)
+    })
+    .catch(err => setError(err.message))
+    .finally(() => {
+      setLoading(false);
+      console.log(posts);
+    });
+  }
 
   const handleLeaveGroup = async () => {
     if (!groupId || !user?.id) return;
@@ -441,7 +456,7 @@ function GroupFeed() {
       {/* Main Feed */}
       <div className='basis-1/2 m-6'>
         <div className='flex flex-col'>
-          <CreatePost/>
+          {isMember && <CreatePost onPostCreated={handlePostCreated}/>}
           {error && (
             <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
               Error: {error}
@@ -462,6 +477,7 @@ function GroupFeed() {
                 <PostCard
                   description={post.header}
                   author={post.user.username}
+                  authorId={post.user.userId}
                   dateTime={parseDate(post.timestamp)}
                   location={post.tags?.latitude && post.tags?.longitude 
                     ? {

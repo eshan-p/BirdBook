@@ -3,7 +3,11 @@ import ProfileIcon from '../common/ProfileIcon'
 import PostFormCard from '../common/PostFormCard';
 import { Image, MapPin } from 'lucide-react';
 
-function CreatePost() {
+interface CreatePostProps {
+  onPostCreated?: () => void;
+}
+
+function CreatePost({ onPostCreated }: CreatePostProps) {
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
 
   const openForm = () => setIsFormOpen(true);
@@ -26,7 +30,7 @@ function CreatePost() {
           </div>
         </div>
       </div>
-      {isFormOpen && <PostFormCard onClose={closeForm} />}
+      {isFormOpen && <PostFormCard onClose={closeForm} onPostCreated={onPostCreated}/>}
     </>
   )
 }
