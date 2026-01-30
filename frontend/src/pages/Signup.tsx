@@ -1,6 +1,5 @@
 import { useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./auth.css";
 import { useAuth } from "../context/AuthContext";
 
 export default function Signup() {
@@ -39,37 +38,54 @@ export default function Signup() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h2>Sign Up</h2>
+    <div className="flex items-center justify-center min-h-screen bg-[#F7F7F7] px-4">
+      <div className="w-full max-w-md bg-white p-8 drop-shadow rounded">
+        <div className="flex flex-row items-center justify-center border-b border-gray-300 pb-4 mb-6">
+          <img src="/src/assets/bird.svg" alt="bird" className="w-8 h-8"/>
+          <h2 className="text-2xl font-bold ml-3">Sign Up</h2>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            className="auth-input"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <input
+              className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
 
-          <input
-            className="auth-input"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div>
+            <input
+              className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-          <button className="auth-button" type="submit">
+          <button 
+            className="w-full py-3 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition duration-200"
+            type="submit"
+          >
             Create Account
           </button>
         </form>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+            <p className="text-red-600 text-sm text-center">{error}</p>
+          </div>
+        )}
 
-        <div className="auth-link">
-          Already have an account? <Link to="/login">Log in</Link>
+        <div className="mt-6 text-center text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-500 hover:text-blue-600 font-semibold">
+            Log in
+          </Link>
         </div>
       </div>
     </div>

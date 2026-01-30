@@ -86,20 +86,32 @@ export default function Birds() {
       <div className="flex flex-col basis-1/4 m-6 mr-0">
         <ProfileCard user={userData || undefined} />
         <div className="h-fit w-full mt-6 bg-white p-4 drop-shadow">
-          <div className="flex flex-row w-full border-b border-gray-300 mb-3">
-            <img src="src/assets/groups.svg" alt="groups"/>
-            <p className="text-lg ml-3 font-bold">Groups</p>
-          </div>
-          {groups.map(group => (
-            <GroupCard key={group.id.toString()} group={group} />
-          ))}
-          <div className="flex flex-row w-full border-b border-gray-300 mb-3 mt-3">
-            <img src="src/assets/person.svg" alt="friends"/>
-            <p className="text-lg ml-3 font-bold">Friends</p>
-          </div>
-          {friends.map(friend => (
-            <FriendCard key={friend.id} user={friend} />
-          ))}
+              <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
+                <img src="src/assets/groups.svg" alt="groups"/>
+                <p className='text-lg ml-3 font-bold'>Groups</p>
+              </div>
+              {groups.length === 0 ? (
+                <p className='text-gray-500 text-sm text-center py-8'>No groups yet</p>
+              ) : (
+                <>
+                  {groups.map((group) => (
+                    <GroupCard key={group.id.toString()} group={group}/>
+                  ))}
+                </>
+              )}
+              <div className='flex flex-row w-full border-b border-gray-300 mb-3'>
+                <img src="src/assets/person.svg" alt="friends"/>
+                <p className='text-lg ml-3 font-bold'>Friends</p>
+              </div>
+              {friends.length === 0 ? (
+                <p className='text-gray-500 text-sm text-center py-8'>No friends yet</p>
+              ) : (
+                <>
+                  {friends.map((friend) => (
+                    <FriendCard key={friend.id} user={friend}/>
+                  ))}
+                </>
+              )}
         </div>
       </div>}
 

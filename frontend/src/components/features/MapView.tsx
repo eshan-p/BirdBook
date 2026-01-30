@@ -17,7 +17,7 @@ function MapView({posts} : {posts: Post[]}) {
     : [33.2148, -96.8158];
 
     return (
-        <MapContainer center={center} zoom={11} style={{height: '400px', width: '100%'}}>
+        <MapContainer center={center} zoom={9} style={{height: '400px', width: '100%'}}>
             <TileLayer 
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; OpenStreetMap contributors'

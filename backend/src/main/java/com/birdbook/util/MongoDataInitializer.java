@@ -829,28 +829,57 @@ public class MongoDataInitializer implements CommandLineRunner {
         }
 
         ObjectId groupOwnedBySuper = groupCoastal;
+        long baseTime = System.currentTimeMillis();
+
+        List<String[]> dfw_locations = List.of(
+            new String[]{"White Rock Lake", "32.8256", "-96.7166"},
+            new String[]{"Cedar Hill State Park", "32.5885", "-96.9561"},
+            new String[]{"Lake Ray Roberts", "33.3657", "-97.0331"},
+            new String[]{"Grapevine Lake", "32.9342", "-97.0780"},
+            new String[]{"Trinity River Audubon Center", "32.8145", "-96.7459"},
+            new String[]{"Hagerman Wildlife Refuge", "33.7500", "-97.3167"},
+            new String[]{"Lake Lavon", "33.2267", "-96.5000"},
+            new String[]{"Benbrook Lake", "32.6545", "-97.4500"},
+            new String[]{"Caddo National Grassland", "33.4500", "-97.6833"}
+        );
+
+        List<String[]> bird_images = List.of(
+            new String[]{"Mallard", "/images/mallard.jpg"},
+            new String[]{"Bald Eagle", "/images/baldEagle.jpg"},
+            new String[]{"Great Blue Heron", "/images/californiaScrubJay.jpg"},
+            new String[]{"Wood Duck", "/images/cattleEgret.jpg"},
+            new String[]{"Red-tailed Hawk", "/images/gadwall.jpg"},
+            new String[]{"Barred Owl", "/images/barredOwl.jpg"},
+            new String[]{"Black-chinned Hummingbird", "/images/commonTern.jpg"},
+            new String[]{"Carolina Wren", "/images/rockPigeon.jpg"},
+            new String[]{"Northern Cardinal", "/images/mountainChickadee.jpg"}
+        );
 
         for (int i = 0; i < 9; i++) {
             ObjectId postId = new ObjectId();
-            ObjectId birdId = birds.get(i); // 👈 guaranteed unique + real
+            ObjectId birdId = birds.get(i);
 
             postsByUser
                     .computeIfAbsent(superUser, k -> new ArrayList<>())
                     .add(postId);
 
+            String[] location = dfw_locations.get(i);
+            String[] bird_image = bird_images.get(i);
+
             docs.add(new Document("_id", postId)
                     .append("user", postUser(superUser))
-                    .append("header", "Daily sighting #" + (i + 1))
+                    .append("header", "Sighting at " + location[0])
                     .append("bird", birdId)
                     .append("group", groupOwnedBySuper)
                     .append("flagged", false)
                     .append("help", false)
                     .append("likes", List.of())
-                    .append("image", null)
-                    .append("textBody", "Observed a notable species during a routine outing.")
-                    .append("timestamp", new Date(now - ((8 - i) * 86_400_000L)))
-                    .append("tags", new Document("latitude", 32.7767)
-                            .append("longitude", -96.7970))
+                    .append("image", bird_image[1])
+                    .append("textBody", "Observed a notable " + bird_image[0] + " during a routine outing.")
+                    .append("timestamp", new Date(baseTime - (365L * 86_400_000L)))
+                    .append("tags", new Document()
+                            .append("latitude", location[1])
+                            .append("longitude", location[2]))
                     .append("comments", List.of())
             );
         }
@@ -875,7 +904,7 @@ public class MongoDataInitializer implements CommandLineRunner {
                 .append("likes", List.of())
                 .append("image", "/images/megastarrapter.jpg")
                 .append("textBody", "Guys I found this awesome bird and it... MEGA EVOLVED")
-                .append("timestamp", new Date(now - (14L * 86_400_000L))) // 2 weeks ago
+                .append("timestamp", new Date(now - (16L * 86_400_000L))) // 2 weeks ago
                 .append("tags", new Document("latitude", 32.5007).append("longitude", 94.7405))
                 .append("comments", List.of(
                         new Document("user", postUser(commenter))

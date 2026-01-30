@@ -38,10 +38,12 @@ export function getUnlockedBadges(user: User, posts: any[]): string[] {
   
   const uniqueSpecies = new Set(
     posts
-      .filter(p => p.bird && typeof p.bird === 'object' && 'commonName' in p.bird)
-      .map((p) => (p.bird as any).commonName)
+      .filter(p => p.bird)
+      .map((p) => (p.bird as any))
   ).size;
-  if (uniqueSpecies >= 3) {
+  console.log(uniqueSpecies)
+
+  if (uniqueSpecies >= 10) {
     unlocked.push('collector');
   }
   
