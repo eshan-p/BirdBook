@@ -904,7 +904,7 @@ public class MongoDataInitializer implements CommandLineRunner {
                 .append("likes", List.of())
                 .append("image", "/images/megastarrapter.jpg")
                 .append("textBody", "Guys I found this awesome bird and it... MEGA EVOLVED")
-                .append("timestamp", new Date(now - (16L * 86_400_000L))) // 2 weeks ago
+                .append("timestamp", new Date(now - (20L * 86_400_000L))) // 3 weeks ago
                 .append("tags", new Document("latitude", 32.5007).append("longitude", 94.7405))
                 .append("comments", List.of(
                         new Document("user", postUser(commenter))
