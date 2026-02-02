@@ -51,8 +51,8 @@ export default function Landing() {
           >
             Get Started
           </button>
-          <div className="auth-link mt-0">
-            Or <Link to="/feed">continue as guest</Link>
+          <div className="auth-link mt-3">
+            Or <Link to="/feed" className="text-blue-600">continue as guest</Link>
           </div>
         </div>
       </section>
