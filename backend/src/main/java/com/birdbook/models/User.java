@@ -1,6 +1,11 @@
 package com.birdbook.models;
 
 import com.birdbook.models.Role;
+import com.birdbook.serializers.ObjectIdDeserializer;
+import com.birdbook.serializers.ObjectIdSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,6 +17,8 @@ import jakarta.validation.constraints.Pattern;
 public class User {
 
     @Id
+    @JsonSerialize(using = ObjectIdSerializer.class)
+    @JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId id;
 
     @NotBlank(message = "Username cannot be blank.")

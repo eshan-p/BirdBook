@@ -7,25 +7,29 @@ export const BADGES: Record<string, Badge> = {
     id: 'first_sighting',
     name: 'First Flight',
     description: 'Record your first bird sighting',
-    icon: '🐦'
+    icon: '🐦',
+    notifiable: false
   },
   COLLECTOR: {
     id: 'collector',
     name: 'Collector',
     description: 'Spot 10 different bird species',
-    icon: '🦅'
+    icon: '🦅',
+    notifiable: true
   },
   SOCIAL_BUTTERFLY: {
     id: 'social_butterfly',
     name: 'Social Butterfly',
     description: 'Make 5 friends',
-    icon: '🦋'
+    icon: '🦋',
+    notifiable: true
   },
   PHOTOGRAPHER: {
     id: 'photographer',
     name: 'Photographer',
     description: 'Get 20 likes on your sightings',
-    icon: '📸'
+    icon: '📸',
+    notifiable: true
   }
 };
 
@@ -57,4 +61,11 @@ export function getUnlockedBadges(user: User, posts: any[]): string[] {
   }
   
   return unlocked;
+}
+
+export function getNotifiableBadges(badgeIds: string[]): string[] {
+  return badgeIds.filter(id => {
+    const badge = Object.values(BADGES).find(b => b.id === id);
+    return badge?.notifiable !== false;
+  });
 }

@@ -1,6 +1,6 @@
 // src/pages/SearchResults.tsx
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { searchAll } from '../api/Search';
 import { Bird } from '../types/Bird';
 import { User } from '../types/User';
@@ -26,6 +26,7 @@ function SearchResults() {
   const query = searchParams.get('q') || '';
   const [results, setResults] = useState<SearchResults | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('all');
 
   useEffect(() => {
@@ -177,14 +178,15 @@ function SearchResults() {
               </div>
               <div className='space-y-2'>
                 {results.users.map((user) => (
-                  <FriendCard 
-                    key={user.id} 
-                    friend={{
-                      id: user.id,
-                      name: user.username,
-                      profilePhoto: user.profilePic
-                    }} 
-                  />
+                  <div 
+                    key={user.id}
+                    onClick={() => navigate(`/user/${user.id}`)}
+                    className="cursor-pointer"
+                  >
+                    <FriendCard 
+                      user={user} 
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -218,10 +220,20 @@ function SearchResults() {
                     <PostCard
                       description={post.header}
                       author={post.user.username}
+                      authorId={post.user.userId}
+                      authorProfilePic={post.user.profilePic}
                       dateTime={parseDate(post.timestamp)}
-                      location={post.tags?.location}
+                      location={
+                        post.tags?.latitude && post.tags?.longitude
+                          ? {
+                              latitude: parseFloat(post.tags.latitude),
+                              longitude: parseFloat(post.tags.longitude)
+                            }
+                          : undefined
+                      }
                       likes={post.likes.length}
                       comments={post.comments.length}
+                      image={post.image}
                     />
                   </Link>
                 ))}

@@ -111,29 +111,27 @@ public class UserService {
     }
 
 public List<Map<String, Object>> getTopBirdsThisMonth(ObjectId userId) {
-    List<Post> userPosts = postDAO.findByUserId(userId);
-    LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+    List<Post> userPosts = getPostsList(userId);
+    LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
     
-    // Filter posts from this month that have a bird and a valid timestamp
     Map<ObjectId, Long> birdCounts = userPosts.stream()
-        .filter(post -> 
-            post.getTimestamp() != null && 
-            post.getBird() != null && // Only posts with birds
-            post.getTimestamp().toInstant()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDateTime()
-                .isAfter(startOfMonth)
-        )
+        .filter(post -> {
+            boolean hasTimestamp = post.getTimestamp() != null;
+            boolean hasBird = post.getBird() != null;
+            boolean isThisMonth = false;
+            
+            if (hasTimestamp) {
+                isThisMonth = post.getTimestamp().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDateTime()
+                    .isAfter(thirtyDaysAgo);
+            }
+            
+            System.out.println("hasTimestamp: " + hasTimestamp + ", hasBird: " + hasBird + ", isThisMonth: " + isThisMonth);
+            return hasTimestamp && hasBird && isThisMonth;
+        })
         .collect(Collectors.groupingBy(Post::getBird, Collectors.counting()));
 
-    System.out.println("Bird counts for user " + userId + ": " + birdCounts);
-
-    // If no birds found, return empty list
-    if (birdCounts.isEmpty()) {
-        return List.of();
-    }
-
-    // Look up bird details for the top 5 birds
     List<Map<String, Object>> topBirds = birdCounts.entrySet().stream()
         .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
         .limit(5)

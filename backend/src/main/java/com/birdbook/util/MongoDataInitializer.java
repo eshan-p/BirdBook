@@ -106,21 +106,21 @@ public class MongoDataInitializer implements CommandLineRunner {
             "/profile_pictures/adminAlice.jpg", "Alice", "Anderson", "Austin, Travis County, Texas, United States"));
 
         userNames.put(superUser, "super_sam");
-        userProfilePics.put(superUser, "/profile_pictures/superSam.jpg");
+        userProfilePics.put(superUser, "/profile_pictures/superSam.png");
         docs.add(userDoc(superUser, "super_sam", "Super1!", Role.SUPER_USER,
             "/profile_pictures/superSam.jpg", "Sam", "Smith", "Dallas, Dallas County, Texas, United States"));
 
         ObjectId birdUser = new ObjectId();
         basicUsers.add(birdUser);
         userNames.put(birdUser, "rockPigeonLover41");
-        userProfilePics.put(birdUser, "/profile_pictures/rockPigeon.jpg");
+        userProfilePics.put(birdUser, "/profile_pictures/default4.png");
 
         docs.add(userDoc(
                 birdUser,
                 "rockPigeonLover41",
                 "Bird1!",
                 Role.BASIC_USER,
-                "/profile_pictures/rockPigeon.jpg",
+                "/profile_pictures/default4.png",
                 "The",
                 "Rock",
                 "Dallas, Dallas County, Texas, United States"
@@ -492,6 +492,13 @@ public class MongoDataInitializer implements CommandLineRunner {
         };
 
         List<Document> docs = new ArrayList<>();
+        Map<String, String> manualImageUrls = new HashMap<>();
+        manualImageUrls.put("American Black Duck", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhkdwAwsIrbewpnqvmoCMT8o74duBuf-oE-A&s");
+        manualImageUrls.put("Green-winged Teal", "https://www.allaboutbirds.org/guide/assets/photo/63893381-480px.jpg");
+        manualImageUrls.put("Blue-winged Teal", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRT7SgIwRN80WZORgCB_SY_zvhI8Y8QPB0rPg&s");
+        manualImageUrls.put("Ring-necked Duck", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSO_z6ANR5hhF_6hOzcJtffgTS2Ob3i051o1g&s");
+        manualImageUrls.put("Common Merganser", "https://www.allaboutbirds.org/guide/assets/photo/63910971-480px.jpg");
+        manualImageUrls.put("Red-breasted Merganser", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSVmPi1iWXNtH2Ya_7W3ENFKAOzrLH6oVGjw&s");
 
         for (String[] bird : birdData) {
             ObjectId birdId = new ObjectId();
@@ -501,6 +508,12 @@ public class MongoDataInitializer implements CommandLineRunner {
             String scientificName = bird[1];
             this.birdCommonNames.add(commonName);
 
+            String imageUrl;
+
+            if (manualImageUrls.containsKey(commonName)) {
+                imageUrl = manualImageUrls.get(commonName);
+            } else {
+
             // Convert to Wikimedia filename format
             String fileName = commonName
                     .replace("’", "")
@@ -509,10 +522,11 @@ public class MongoDataInitializer implements CommandLineRunner {
                     .replace(" ", "_")
                     + ".jpg";
 
-            String imageUrl =
+            imageUrl =
                     "https://commons.wikimedia.org/wiki/Special:FilePath/"
                     + fileName
                     + "?width=600";
+            }
 
             docs.add(new Document("_id", birdId)
                     .append("commonName", commonName)
@@ -876,7 +890,7 @@ public class MongoDataInitializer implements CommandLineRunner {
                     .append("likes", List.of())
                     .append("image", bird_image[1])
                     .append("textBody", "Observed a notable " + bird_image[0] + " during a routine outing.")
-                    .append("timestamp", new Date(baseTime - (365L * 86_400_000L)))
+                    .append("timestamp", new Date(baseTime - (21L * 86_400_000L)))
                     .append("tags", new Document()
                             .append("latitude", location[1])
                             .append("longitude", location[2]))

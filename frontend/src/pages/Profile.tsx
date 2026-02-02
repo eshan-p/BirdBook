@@ -43,7 +43,9 @@ function Profile() {
   useEffect(() => {
     if (userInfo && posts) {
       const newUnlocked = getUnlockedBadges(userInfo, posts);
-      const newBadges = newUnlocked.filter(b => !unlockedBadges.includes(b));
+      const newBadges = newUnlocked.filter(b => 
+        !unlockedBadges.includes(b) && b !== 'first_sighting' 
+      );
       if (newBadges.length > 0) {
         const badgeId = newBadges[0];
         const badge = BADGES[badgeId.toUpperCase().replace(/_/g, '_')];

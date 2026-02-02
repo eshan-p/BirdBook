@@ -15,13 +15,14 @@ function FriendCard(props: FriendCardProps) {
     const user = props.user;
 
     name = user.username;
+    console.log(user.profilePic);
     profilePhoto = user.profilePic ? `http://localhost:8080${user.profilePic}` : undefined;
     subText = `${user.friends?.length || 0} friends`;
   } else {
     const friend = props.friend;
-
+    console.log("Hit")
     name = friend.name;
-    profilePhoto = friend.profilePhoto;
+    profilePhoto = friend.profilePhoto ? `http://localhost:8080${friend.profilePhoto}` : undefined;
     subText = friend.location
       ? friend.location.join(", ")
       : "Unknown location";
