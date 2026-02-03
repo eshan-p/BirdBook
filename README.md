@@ -30,6 +30,7 @@ BirdBook is a full-stack social media application designed for bird watchers to 
 ![Group](./images/groups.png)
 - **🔐 Secure Authentication** - Role-based access control with JWT authentication
 - **📊 Personal Statistics** - Track your birding progress with comprehensive analytics
+![Profile](./images/profile.png)
 
 ---
 
